@@ -28,8 +28,12 @@ SDL_TTL链接-> http://www.libsdl.org/projects/SDL_ttf/ （附有FreeType库下�
 
 可以直接下载它们的dll文件，也可以下载了工程文件后自行编译出lib文件和dll文件。
 
+SDL2文档-> https://wiki.libsdl.org/
+
+会看文档就不怕不怕辣。
+
 ### 开发日志
 
 ##### 2020年7月20日
 
-嗯，开了个题，顺便写了写readme，然后开了工程+做了做环境的配置。感觉不赖。
+嗯，开了个题，顺便写了写readme，然后开了工程+做了做环境的配置，试了试感觉也没什么问题。感觉不赖。

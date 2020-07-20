@@ -36,4 +36,7 @@
       <Filter>外来库</Filter>
     </Library>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
+  </ItemGroup>
 </Project>
