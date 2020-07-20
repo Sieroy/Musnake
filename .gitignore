@@ -4487,3 +4487,16 @@ env/SDL2_ttf-2.0.15/Xcode/showfont/Info-showfont__Upgraded_.plist
 env/SDL2_ttf-2.0.15/Xcode/showfont/SDLMain.h
 env/SDL2_ttf-2.0.15/Xcode/showfont/SDLMain.m
 env/SDL2_ttf-2.0.15/Xcode/showfont/showfont.xcodeproj/project.pbxproj
+Debug/Musnake.ilk
+Debug/Musnake.log
+Debug/Musnake.pdb
+Debug/Musnake.tlog/CL.command.1.tlog
+Debug/Musnake.tlog/CL.read.1.tlog
+Debug/Musnake.tlog/CL.write.1.tlog
+Debug/Musnake.tlog/link.command.1.tlog
+Debug/Musnake.tlog/link.read.1.tlog
+Debug/Musnake.tlog/link.write.1.tlog
+Debug/Musnake.tlog/Musnake.lastbuildstate
+Debug/Musnake.vcxproj.FileListAbsolute.txt
+Debug/vc142.idb
+Debug/vc142.pdb
