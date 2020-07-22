@@ -151,6 +151,13 @@
   <ItemGroup>
     <None Include="README.md" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MU_flame.h" />
+    <ClInclude Include="MU_game.h" />
+    <ClInclude Include="MU_grid.h" />
+    <ClInclude Include="MU_time.h" />
+    <ClInclude Include="MU_snake.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

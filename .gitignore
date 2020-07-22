@@ -4500,3 +4500,7 @@ Debug/Musnake.tlog/Musnake.lastbuildstate
 Debug/Musnake.vcxproj.FileListAbsolute.txt
 Debug/vc142.idb
 Debug/vc142.pdb
+.vs/Musnake/v16/ipch/AutoPCH/978f2ed298267678/MU_SNAKE.ipch
+.vs/Musnake/v16/ipch/AutoPCH/245545f14cb6f301/MU_SNAKE.ipch
+.vs/Musnake/v16/ipch/AutoPCH/c294ac1a7a817129/MU_TIME.ipch
+.vs/Musnake/v16/ipch/AutoPCH/ec16dec112211abf/MU_FLAME.ipch

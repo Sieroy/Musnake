@@ -39,4 +39,21 @@
   <ItemGroup>
     <None Include="README.md" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MU_time.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MU_snake.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MU_flame.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MU_game.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MU_grid.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
