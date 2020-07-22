@@ -7,18 +7,18 @@
 #include "MU_grid.h"
 
 namespace musnake {
-	enum BodyDirect;
+	enum BodyDirect {
+		none = -1,
+		up = 0,
+		right,
+		down,
+		left
+	};
+	class Grid;
 	class Snake;
 }
 
 /* 蛇的身体朝向枚举 */
-enum musnake::BodyDirect {
-	none  = -1,
-	up = 0,
-	right,
-	down,
-	left
-};
 
 /* 蛇的身体类 */
 class musnake::Snake {
@@ -45,7 +45,6 @@ public:
 	void draw(SDL_Renderer* render);
 
 private:
-	SDL_Rect rect;  // 蛇体所在位置
 	int headDir;  // 蛇头向的朝向
 	int tailDir;  // 蛇尾向的朝向
 
@@ -65,6 +64,7 @@ inline musnake::Snake::Snake(){
 	flameTime = 0;
 	next = nullptr;
 	prev = nullptr;
+	grid = nullptr;
 }
 
 inline void musnake::Snake::setHeadDir(int dir) {
@@ -75,13 +75,6 @@ inline void musnake::Snake::setTailDir(int dir) {
 	tailDir = dir;
 }
 
-inline void musnake::Snake::setPosition(int x, int y, int w, int h) {
-	rect.x = x;
-	rect.y = y;
-	rect.w = w;
-	rect.h = h;
-}
-
 inline void musnake::Snake::setFlame(Flame* flame) {
 	Snake::flame = flame;
 	flameTime = flame->getDuration();
@@ -89,8 +82,7 @@ inline void musnake::Snake::setFlame(Flame* flame) {
 
 inline void musnake::Snake::update() {
 	if (flameTime < 0) return;  // 对于永续帧，不再更新
-	unsigned long long dt = getTimeDelta();
-	flameTime -= dt;
+	flameTime -= getTimeDelta();
 	if (flameTime <= 0) {
 		flame = flame->getNext();
 		if (flame)
@@ -103,5 +95,5 @@ inline void musnake::Snake::update() {
 }
 
 inline void musnake::Snake::draw(SDL_Renderer* render) {
-	flame->draw(render, &rect);
+	flame->draw(render, &grid->rect);
 }
