@@ -3,12 +3,12 @@
 #include<string.h>
 
 namespace musnake {
-	// ³ÌĞòËùÔÚÂ·¾¶
+	// ç¨‹åºæ‰€åœ¨è·¯å¾„
 	char PATH[256];
 
-	// ³õÊ¼»¯Â·¾¶
+	// åˆå§‹åŒ–è·¯å¾„
 	void initPath(char* path);
-	// ÓÉÏà¶ÔÂ·¾¶»ñÈ¡¾ø¶ÔÂ·¾¶
+	// ç”±ç›¸å¯¹è·¯å¾„è·å–ç»å¯¹è·¯å¾„
 	void catPath(char* dest, const char* relative);
 }
 
@@ -17,7 +17,7 @@ inline void musnake::initPath(char* path) {
 
 	strcpy(PATH, path);
 	while (*p)p++;
-	while (*p != '\\')p--;
+	while (*p != '\\' && *p != '/')p--;
 	*(++p) = 0;
 }
 
