@@ -24,7 +24,9 @@ SDL2链接-> http://libsdl.org/download-2.0.php
 
 SDL_Image链接-> http://www.libsdl.org/projects/SDL_image/ （附有zlib、libpng等库的下载链接）
 
-SDL_TTL链接-> http://www.libsdl.org/projects/SDL_ttf/ （附有FreeType库下载链接）
+SDL_TTF链接-> http://www.libsdl.org/projects/SDL_ttf/ （附有FreeType库下载链接）
+
+SDL_Mixer链接-> http://www.libsdl.org/projects/SDL_mixer/
 
 可以直接下载它们的dll文件，也可以下载了工程文件后自行编译出lib文件和dll文件。
 
