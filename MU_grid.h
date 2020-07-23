@@ -5,11 +5,11 @@
 namespace musnake {
 	// 格子内物品种类
 	enum GridObjectType {
-		dark = -1,  // 类似空气墙的东西
-		empty = 0,  // 空格
-		snake,  // 蛇体
-		block,  // 砖块
-		food,  // 食物
+		MU_GRID_OBJECT_TYPE_DARK = -1,  // 类似空气墙的东西
+		MU_GRID_OBJECT_TYPE_EMPTY = 0,  // 空格
+		MU_GRID_OBJECT_TYPE_SNAKE,  // 蛇体
+		MU_GRID_OBJECT_TYPE_BLOCK,  // 障碍物
+		MU_GRID_OBJECT_TYPE_FOOD,  // 食物
 	};
 }
 
@@ -20,6 +20,7 @@ public:
 	~Grid();
 
 	SDL_Rect rect;
+	int objType;
 
 	void setPosition(int x, int y, int w, int h);
 
@@ -27,7 +28,6 @@ public:
 	void draw(SDL_Renderer* render);
 
 private:
-	int objType;
 	Snake* snake;
 
 	Flame* flame;
@@ -37,7 +37,7 @@ private:
 };
 
 musnake::Grid::Grid() {
-	objType = empty;
+	objType = MU_GRID_OBJECT_TYPE_EMPTY;
 	snake = nullptr;
 }
 
@@ -57,10 +57,10 @@ inline void musnake::Grid::update() {
 				flameTime += flame->getDuration();
 		}
 	}
-	if (objType == GridObjectType::snake)snake->update();
+	if (objType == GridObjectType::MU_GRID_OBJECT_TYPE_SNAKE)snake->update();
 }
 
 inline void musnake::Grid::draw(SDL_Renderer* render) {
 	flame->draw(render, &rect);
-	if (objType == GridObjectType::snake)snake->draw(render);
+	if (objType == GridObjectType::MU_GRID_OBJECT_TYPE_SNAKE)snake->draw(render);
 }

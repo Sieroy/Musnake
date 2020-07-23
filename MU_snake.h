@@ -7,12 +7,12 @@
 #include "MU_grid.h"
 
 namespace musnake {
-	enum BodyDirect {
-		none = -1,
-		up = 0,
-		right,
-		down,
-		left
+	enum SnakeDirect {
+		MU_SNAKE_DIRECT_NONE = -1,
+		MU_SNAKE_DIRECT_UP = 0,
+		MU_SNAKE_DIRECT_RIGHT,
+		MU_SNAKE_DIRECT_DOWN,
+		MU_SNAKE_DIRECT_LEFT
 	};
 	class Grid;
 	class Snake;
@@ -58,8 +58,8 @@ private:
 };
 
 inline musnake::Snake::Snake(){
-	headDir = none;
-	tailDir = none;
+	headDir = MU_SNAKE_DIRECT_NONE;
+	tailDir = MU_SNAKE_DIRECT_NONE;
 	flame = nullptr;
 	flameTime = 0;
 	next = nullptr;

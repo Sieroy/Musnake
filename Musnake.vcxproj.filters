@@ -35,6 +35,9 @@
     <Library Include="SDL2main.lib">
       <Filter>外来库</Filter>
     </Library>
+    <Library Include="SDL2_mixer.lib">
+      <Filter>外来库</Filter>
+    </Library>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
@@ -53,6 +56,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="MU_grid.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MU_path.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
