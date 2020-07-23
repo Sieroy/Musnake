@@ -14,7 +14,8 @@ public:
 
 	void setTexture(SDL_Texture* texture);  // 设置帧的纹理
 	void setDuration(int duration);  // 设置帧的持续时间
-	void setNext(Flame* next);  // 设置下一帧
+	void setNext(Flame* next);  // 设置下一帧，如果next非空，则转为对next进行setNext
+	void setNext(Flame* next, int forced);  // 强制设置this的下一帧，注意内存泄漏问题
 	void setGroupId(int id);  // 标记帧组号，帧组号用来在terminate时能稳定地释放这些帧
 
 	Flame* getNext();  // 获取下一帧
@@ -23,7 +24,7 @@ public:
 	void draw(SDL_Renderer* render, SDL_Rect* rect);  // 在指定地点绘制
 
 private:
-	int groupId;
+	int groupId = -1;
 	SDL_Texture* tex;  // 该帧的纹理图对象
 	long long duration;  // 该帧要持续的时间，-1表示始终
 	Flame* next;  // 下一帧
@@ -54,7 +55,12 @@ inline void musnake::Flame::setDuration(int duration){
 	Flame::duration = duration;
 }
 
-inline void musnake::Flame::setNext(Flame* next){
+inline void musnake::Flame::setNext(Flame* next) {
+	if (Flame::next != nullptr)Flame::next->setNext(next);
+	else Flame::next = next;
+}
+
+inline void musnake::Flame::setNext(Flame* next, int forced) {
 	Flame::next = next;
 }
 

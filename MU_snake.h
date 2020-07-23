@@ -38,6 +38,16 @@ public:
 	// 直接改变蛇体的当前帧
 	void setFlame(Flame* flame);
 
+	// 设置相邻蛇体
+	void setNext(Snake* snake);
+	void setPrev(Snake* snake);
+
+	// 蛇头变蛇体
+	void turnBody();  // 实验性的函数，试试有没有简化效果
+
+	// 蛇体变蛇尾
+	void turnTail();  // 实验性的函数，试试有没有简化效果
+
 	// 更新蛇体
 	void update();
 
@@ -78,6 +88,14 @@ inline void musnake::Snake::setTailDir(int dir) {
 inline void musnake::Snake::setFlame(Flame* flame) {
 	Snake::flame = flame;
 	flameTime = flame->getDuration();
+}
+
+inline void musnake::Snake::setNext(Snake* snake) {
+	next = snake;
+}
+
+inline void musnake::Snake::setPrev(Snake* snake) {
+	prev = snake;
 }
 
 inline void musnake::Snake::update() {
