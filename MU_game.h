@@ -22,15 +22,26 @@ public:
 	void setDelayFunc(void (*func)(unsigned long), unsigned long arg, int delay);
 	void setSnakeHead(Snake* snake);
 	void setSnakeTail(Snake* snake);
+
+	// 移蛇函数，如果正常移动，就返回0，否则返回1并在函数内实现扣血之类的操作
+	// 正常移动：踩着节拍向非尾向的方向、成功地移动；
+	// 非正常移动：错节拍移动、尾向移动、撞墙、撞蛇身
+	int moveSnake(int dir);
+
+	// 为小蛇解移动锁
+	void unlockMoving();
 	
 	// 游戏运行的小主函数
 	void run();
 
 private:
+	int hp = 5;  // 蛇的血量，初始为5
+	long long int note = -1;  // 节拍判定。到达某个音符的判定点后，note会被赋值为当前时间值，判定成功后变为-1
+	bool movingLock = false;  // 为实现Moves per Second限制而加的移动锁
+	int combo = 0;  // 连击数
 	SDL_Rect drawRect;  // 当前屏幕绘制区域对应的完整地图的矩形
 	Snake* snakeHead, * snakeTail;  // 蛇头和蛇尾
 	DelayFunc* timingFunc = nullptr;  // 当局游戏用的延时函数表（注意实现暂停效果时翻新时间）
-	bool movingLock = false;  // 为实现Moves per Second限制而加的移动锁
 };
 
 musnake::Game::Game() {
@@ -142,7 +153,7 @@ musnake::Game::Game() {
 
 	for (int i = 0;i < 20;i++) {
 		for (int j = 0;j < 15;j++) {
-			Grid* map = gameMap[i][j] = new Grid;
+			Grid* map = gameMap[i][j] = new Grid(i, j);
 			map->setPosition(i * 40, j * 40, 40, 40);
 			map->objType = MU_GRID_OBJECT_TYPE_EMPTY;
 		}
@@ -198,6 +209,92 @@ inline void musnake::Game::setSnakeTail(Snake* snake) {
 	snakeTail = snake;
 }
 
+inline void musnake::Game::unlockMoving() {
+	movingLock = false;
+}
+
+void unlockMoving_D(unsigned long arg) {
+	musnake::thisGame->unlockMoving();
+}
+
+int musnake::Game::moveSnake(int dir) {
+	Grid* gp = snakeHead->getGrid();
+	Snake* sp;
+	int returnVal = 0;
+	int x = gp->x, y = gp->y;
+
+	if (movingLock) {  // 如果超出了MPS的限制，则判定为手抖
+		return 0;
+	}
+	else {
+		movingLock = true;
+		setDelayFunc(&unlockMoving_D, 0, 200);  // 0.2秒后自解开
+	}
+
+	if (dir == snakeHead->getTailDir()) {  // 返向
+		combo = 0;
+		dir = (dir + 2) % 4;
+		returnVal = 1;
+	}
+
+	if (note == -1) {  // 当前没有音符
+		combo = 0;
+		returnVal = 1;
+	}
+	else if (getTimeVal() - note > 400) {  // 一个音符超过0.4秒没有按就视为miss。所以音符会稀疏一些，避免连打
+		combo = 0;
+		returnVal = 1;
+		note = -1;
+	}
+
+	switch (dir) {
+	case MU_SNAKE_DIRECT_UP:
+		y--;
+		break;
+	case MU_SNAKE_DIRECT_RIGHT:
+		x++;
+		break;
+	case MU_SNAKE_DIRECT_DOWN:
+		y++;
+		break;
+	case MU_SNAKE_DIRECT_LEFT:
+		x--;
+		break;
+	}
+	gp = gameMap[x][y];
+
+	switch (gp->objType) {
+	case MU_GRID_OBJECT_TYPE_SNAKE:
+		if (gp->getSnake() != snakeTail) {  // 如果所指为蛇身，则开始伤害判定并取消此次移动
+	case MU_GRID_OBJECT_TYPE_BLOCK:  // 如果前方是障碍，则同
+			hp -= 4;
+			combo = 0;
+			return 1;
+		}  // 如果所指为蛇尾，接着下一个case开始生头并缩尾
+	case MU_GRID_OBJECT_TYPE_EMPTY:
+	case MU_GRID_OBJECT_TYPE_FOOD:
+		// 先处理尾巴的问题
+		if (gp->objType == MU_GRID_OBJECT_TYPE_FOOD) {
+			snakeTail->shakeTail();
+		}
+		else {
+			snakeTail->getPrev()->turnTail();
+			snakeTail->endTail();
+			snakeTail->getGrid()->setSnake(nullptr);
+		}
+		// 再搞头
+		sp = new Snake((dir + 2) % 4);  // 别问，问就是数学
+		snakeHead->setPrev(sp);
+		snakeHead->turnBody(dir);
+		sp->setNext(snakeHead);
+		snakeHead = sp;
+		gp->setSnake(sp);
+
+		if (returnVal == 0) combo++;
+	}
+	return returnVal;
+}
+
 void musnake::Game::run() {
 	// 先想想大致的流程吧
 	state = MU_GAME_STATE_RUNNING;
@@ -211,6 +308,32 @@ void musnake::Game::run() {
 			// 这里要用来处理各种事件了
 			// 对此我想到了一种绝妙的解决方法
 			// 可惜这里位置太少，写不下 [doge]
+			switch (evt.type) {
+			case SDL_KEYDOWN:
+				switch (evt.key.keysym.sym) {
+				case SDLK_UP:
+				case SDLK_w:  // 这个死键位先保留着吧，以后开放自行设置键位时再说别的实现方法
+					moveSnake(MU_SNAKE_DIRECT_UP);
+					break;
+				case SDLK_RIGHT:
+				case SDLK_d:
+					moveSnake(MU_SNAKE_DIRECT_RIGHT);
+					break;
+				case SDLK_DOWN:
+				case SDLK_s:
+					moveSnake(MU_SNAKE_DIRECT_DOWN);
+					break;
+				case SDLK_LEFT:
+				case SDLK_a:
+					moveSnake(MU_SNAKE_DIRECT_LEFT);
+					break;
+				}
+				break;
+			case SDL_QUIT:
+				state = MU_GAME_STATE_OVER;
+				musnakeState = MU_STATE_OVER;
+				break;  // 正在考虑要不要goto直接出来或return，不然还会遍历剩下的事件。emmm...
+			}
 		}
 
 		triggerDelayFunc(&timingFunc);

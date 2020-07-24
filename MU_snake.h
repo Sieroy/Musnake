@@ -38,6 +38,13 @@ public:
 	Snake* getNext();
 	Snake* getPrev();
 
+	// 获取蛇体地块
+	Grid* getGrid();
+
+	// 获取蛇方向
+	int getHeadDir();
+	int getTailDir();
+
 	// 蛇头变蛇体
 	void turnBody();  // 实验性的函数，试试有没有简化效果
 	// 蛇头变蛇体，指定方向的版本
@@ -143,6 +150,18 @@ inline musnake::Snake* musnake::Snake::getNext() {
 
 inline musnake::Snake* musnake::Snake::getPrev() {
 	return prev;
+}
+
+inline musnake::Grid* musnake::Snake::getGrid() {
+	return grid;
+}
+
+inline int musnake::Snake::getHeadDir() {
+	return headDir;
+}
+
+inline int musnake::Snake::getTailDir() {
+	return tailDir;
 }
 
 inline void musnake::Snake::turnBody() {
@@ -292,6 +311,7 @@ inline void musnake::Snake::shakeTail() {
 void discardTail(unsigned long arg) {
 	musnake::Snake* snake = (musnake::Snake*)arg;
 	musnake::thisGame->setSnakeTail(snake->getPrev());
+	snake->getPrev()->setNext(nullptr);
 	delete snake;
 }
 

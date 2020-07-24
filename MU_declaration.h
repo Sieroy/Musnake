@@ -1,6 +1,14 @@
 #pragma once
 
 namespace musnake {
+	// 程序状态枚举
+	enum MusnakeState {
+		MU_STATE_OVER,
+		MU_STATE_RUNNING,
+	};
+	// 程序当前状态
+	int musnakeState;
+
 	// ================================ MU_flame.h =================================
 
 	class Flame;
