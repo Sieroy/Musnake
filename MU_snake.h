@@ -2,28 +2,20 @@
 
 #include "SDL.h"
 
+#include "MU_declaration.h"
 #include "MU_time.h"
 #include "MU_flame.h"
 #include "MU_grid.h"
-
-namespace musnake {
-	enum SnakeDirect {
-		MU_SNAKE_DIRECT_NONE = -1,
-		MU_SNAKE_DIRECT_UP = 0,
-		MU_SNAKE_DIRECT_RIGHT,
-		MU_SNAKE_DIRECT_DOWN,
-		MU_SNAKE_DIRECT_LEFT
-	};
-	class Grid;
-	class Snake;
-}
 
 /* 蛇的身体朝向枚举 */
 
 /* 蛇的身体类 */
 class musnake::Snake {
 public:
+	// 直接造一个蛇
 	Snake();
+	// 指定尾向，将蛇作为蛇头而初始化
+	Snake(int tailDir);
 	~Snake();
 
 	// 设置蛇头向方向
@@ -32,9 +24,6 @@ public:
 	// 设置蛇尾向方向
 	void setTailDir(int dir);
 
-	// 设置蛇体位置
-	void setPosition(int x, int y, int w, int h);
-
 	// 直接改变蛇体的当前帧
 	void setFlame(Flame* flame);
 
@@ -42,11 +31,26 @@ public:
 	void setNext(Snake* snake);
 	void setPrev(Snake* snake);
 
+	// 设置所在地块。不会改变地块的数据
+	void setGrid(Grid* grid);
+
+	// 获取相邻蛇体
+	Snake* getNext();
+	Snake* getPrev();
+
 	// 蛇头变蛇体
 	void turnBody();  // 实验性的函数，试试有没有简化效果
+	// 蛇头变蛇体，指定方向的版本
+	void turnBody(int headDir);  // 实验性的函数，试试有没有简化效果
 
 	// 蛇体变蛇尾
 	void turnTail();  // 实验性的函数，试试有没有简化效果
+
+	// 吃东西时尾巴增长的摇摆
+	void shakeTail();  // 实验性的函数，试试有没有简化效果
+
+	// 尾巴因前进而消失于一个地图块
+	void endTail();  // 实验性的函数，试试有没有简化效果
 
 	// 更新蛇体
 	void update();
@@ -77,6 +81,37 @@ inline musnake::Snake::Snake(){
 	grid = nullptr;
 }
 
+inline musnake::Snake::Snake(int tailDir) {
+	headDir = MU_SNAKE_DIRECT_NONE;
+	Snake::tailDir = tailDir;
+	next = nullptr;
+	prev = nullptr;
+	grid = nullptr;
+
+	switch (tailDir) {
+	case MU_SNAKE_DIRECT_UP:
+		setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_0toUP]);
+		break;
+	case MU_SNAKE_DIRECT_RIGHT:
+		setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_0toRIGHT]);
+		break;
+	case MU_SNAKE_DIRECT_DOWN:
+		setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_0toDOWN]);
+		break;
+	case MU_SNAKE_DIRECT_LEFT:
+		setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_0toLEFT]);
+		break;
+	}
+}
+
+inline musnake::Snake::~Snake() {
+	if (next) {
+		delete next;
+	}
+	/* 因为一般而言，只有蛇尾才会在游戏过程中自动被释放，所以如果不是蛇尾，也就是有next，
+	 * 那么只会是游戏结束时的大释放，这时候应该递归地把这些蛇体全释放掉 */
+}
+
 inline void musnake::Snake::setHeadDir(int dir) {
 	headDir = dir;
 }
@@ -96,6 +131,188 @@ inline void musnake::Snake::setNext(Snake* snake) {
 
 inline void musnake::Snake::setPrev(Snake* snake) {
 	prev = snake;
+}
+
+inline void musnake::Snake::setGrid(Grid* grid) {
+	Snake::grid = grid;
+}
+
+inline musnake::Snake* musnake::Snake::getNext() {
+	return next;
+}
+
+inline musnake::Snake* musnake::Snake::getPrev() {
+	return prev;
+}
+
+inline void musnake::Snake::turnBody() {
+	switch (tailDir) {  // 其实本来是想头向左移位或尾向的，但昨天排了帧组后发现很难对齐，所以就列举吧……
+	case MU_SNAKE_DIRECT_UP:
+		switch (headDir) {
+		case MU_SNAKE_DIRECT_RIGHT:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_UPtoRIGHT]);
+			break;
+		case MU_SNAKE_DIRECT_DOWN:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_UPtoDOWN]);
+			break;
+		case MU_SNAKE_DIRECT_LEFT:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_UPtoLEFT]);
+			break;
+		}
+		break;
+
+	case MU_SNAKE_DIRECT_RIGHT:
+		switch (headDir) {
+		case MU_SNAKE_DIRECT_UP:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_RIGHTtoUP]);
+			break;
+		case MU_SNAKE_DIRECT_DOWN:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_RIGHTtoDOWN]);
+			break;
+		case MU_SNAKE_DIRECT_LEFT:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_RIGHTtoLEFT]);
+			break;
+		}
+		break;
+
+	case MU_SNAKE_DIRECT_DOWN:
+		switch (headDir) {
+		case MU_SNAKE_DIRECT_UP:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_DOWNtoUP]);
+			break;
+		case MU_SNAKE_DIRECT_RIGHT:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_DOWNtoRIGHT]);
+			break;
+		case MU_SNAKE_DIRECT_LEFT:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_DOWNtoLEFT]);
+			break;
+		}
+		break;
+
+	case MU_SNAKE_DIRECT_LEFT:
+		switch (headDir) {
+		case MU_SNAKE_DIRECT_UP:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_LEFTtoUP]);
+			break;
+		case MU_SNAKE_DIRECT_RIGHT:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_LEFTtoRIGHT]);
+			break;
+		case MU_SNAKE_DIRECT_DOWN:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_LEFTtoDOWN]);
+			break;
+		}
+		break;
+	}
+}
+
+inline void musnake::Snake::turnBody(int headDir) {
+	Snake::headDir = headDir;
+	turnBody();
+}
+
+inline void musnake::Snake::turnTail() {
+	switch (tailDir) {  // 其实本来是想头向左移位或尾向的，但昨天排了帧组后发现很难对齐，所以就列举吧……
+	case MU_SNAKE_DIRECT_UP:
+		switch (headDir) {
+		case MU_SNAKE_DIRECT_RIGHT:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_UPtoRIGHT]);
+			break;
+		case MU_SNAKE_DIRECT_DOWN:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_UPtoDOWN]);
+			break;
+		case MU_SNAKE_DIRECT_LEFT:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_UPtoLEFT]);
+			break;
+		}
+		break;
+
+	case MU_SNAKE_DIRECT_RIGHT:
+		switch (headDir) {
+		case MU_SNAKE_DIRECT_UP:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHTtoUP]);
+			break;
+		case MU_SNAKE_DIRECT_DOWN:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHTtoDOWN]);
+			break;
+		case MU_SNAKE_DIRECT_LEFT:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHTtoLEFT]);
+			break;
+		}
+		break;
+
+	case MU_SNAKE_DIRECT_DOWN:
+		switch (headDir) {
+		case MU_SNAKE_DIRECT_UP:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_DOWNtoUP]);
+			break;
+		case MU_SNAKE_DIRECT_RIGHT:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_DOWNtoRIGHT]);
+			break;
+		case MU_SNAKE_DIRECT_LEFT:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_DOWNtoLEFT]);
+			break;
+		}
+		break;
+
+	case MU_SNAKE_DIRECT_LEFT:
+		switch (headDir) {
+		case MU_SNAKE_DIRECT_UP:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFTtoUP]);
+			break;
+		case MU_SNAKE_DIRECT_RIGHT:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFTtoRIGHT]);
+			break;
+		case MU_SNAKE_DIRECT_DOWN:
+			setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFTtoDOWN]);
+			break;
+		}
+		break;
+	}
+
+	setTailDir(MU_SNAKE_DIRECT_NONE);
+}
+
+inline void musnake::Snake::shakeTail() {
+	switch (headDir) {
+	case MU_SNAKE_DIRECT_UP:
+		setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_UPshake]);
+		break;
+	case MU_SNAKE_DIRECT_RIGHT:
+		setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHTshake]);
+		break;
+	case MU_SNAKE_DIRECT_DOWN:
+		setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_DOWNshake]);
+		break;
+	case MU_SNAKE_DIRECT_LEFT:
+		setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFTshake]);
+		break;
+	}
+}
+
+void discardTail(unsigned long arg) {
+	musnake::Snake* snake = (musnake::Snake*)arg;
+	musnake::thisGame->setSnakeTail(snake->getPrev());
+	delete snake;
+}
+
+inline void musnake::Snake::endTail() {
+	switch (headDir) {
+	case MU_SNAKE_DIRECT_UP:
+		setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_UPto0]);
+		break;
+	case MU_SNAKE_DIRECT_RIGHT:
+		setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHTto0]);
+		break;
+	case MU_SNAKE_DIRECT_DOWN:
+		setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_DOWNto0]);
+		break;
+	case MU_SNAKE_DIRECT_LEFT:
+		setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFTto0]);
+		break;
+	}
+	setHeadDir(MU_SNAKE_DIRECT_NONE);
+
+	thisGame->setDelayFunc(&discardTail, (unsigned long)this, 225);  // 展示完效果就赶紧GG
 }
 
 inline void musnake::Snake::update() {

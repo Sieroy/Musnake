@@ -153,6 +153,7 @@
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="MU_declaration.h" />
     <ClInclude Include="MU_flame.h" />
     <ClInclude Include="MU_game.h" />
     <ClInclude Include="MU_grid.h" />

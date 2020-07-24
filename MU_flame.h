@@ -2,9 +2,7 @@
 
 #include "SDL.h"
 
-namespace musnake {
-	class Flame;
-}
+#include "MU_declaration.h"
 
 class musnake::Flame {
 public:

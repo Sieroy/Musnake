@@ -2,15 +2,7 @@
 
 #include<string.h>
 
-namespace musnake {
-	// 程序所在路径
-	char PATH[256];
-
-	// 初始化路径
-	void initPath(char* path);
-	// 由相对路径获取绝对路径
-	void catPath(char* dest, const char* relative);
-}
+#include "MU_declaration.h"
 
 inline void musnake::initPath(char* path) {
 	char* p = PATH;

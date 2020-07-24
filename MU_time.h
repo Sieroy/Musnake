@@ -2,33 +2,7 @@
 
 #include"SDL.h"
 
-namespace musnake {
-
-	typedef struct _DelayFunc {
-		void (*func)();
-		unsigned long long time;
-		struct _DelayFunc* next;
-	}DelayFunc;
-
-	/* 将函数插入到指定的延时函数表中 */
-	void addDelayFunc(DelayFunc** list, void (*func)(), long long delay);
-	/* 轮流触发到达时间的延时函数 */
-	void triggerDelayFunc(DelayFunc** list);
-	/* 清空目标表内的延时函数 */
-	void clearDelayFunc(DelayFunc** list);
-
-	unsigned long long timeVal = 0;
-	unsigned long long timeDelta = 0;
-
-	/* 更新时间值 */
-	inline unsigned long long updateTime();
-
-	/* 获取当前的时间值 */
-	inline unsigned long long getTimeVal();
-
-	/* 获取当前时间值与上一次更新间的时间差 */
-	inline unsigned long long getTimeDelta();
-}
+#include"MU_declaration.h"
 
 inline unsigned long long musnake::updateTime() {
 	unsigned long long tv = SDL_GetTicks();
@@ -45,9 +19,10 @@ inline unsigned long long musnake::getTimeDelta() {
 	return timeDelta;
 }
 
-inline void musnake::addDelayFunc(DelayFunc** list, void (*func)(), long long delay) {
+inline void musnake::addDelayFunc(DelayFunc** list, void (*func)(unsigned long), unsigned long arg, long long delay) {
 	DelayFunc* ndf = new DelayFunc;
 	ndf->func = func;
+	ndf->arg = arg;
 	ndf->time = delay + getTimeVal();
 
 	if (!*list) {  // 如果延时表是空的
@@ -82,7 +57,7 @@ inline void musnake::triggerDelayFunc(DelayFunc** list) {
 	while (np = *list) {
 		if (np->time > getTimeVal()) break;
 		*list = np->next;
-		np->func();
+		np->func(np->arg);
 		delete np;
 	}
 }

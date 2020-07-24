@@ -3,85 +3,12 @@
 #include "SDL.h"
 #include "SDL_image.h"
 
+#include "MU_declaration.h"
 #include "MU_path.h"
 #include "MU_grid.h"
 #include "MU_snake.h"
 #include "MU_flame.h"
 
-namespace musnake{
-	// 游戏状态枚举
-	enum GameState {
-		MU_GAME_STATE_RUNNING,
-		MU_GAME_STATE_LOADING,
-		MU_GAME_STATE_PAUSED,
-		MU_GAME_STATE_OVER
-	};
-
-	// 蛇体帧组助记符
-	enum SnakeFlameIndex {
-		MU_SNAKE_FLAME_HEAD_UP,
-		MU_SNAKE_FLAME_HEAD_RIGHT,
-		MU_SNAKE_FLAME_HEAD_DOWN,
-		MU_SNAKE_FLAME_HEAD_LEFT,
-
-		MU_SNAKE_FLAME_TAIL_UP,
-		MU_SNAKE_FLAME_TAIL_RIGHT,
-		MU_SNAKE_FLAME_TAIL_DOWN,
-		MU_SNAKE_FLAME_TAIL_LEFT,
-
-		MU_SNAKE_FLAME_BODY_UPDOWN,
-		MU_SNAKE_FLAME_BODY_RIGHTLEFT,
-		MU_SNAKE_FLAME_BODY_UPRIGHT,
-		MU_SNAKE_FLAME_BODY_RIGHTDOWN,
-		MU_SNAKE_FLAME_BODY_DOWNLEFT,
-		MU_SNAKE_FLAME_BODY_UPLEFT,
-
-		// 下面是动态的图
-
-		MU_SNAKE_FLAME_HEAD_0toUP,
-		MU_SNAKE_FLAME_HEAD_UPtoRIGHT,
-		MU_SNAKE_FLAME_HEAD_UPtoDOWN,
-		MU_SNAKE_FLAME_HEAD_UPtoLEFT,
-		MU_SNAKE_FLAME_HEAD_0toRIGHT,
-		MU_SNAKE_FLAME_HEAD_RIGHTtoUP,
-		MU_SNAKE_FLAME_HEAD_RIGHTtoDOWN,
-		MU_SNAKE_FLAME_HEAD_RIGHTtoLEFT,
-		MU_SNAKE_FLAME_HEAD_0toDOWN,
-		MU_SNAKE_FLAME_HEAD_DOWNtoUP,
-		MU_SNAKE_FLAME_HEAD_DOWNtoRIGHT,
-		MU_SNAKE_FLAME_HEAD_DOWNtoLEFT,
-		MU_SNAKE_FLAME_HEAD_0toLEFT,
-		MU_SNAKE_FLAME_HEAD_LEFTtoUP,
-		MU_SNAKE_FLAME_HEAD_LEFTtoRIGHT,
-		MU_SNAKE_FLAME_HEAD_LEFTtoDOWN,
-
-		MU_SNAKE_FLAME_TAIL_UPshake,
-		MU_SNAKE_FLAME_TAIL_UPto0,
-		MU_SNAKE_FLAME_TAIL_RIGHTtoUP,
-		MU_SNAKE_FLAME_TAIL_DOWNtoUP,
-		MU_SNAKE_FLAME_TAIL_LEFTtoUP,
-		MU_SNAKE_FLAME_TAIL_RIGHTshake,
-		MU_SNAKE_FLAME_TAIL_RIGHTto0,
-		MU_SNAKE_FLAME_TAIL_UPtoRIGHT,
-		MU_SNAKE_FLAME_TAIL_DOWNtoRIGHT,
-		MU_SNAKE_FLAME_TAIL_LEFTtoRIGHT,
-		MU_SNAKE_FLAME_TAIL_DOWNshake,
-		MU_SNAKE_FLAME_TAIL_DOWNto0,
-		MU_SNAKE_FLAME_TAIL_UPtoDOWN,
-		MU_SNAKE_FLAME_TAIL_RIGHTtoDOWN,
-		MU_SNAKE_FLAME_TAIL_LEFTtoDOWN,
-		MU_SNAKE_FLAME_TAIL_LEFTshake,
-		MU_SNAKE_FLAME_TAIL_LEFTto0,
-		MU_SNAKE_FLAME_TAIL_UPtoLEFT,
-		MU_SNAKE_FLAME_TAIL_RIGHTtoLEFT,
-		MU_SNAKE_FLAME_TAIL_DOWNtoLEFT,
-	};
-
-	class Game;
-
-	Grid* gameMap[20][15] = { nullptr };  // 单局游戏用到的地格们，第一维为X坐标，第二维为Y坐标
-	Flame* snakeFlame[50] = { nullptr };  // 绘制蛇要用到的帧们
-}
 
 class musnake::Game {
 public:
@@ -92,12 +19,18 @@ public:
 	SDL_Renderer* gameRender;
 
 	void setRenderer(SDL_Renderer* render);
+	void setDelayFunc(void (*func)(unsigned long), unsigned long arg, int delay);
+	void setSnakeHead(Snake* snake);
+	void setSnakeTail(Snake* snake);
 	
 	// 游戏运行的小主函数
 	void run();
 
 private:
 	SDL_Rect drawRect;  // 当前屏幕绘制区域对应的完整地图的矩形
+	Snake* snakeHead, * snakeTail;  // 蛇头和蛇尾
+	DelayFunc* timingFunc = nullptr;  // 当局游戏用的延时函数表（注意实现暂停效果时翻新时间）
+	bool movingLock = false;  // 为实现Moves per Second限制而加的移动锁
 };
 
 musnake::Game::Game() {
@@ -214,12 +147,83 @@ musnake::Game::Game() {
 			map->objType = MU_GRID_OBJECT_TYPE_EMPTY;
 		}
 	}
+
+	Snake* sp[4];
+	gameMap[7][3]->setSnake(sp[0] = new Snake);
+	sp[0]->setTailDir(MU_SNAKE_DIRECT_LEFT);
+	gameMap[6][3]->setSnake(sp[1] = new Snake);
+	sp[1]->setHeadDir(MU_SNAKE_DIRECT_RIGHT);
+	sp[1]->setTailDir(MU_SNAKE_DIRECT_LEFT);
+	gameMap[5][3]->setSnake(sp[2] = new Snake);
+	sp[2]->setHeadDir(MU_SNAKE_DIRECT_RIGHT);
+	sp[2]->setTailDir(MU_SNAKE_DIRECT_LEFT);
+	gameMap[4][3]->setSnake(sp[3] = new Snake);
+	sp[3]->setHeadDir(MU_SNAKE_DIRECT_RIGHT);
+
+	setSnakeHead(sp[0]);
+	sp[0]->setNext(sp[1]);
+	sp[1]->setNext(sp[2]);
+	sp[2]->setNext(sp[3]);
+	setSnakeTail(sp[3]);
+	sp[3]->setPrev(sp[2]);
+	sp[2]->setPrev(sp[1]);
+	sp[1]->setPrev(sp[0]);
 }
 
 musnake::Game::~Game() {
 	// 先保留着，因为目前还是测试阶段，一次运行的话没有卸载地格之类的必要（软件问题关掉就好~
+	// 先把地格的释放写了吧
+	for (int i = 0;i < 20;i++) {
+		for (int j = 0;j < 15;j++) {
+			delete gameMap[i][j];
+		}
+	}
+	// 再把蛇的释放加上吧，利用蛇的半递归析构应该不难
+	delete snakeHead;
 }
 
 inline void musnake::Game::setRenderer(SDL_Renderer* render) {
 	gameRender = render;
+}
+
+inline void musnake::Game::setDelayFunc(void(*func)(unsigned long), unsigned long arg, int delay) {
+	addDelayFunc(&timingFunc, func, arg, delay);
+}
+
+inline void musnake::Game::setSnakeHead(Snake* snake) {
+	snakeHead = snake;
+}
+
+inline void musnake::Game::setSnakeTail(Snake* snake) {
+	snakeTail = snake;
+}
+
+void musnake::Game::run() {
+	// 先想想大致的流程吧
+	state = MU_GAME_STATE_RUNNING;
+
+	while (state != MU_GAME_STATE_OVER) {
+		SDL_Event evt;
+		updateTime();
+		SDL_RenderClear(gameRender);  // 就硬清！
+
+		while (SDL_PollEvent(&evt)) {
+			// 这里要用来处理各种事件了
+			// 对此我想到了一种绝妙的解决方法
+			// 可惜这里位置太少，写不下 [doge]
+		}
+
+		triggerDelayFunc(&timingFunc);
+
+		for (int i = 0;i < 20;i++) {
+			for (int j = 0;j < 15;j++) {
+				gameMap[i][j]->update();
+				gameMap[i][j]->draw(gameRender);
+			}
+		}
+		snakeTail->update();
+		snakeTail->draw(gameRender);  // 为了保证蛇尾即使处于消失阶段也能正确绘制，在这里调一下它
+
+		SDL_RenderPresent(gameRender);
+	}
 }

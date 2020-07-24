@@ -1,17 +1,8 @@
 #pragma once
 
+#include "MU_declaration.h"
 #include "MU_snake.h"
 
-namespace musnake {
-	// 格子内物品种类
-	enum GridObjectType {
-		MU_GRID_OBJECT_TYPE_DARK = -1,  // 类似空气墙的东西
-		MU_GRID_OBJECT_TYPE_EMPTY = 0,  // 空格
-		MU_GRID_OBJECT_TYPE_SNAKE,  // 蛇体
-		MU_GRID_OBJECT_TYPE_BLOCK,  // 障碍物
-		MU_GRID_OBJECT_TYPE_FOOD,  // 食物
-	};
-}
 
 // 地图格
 class musnake::Grid {
@@ -23,6 +14,11 @@ public:
 	int objType;
 
 	void setPosition(int x, int y, int w, int h);
+
+	// 设置地块物体为一段蛇，会调用蛇的setGrid
+	void setSnake(Snake* snake);
+
+	Snake* popSnake();
 
 	void update();
 	void draw(SDL_Renderer* render);
@@ -46,6 +42,19 @@ inline void musnake::Grid::setPosition(int x, int y, int w, int h) {
 	rect.y = y;
 	rect.w = w;
 	rect.h = h;
+}
+
+inline void musnake::Grid::setSnake(Snake* snake) {
+	objType = MU_GRID_OBJECT_TYPE_SNAKE;
+	Grid::snake = snake;
+	snake->setGrid(this);
+}
+
+inline musnake::Snake* musnake::Grid::popSnake() {
+	Snake* sp = snake;
+	snake = nullptr;
+	objType = MU_GRID_OBJECT_TYPE_EMPTY;
+	return sp;
 }
 
 inline void musnake::Grid::update() {
