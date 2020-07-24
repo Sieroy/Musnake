@@ -4525,3 +4525,10 @@ env/SDL2_mixer-2.0.4/lib/x86/LICENSE.ogg-vorbis.txt
 env/SDL2_mixer-2.0.4/lib/x86/LICENSE.opus.txt
 env/SDL2_mixer-2.0.4/lib/x86/LICENSE.opusfile.txt
 env/SDL2_mixer-2.0.4/README.txt
+Debug/image/snake_0.zip
+Debug/image/snake_0_body.png
+Debug/image/snake_0_body.psd
+Debug/image/snake_0_head.png
+Debug/image/snake_0_head.psd
+Debug/image/snake_0_tail.png
+Debug/image/snake_0_tail.psd

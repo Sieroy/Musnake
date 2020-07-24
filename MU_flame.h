@@ -70,6 +70,10 @@ inline musnake::Flame* musnake::Flame::getNext(){
 	return next;
 }
 
+inline long long musnake::Flame::getDuration() {
+	return duration;
+}
+
 inline void musnake::Flame::draw(SDL_Renderer* render, SDL_Rect* rect){
 	SDL_RenderCopy(render, tex, NULL, rect);
 }

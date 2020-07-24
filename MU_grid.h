@@ -51,6 +51,10 @@ musnake::Grid::Grid(int x, int y) {
 	this->y = y;
 }
 
+musnake::Grid::~Grid() {
+	// 想不出来要写什么，就先这样吧、、
+}
+
 inline void musnake::Grid::setPosition(int x, int y, int w, int h) {
 	rect.x = x;
 	rect.y = y;
@@ -91,4 +95,10 @@ inline void musnake::Grid::update() {
 inline void musnake::Grid::draw(SDL_Renderer* render) {
 	if (flame) flame->draw(render, &rect);
 	if (objType == GridObjectType::MU_GRID_OBJECT_TYPE_SNAKE)snake->draw(render);
+}
+
+
+inline void musnake::Snake::setGrid(Grid* grid) {
+	Snake::grid = grid;
+	rect = grid->rect;
 }

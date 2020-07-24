@@ -34,6 +34,8 @@ public:
 	// 游戏运行的小主函数
 	void run();
 
+	void init();
+
 private:
 	int hp = 5;  // 蛇的血量，初始为5
 	long long int note = -1;  // 节拍判定。到达某个音符的判定点后，note会被赋值为当前时间值，判定成功后变为-1
@@ -45,8 +47,24 @@ private:
 };
 
 musnake::Game::Game() {
+
+}
+
+musnake::Game::~Game() {
+	// 先保留着，因为目前还是测试阶段，一次运行的话没有卸载地格之类的必要（软件问题关掉就好~
+	// 先把地格的释放写了吧
+	for (int i = 0;i < 20;i++) {
+		for (int j = 0;j < 15;j++) {
+			delete gameMap[i][j];
+		}
+	}
+	// 再把蛇的释放加上吧，利用蛇的半递归析构应该不难
+	delete snakeHead;
+}
+
+void musnake::Game::init(){
 	// 按说这里应该是从配置文件里读数据来初始化地格的，现阶段就先写死吧
-	SDL_Surface* picSurf, tmpSurf;
+	SDL_Surface* picSurf, * tmpSurf;
 	SDL_Texture* tmpTex;
 
 	state = MU_GAME_STATE_LOADING;
@@ -63,8 +81,16 @@ musnake::Game::Game() {
 		Flame* flames[8];
 		for (int j = 0;j < 8;j++) {  // 每种运动情况有8帧
 			SDL_Rect srect = { j * 20, i * 20, 20, 20 };
-			SDL_BlitSurface(picSurf, &srect, &tmpSurf, NULL);
-			tmpTex = SDL_CreateTextureFromSurface(gameRender, &tmpSurf);
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+			tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+#else
+			tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+#endif
+
+			SDL_BlitSurface(picSurf, &srect, tmpSurf, NULL);
+			tmpTex = SDL_CreateTextureFromSurface(gameRender, tmpSurf);
+			SDL_FreeSurface(tmpSurf);
 			flames[j] = new Flame(tmpTex, 25);
 			flames[j]->setGroupId(MU_SNAKE_FLAME_HEAD_0toUP + i);
 			if (j)flames[j - 1]->setNext(flames[j]);
@@ -79,8 +105,16 @@ musnake::Game::Game() {
 		Flame* flames[8];
 		for (int j = 0;j < 8;j++) {
 			SDL_Rect srect = { j * 20, i * 20, 20, 20 };
-			SDL_BlitSurface(picSurf, &srect, &tmpSurf, NULL);
-			tmpTex = SDL_CreateTextureFromSurface(gameRender, &tmpSurf);
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+			tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+#else
+			tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+#endif
+
+			SDL_BlitSurface(picSurf, &srect, tmpSurf, NULL);
+			tmpTex = SDL_CreateTextureFromSurface(gameRender, tmpSurf);
+			SDL_FreeSurface(tmpSurf);
 			flames[j] = new Flame(tmpTex, 25);
 			flames[j]->setGroupId(MU_SNAKE_FLAME_TAIL_UPshake + i);
 			if (j)flames[j - 1]->setNext(flames[j]);
@@ -93,19 +127,34 @@ musnake::Game::Game() {
 	picSurf = IMG_Load(snakeBodyPicturePath);
 	for (int j = MU_SNAKE_FLAME_HEAD_UP;j <= MU_SNAKE_FLAME_TAIL_LEFT;j++) {
 		SDL_Rect srect = { j * 20, 0, 20, 20 };
-		SDL_BlitSurface(picSurf, &srect, &tmpSurf, NULL);
-		tmpTex = SDL_CreateTextureFromSurface(gameRender, &tmpSurf);
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+		tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+#else
+		tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+#endif
+
+		SDL_BlitSurface(picSurf, &srect, tmpSurf, NULL);
+		tmpTex = SDL_CreateTextureFromSurface(gameRender, tmpSurf);
+		SDL_FreeSurface(tmpSurf);
 		snakeFlame[j] = new Flame(tmpTex, -1);
 		snakeFlame[j]->setGroupId(j);
 	}
 	for (int j = MU_SNAKE_FLAME_BODY_UPDOWN;j <= MU_SNAKE_FLAME_BODY_UPLEFT;j++) {
 		SDL_Rect srect = { (j - MU_SNAKE_FLAME_BODY_UPDOWN) * 20, 20, 20, 20 };
-		SDL_BlitSurface(picSurf, &srect, &tmpSurf, NULL);
-		tmpTex = SDL_CreateTextureFromSurface(gameRender, &tmpSurf);
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+		tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+#else
+		tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+#endif
+
+		SDL_BlitSurface(picSurf, &srect, tmpSurf, NULL);
+		tmpTex = SDL_CreateTextureFromSurface(gameRender, tmpSurf);
+		SDL_FreeSurface(tmpSurf);
 		snakeFlame[j] = new Flame(tmpTex, -1);
 		snakeFlame[j]->setGroupId(j);
 	}
-	SDL_FreeSurface(picSurf);
 
 	// 然后对不同的帧组进行关联，艹了
 	snakeFlame[MU_SNAKE_FLAME_HEAD_0toUP]->setNext(snakeFlame[MU_SNAKE_FLAME_HEAD_UP]);
@@ -179,18 +228,11 @@ musnake::Game::Game() {
 	sp[3]->setPrev(sp[2]);
 	sp[2]->setPrev(sp[1]);
 	sp[1]->setPrev(sp[0]);
-}
 
-musnake::Game::~Game() {
-	// 先保留着，因为目前还是测试阶段，一次运行的话没有卸载地格之类的必要（软件问题关掉就好~
-	// 先把地格的释放写了吧
-	for (int i = 0;i < 20;i++) {
-		for (int j = 0;j < 15;j++) {
-			delete gameMap[i][j];
-		}
-	}
-	// 再把蛇的释放加上吧，利用蛇的半递归析构应该不难
-	delete snakeHead;
+	sp[0]->setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_LEFT]);
+	sp[1]->setFlame(snakeFlame[MU_SNAKE_FLAME_BODY_RIGHTLEFT]);
+	sp[2]->setFlame(snakeFlame[MU_SNAKE_FLAME_BODY_RIGHTLEFT]);
+	sp[3]->setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHT]);
 }
 
 inline void musnake::Game::setRenderer(SDL_Renderer* render) {
@@ -349,4 +391,32 @@ void musnake::Game::run() {
 
 		SDL_RenderPresent(gameRender);
 	}
+}
+
+void discardTail(unsigned long arg) {
+	using namespace musnake;
+	Snake* snake = (Snake*)arg;
+	thisGame->setSnakeTail(snake->getPrev());
+	snake->getPrev()->setNext(nullptr);
+	delete snake;
+}
+
+inline void musnake::Snake::endTail() {
+	switch (headDir) {
+	case MU_SNAKE_DIRECT_UP:
+		setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_UPto0]);
+		break;
+	case MU_SNAKE_DIRECT_RIGHT:
+		setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHTto0]);
+		break;
+	case MU_SNAKE_DIRECT_DOWN:
+		setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_DOWNto0]);
+		break;
+	case MU_SNAKE_DIRECT_LEFT:
+		setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFTto0]);
+		break;
+	}
+	setHeadDir(MU_SNAKE_DIRECT_NONE);
+
+	musnake::thisGame->setDelayFunc(&discardTail, (unsigned long)this, 225);  // 展示完效果就赶紧GG
 }

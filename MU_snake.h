@@ -3,6 +3,7 @@
 #include "SDL.h"
 
 #include "MU_declaration.h"
+#include "MU_game.h"
 #include "MU_time.h"
 #include "MU_flame.h"
 #include "MU_grid.h"
@@ -69,6 +70,7 @@ private:
 	int headDir;  // 蛇头向的朝向
 	int tailDir;  // 蛇尾向的朝向
 
+	SDL_Rect rect;  // 自身矩形
 	Flame* flame;  // 蛇体当前帧
 	long long flameTime;  // 蛇体当前帧剩余持续时间
 
@@ -138,10 +140,6 @@ inline void musnake::Snake::setNext(Snake* snake) {
 
 inline void musnake::Snake::setPrev(Snake* snake) {
 	prev = snake;
-}
-
-inline void musnake::Snake::setGrid(Grid* grid) {
-	Snake::grid = grid;
 }
 
 inline musnake::Snake* musnake::Snake::getNext() {
@@ -308,38 +306,11 @@ inline void musnake::Snake::shakeTail() {
 	}
 }
 
-void discardTail(unsigned long arg) {
-	musnake::Snake* snake = (musnake::Snake*)arg;
-	musnake::thisGame->setSnakeTail(snake->getPrev());
-	snake->getPrev()->setNext(nullptr);
-	delete snake;
-}
-
-inline void musnake::Snake::endTail() {
-	switch (headDir) {
-	case MU_SNAKE_DIRECT_UP:
-		setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_UPto0]);
-		break;
-	case MU_SNAKE_DIRECT_RIGHT:
-		setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHTto0]);
-		break;
-	case MU_SNAKE_DIRECT_DOWN:
-		setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_DOWNto0]);
-		break;
-	case MU_SNAKE_DIRECT_LEFT:
-		setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFTto0]);
-		break;
-	}
-	setHeadDir(MU_SNAKE_DIRECT_NONE);
-
-	thisGame->setDelayFunc(&discardTail, (unsigned long)this, 225);  // 展示完效果就赶紧GG
-}
-
 inline void musnake::Snake::update() {
 	if (flameTime < 0) return;  // 对于永续帧，不再更新
 	flameTime -= getTimeDelta();
 	if (flameTime <= 0) {
-		flame = flame->getNext();
+		if (flame) flame = flame->getNext();
 		if (flame)
 			flameTime += flame->getDuration();
 		else
@@ -350,5 +321,5 @@ inline void musnake::Snake::update() {
 }
 
 inline void musnake::Snake::draw(SDL_Renderer* render) {
-	flame->draw(render, &grid->rect);
+	if(flame) flame->draw(render, &rect);
 }
