@@ -13,7 +13,7 @@ inline void musnake::initPath(char* path) {
 	*(++p) = 0;
 }
 
-inline void musnake::catPath(char* dest, const char* relative) {
+inline void musnake::catPath(char* dest, char* relative) {
 	strcpy(dest, PATH);
 	strcat(dest, relative);
 }

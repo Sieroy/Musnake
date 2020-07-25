@@ -64,5 +64,8 @@
     <ClInclude Include="MU_declaration.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="MU_note.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

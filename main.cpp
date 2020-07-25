@@ -3,6 +3,7 @@
 #include"SDL.h"
 #include"SDL_main.h"
 #include"SDL_image.h"
+#include"SDL_mixer.h"
 
 #include"MU_declaration.h"
 #include"MU_path.h"
@@ -19,10 +20,11 @@ int main(int argc, char* argv[]) {
 	initPath(argv[0]);
 	SDL_Init(SDL_INIT_EVERYTHING);
 	IMG_Init(IMG_INIT_PNG);
+	Mix_Init(MIX_INIT_MP3);
 
 	window = SDL_CreateWindow("Musnake", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_RESIZABLE);
 	render = SDL_CreateRenderer(window, -1, 0);
-
+	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
 	/*
 	while (musnakeState) {
 		while (SDL_PollEvent(&evt)) {
@@ -36,9 +38,11 @@ int main(int argc, char* argv[]) {
 	*/
 	thisGame = new Game();
 	thisGame->setRenderer(render);
-	thisGame->init();
+	thisGame->init((char*)"test");
 	thisGame->run();
 
+	IMG_Quit();
+	Mix_Quit();
 	SDL_DestroyRenderer(render);
 	SDL_DestroyWindow(window);
 	SDL_Quit();

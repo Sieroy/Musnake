@@ -5,9 +5,18 @@
 #include"MU_declaration.h"
 
 inline unsigned long long musnake::updateTime() {
+	static unsigned flameCount = 0;
+	static unsigned timeCount = 0;
 	unsigned long long tv = SDL_GetTicks();
 	timeDelta = tv - timeVal;
 	timeVal = tv;
+	flameCount++;
+	timeCount += timeDelta;
+	if (timeCount > 1000) {
+		timeCount %= 1000;
+		fps = flameCount;
+		flameCount = 0;
+	}
 	return tv;
 }
 

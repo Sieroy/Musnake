@@ -2,8 +2,10 @@
 
 #include "SDL.h"
 #include "SDL_image.h"
+#include "SDL_mixer.h"
 
 #include "MU_declaration.h"
+#include "MU_note.h"
 #include "MU_path.h"
 #include "MU_grid.h"
 #include "MU_snake.h"
@@ -34,13 +36,19 @@ public:
 	// 游戏运行的小主函数
 	void run();
 
-	void init();
+	// 刷新延时函数和Note的时延值，在开局和结束暂停时调用
+	void refreshTime();
+
+	void init(char* levelname);
 
 private:
+	char level[32] = "level\\";
 	int hp = 5;  // 蛇的血量，初始为5
-	long long int note = -1;  // 节拍判定。到达某个音符的判定点后，note会被赋值为当前时间值，判定成功后变为-1
+	Note* note = nullptr;  // 节拍
+	Mix_Music* bgm = nullptr;  // BGM
 	bool movingLock = false;  // 为实现Moves per Second限制而加的移动锁
 	int combo = 0;  // 连击数
+	unsigned long long pausingTime = 0;  // 暂停时的时间值
 	SDL_Rect drawRect;  // 当前屏幕绘制区域对应的完整地图的矩形
 	Snake* snakeHead, * snakeTail;  // 蛇头和蛇尾
 	DelayFunc* timingFunc = nullptr;  // 当局游戏用的延时函数表（注意实现暂停效果时翻新时间）
@@ -62,21 +70,21 @@ musnake::Game::~Game() {
 	delete snakeHead;
 }
 
-void musnake::Game::init(){
+void musnake::Game::init(char* levelname){
 	// 按说这里应该是从配置文件里读数据来初始化地格的，现阶段就先写死吧
 	SDL_Surface* picSurf, * tmpSurf;
 	SDL_Texture* tmpTex;
 
+	SDL_strlcat(level, levelname, 25);
+
 	state = MU_GAME_STATE_LOADING;
 
-	// 这里定位图片文件的位置
-	char snakeBodyPicturePath[256], snakeHeadPicturePath[256], snakeTailPicturePath[256];
-	catPath(snakeBodyPicturePath, "image\\snake_0_body.png");
-	catPath(snakeHeadPicturePath, "image\\snake_0_head.png");
-	catPath(snakeTailPicturePath, "image\\snake_0_tail.png");
+	// 这里定位文件的位置
+	char tmpPath[256];
 
 	// 开始装载蛇头图，有向蛇头对应的枚举从14号（MU_SNAKE_FLAME_HEAD_0toUP）开始，29号结束
-	picSurf = IMG_Load(snakeHeadPicturePath);
+	catPath(tmpPath, (char*)"image\\snake_0_head.png");
+	picSurf = IMG_Load(tmpPath);
 	for (int i = 0;i < 16;i++) {  // 16种蛇头运动情况
 		Flame* flames[8];
 		for (int j = 0;j < 8;j++) {  // 每种运动情况有8帧
@@ -91,7 +99,7 @@ void musnake::Game::init(){
 			SDL_BlitSurface(picSurf, &srect, tmpSurf, NULL);
 			tmpTex = SDL_CreateTextureFromSurface(gameRender, tmpSurf);
 			SDL_FreeSurface(tmpSurf);
-			flames[j] = new Flame(tmpTex, 25);
+			flames[j] = new Flame(tmpTex, 10);
 			flames[j]->setGroupId(MU_SNAKE_FLAME_HEAD_0toUP + i);
 			if (j)flames[j - 1]->setNext(flames[j]);
 		}
@@ -100,7 +108,8 @@ void musnake::Game::init(){
 	SDL_FreeSurface(picSurf);
 
 	// 开始装载蛇尾图，有向蛇尾对应的枚举从30号（MU_SNAKE_FLAME_TAIL_UPshake）开始，49号结束
-	picSurf = IMG_Load(snakeTailPicturePath);
+	catPath(tmpPath, (char*)"image\\snake_0_tail.png");
+	picSurf = IMG_Load(tmpPath);
 	for (int i = 0;i < 20;i++) {  // 20种有向蛇尾的情况
 		Flame* flames[8];
 		for (int j = 0;j < 8;j++) {
@@ -115,7 +124,7 @@ void musnake::Game::init(){
 			SDL_BlitSurface(picSurf, &srect, tmpSurf, NULL);
 			tmpTex = SDL_CreateTextureFromSurface(gameRender, tmpSurf);
 			SDL_FreeSurface(tmpSurf);
-			flames[j] = new Flame(tmpTex, 25);
+			flames[j] = new Flame(tmpTex, 10);
 			flames[j]->setGroupId(MU_SNAKE_FLAME_TAIL_UPshake + i);
 			if (j)flames[j - 1]->setNext(flames[j]);
 		}
@@ -124,7 +133,8 @@ void musnake::Game::init(){
 	SDL_FreeSurface(picSurf);
 
 	// 开始装载一般蛇体图，一般蛇体对应的枚举从0号（MU_SNAKE_FLAME_HEAD_UP）开始，13号结束
-	picSurf = IMG_Load(snakeBodyPicturePath);
+	catPath(tmpPath, (char*)"image\\snake_0_body.png");
+	picSurf = IMG_Load(tmpPath);
 	for (int j = MU_SNAKE_FLAME_HEAD_UP;j <= MU_SNAKE_FLAME_TAIL_LEFT;j++) {
 		SDL_Rect srect = { j * 20, 0, 20, 20 };
 
@@ -200,11 +210,54 @@ void musnake::Game::init(){
 	 * 先考虑着吧，测试顺利+时间充裕的话，倒也不是不可以。
 	 */
 
+	// 关卡路径
+	char levelfile[64];
+	// 装载关卡音乐
+	SDL_strlcpy(levelfile, level, 64);
+	SDL_strlcat(levelfile, "\\bgm.mp3", 64);
+	catPath(tmpPath, levelfile);
+	bgm = Mix_LoadMUS(tmpPath);
+
+	// 装载关卡的节拍
+	SDL_strlcpy(levelfile, level, 64);
+	SDL_strlcat(levelfile, "\\notes.mu", 64);
+	catPath(tmpPath, levelfile);
+	SDL_RWops* f = SDL_RWFromFile(tmpPath, "r");
+	char nts[16], * ntp = nts;
+	char c = 1;
+	Note* endn = nullptr;
+	while (SDL_RWread(f, &c, 1, 1)) {
+		if (c != ';') {
+			*ntp = c;
+			ntp++;
+		}
+		else {
+			long long nt = 0;
+			int p = 1;
+			do {
+				ntp--;
+				nt += (*ntp - '0') * p;
+				p *= 10;
+			} while (ntp != nts);
+
+			if (!endn) {
+				endn = note = newNote(nt);
+			}
+			else {
+				endn->next = newNote(nt);
+				endn = endn->next;
+			}
+		}
+	}
+
 	for (int i = 0;i < 20;i++) {
 		for (int j = 0;j < 15;j++) {
 			Grid* map = gameMap[i][j] = new Grid(i, j);
 			map->setPosition(i * 40, j * 40, 40, 40);
-			map->objType = MU_GRID_OBJECT_TYPE_EMPTY;
+			if (i == 0 || i == 19 || j == 0 || j == 14)
+				map->objType = MU_GRID_OBJECT_TYPE_BLOCK;
+			else 
+				map->objType = MU_GRID_OBJECT_TYPE_EMPTY;
 		}
 	}
 
@@ -265,12 +318,12 @@ int musnake::Game::moveSnake(int dir) {
 	int returnVal = 0;
 	int x = gp->x, y = gp->y;
 
-	if (movingLock) {  // 如果超出了MPS的限制，则判定为手抖
+	if (movingLock) {  // 如果超出了10MPS的限制，则判定为手抖
 		return 0;
 	}
 	else {
 		movingLock = true;
-		setDelayFunc(&unlockMoving_D, 0, 200);  // 0.2秒后自解开
+		setDelayFunc(&unlockMoving_D, 0, 100);  // 0.1秒后自解开
 	}
 
 	if (dir == snakeHead->getTailDir()) {  // 返向
@@ -279,14 +332,22 @@ int musnake::Game::moveSnake(int dir) {
 		returnVal = 1;
 	}
 
-	if (note == -1) {  // 当前没有音符
+	if (note->time > (long long)getTimeVal()) {  // 当前没有音符
 		combo = 0;
 		returnVal = 1;
 	}
-	else if (getTimeVal() - note > 400) {  // 一个音符超过0.4秒没有按就视为miss。所以音符会稀疏一些，避免连打
+	else if (dir == MU_SNAKE_DIRECT_NONE) {  // 一个音符超过0.2秒没有按就视为miss
 		combo = 0;
 		returnVal = 1;
-		note = -1;
+		dir = (snakeHead->getTailDir() + 2) % 4;
+		Note* np = note;
+		note = np->next;
+		delete np;
+	}
+	else {  // 正常击中音符
+		Note* np = note;
+		note = np->next;
+		delete np;
 	}
 
 	switch (dir) {
@@ -337,9 +398,30 @@ int musnake::Game::moveSnake(int dir) {
 	return returnVal;
 }
 
+void musnake::Game::refreshTime() {
+	long long dt = getTimeVal() - pausingTime;
+	DelayFunc* dfp = timingFunc;
+	Note* np = note;
+
+	while (dfp) {  // 开局时应该不会有游戏当局延时函数吧
+		dfp->time += dt;
+		dfp = dfp->next;
+	}
+
+	if (!pausingTime) dt += noteDelta;  // 对于run开始的那次刷新，加上偏移
+	while (np) {
+		np->time += dt;
+		np = np->next;
+	}
+}
+
 void musnake::Game::run() {
+	SDL_Rect r = { 0, 0, 20, 20 };
 	// 先想想大致的流程吧
 	state = MU_GAME_STATE_RUNNING;
+	updateTime();
+	refreshTime();
+	Mix_PlayMusic(bgm, 1);
 
 	while (state != MU_GAME_STATE_OVER) {
 		SDL_Event evt;
@@ -378,6 +460,8 @@ void musnake::Game::run() {
 			}
 		}
 
+		if (getTimeVal() - note->time > 300) moveSnake(MU_SNAKE_DIRECT_NONE);
+
 		triggerDelayFunc(&timingFunc);
 
 		for (int i = 0;i < 20;i++) {
@@ -388,6 +472,10 @@ void musnake::Game::run() {
 		}
 		snakeTail->update();
 		snakeTail->draw(gameRender);  // 为了保证蛇尾即使处于消失阶段也能正确绘制，在这里调一下它
+
+		if (movingLock)SDL_SetRenderDrawColor(gameRender, 50, 0, 0, 255);
+		else SDL_SetRenderDrawColor(gameRender, 50, 50, 0, 255);
+		SDL_RenderDrawRect(gameRender, &r);
 
 		SDL_RenderPresent(gameRender);
 	}
@@ -418,5 +506,5 @@ inline void musnake::Snake::endTail() {
 	}
 	setHeadDir(MU_SNAKE_DIRECT_NONE);
 
-	musnake::thisGame->setDelayFunc(&discardTail, (unsigned long)this, 225);  // 展示完效果就赶紧GG
+	musnake::thisGame->setDelayFunc(&discardTail, (unsigned long)this, 90);  // 展示完效果就赶紧GG
 }

@@ -22,7 +22,7 @@ namespace musnake {
 	// 初始化路径
 	void initPath(char* path);
 	// 由相对路径获取绝对路径
-	void catPath(char* dest, const char* relative);
+	void catPath(char* dest, char* relative);
 
 
 	// ================================ MU_time.h =================================
@@ -43,6 +43,7 @@ namespace musnake {
 
 	unsigned long long timeVal = 0;
 	unsigned long long timeDelta = 0;
+	unsigned long fps = 0;
 
 	/* 更新时间值 */
 	inline unsigned long long updateTime();
@@ -154,4 +155,5 @@ namespace musnake {
 	Grid* gameMap[20][15] = { nullptr };  // 单局游戏用到的地格们，第一维为X坐标，第二维为Y坐标
 	Flame* snakeFlame[50] = { nullptr };  // 绘制蛇要用到的帧们
 	Game* thisGame = nullptr;  // 当前进行中的游戏对象（鱼，好大的鱼，虎纹鲨鱼……）
+	int noteDelta = 0;  // 节奏偏移
 }
