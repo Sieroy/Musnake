@@ -1,5 +1,7 @@
 #pragma once
 
+#include <random>
+
 #include "SDL.h"
 #include "SDL_image.h"
 #include "SDL_mixer.h"
@@ -30,6 +32,9 @@ public:
 	// 非正常移动：错节拍移动、尾向移动、撞墙、撞蛇身
 	int moveSnake(int dir);
 
+	// 生成食物
+	void refreshFood();
+
 	// 为小蛇解移动锁
 	void unlockMoving();
 	
@@ -45,6 +50,7 @@ private:
 	char level[32] = "level\\";
 	int hp = 5;  // 蛇的血量，初始为5
 	Note* note = nullptr;  // 节拍
+	Food* food = nullptr;  // 食物
 	Mix_Music* bgm = nullptr;  // BGM
 	bool movingLock = false;  // 为实现Moves per Second限制而加的移动锁
 	int combo = 0;  // 连击数
@@ -68,6 +74,11 @@ musnake::Game::~Game() {
 	}
 	// 再把蛇的释放加上吧，利用蛇的半递归析构应该不难
 	delete snakeHead;
+
+	clearDelayFunc(&timingFunc);
+
+	Mix_HaltMusic();
+	Mix_FreeMusic(bgm);
 }
 
 void musnake::Game::init(char* levelname){
@@ -81,6 +92,14 @@ void musnake::Game::init(char* levelname){
 
 	// 这里定位文件的位置
 	char tmpPath[256];
+
+	// 装载食物图
+	catPath(tmpPath, (char*)"image\\food_0.png");
+	picSurf = IMG_Load(tmpPath);
+	tmpTex = SDL_CreateTextureFromSurface(gameRender, picSurf);
+	SDL_FreeSurface(picSurf);
+	foodFlame[0] = new Flame(tmpTex, -1);
+	foodFlame[0]->setNext(nullptr);
 
 	// 开始装载蛇头图，有向蛇头对应的枚举从14号（MU_SNAKE_FLAME_HEAD_0toUP）开始，29号结束
 	catPath(tmpPath, (char*)"image\\snake_0_head.png");
@@ -261,6 +280,8 @@ void musnake::Game::init(char* levelname){
 		}
 	}
 
+	// 特化一下我们的小蛇
+
 	Snake* sp[4];
 	gameMap[7][3]->setSnake(sp[0] = new Snake);
 	sp[0]->setTailDir(MU_SNAKE_DIRECT_LEFT);
@@ -370,7 +391,7 @@ int musnake::Game::moveSnake(int dir) {
 	case MU_GRID_OBJECT_TYPE_SNAKE:
 		if (gp->getSnake() != snakeTail) {  // 如果所指为蛇身，则开始伤害判定并取消此次移动
 	case MU_GRID_OBJECT_TYPE_BLOCK:  // 如果前方是障碍，则同
-			hp -= 4;
+			hp -= 3;  // 算了，改简单一些，就扣3血
 			combo = 0;
 			return 1;
 		}  // 如果所指为蛇尾，接着下一个case开始生头并缩尾
@@ -378,6 +399,10 @@ int musnake::Game::moveSnake(int dir) {
 	case MU_GRID_OBJECT_TYPE_FOOD:
 		// 先处理尾巴的问题
 		if (gp->objType == MU_GRID_OBJECT_TYPE_FOOD) {
+			hp += 1;
+			delete gp->getFood();
+			gp->setFood(nullptr);
+			food = nullptr;
 			snakeTail->shakeTail();
 		}
 		else {
@@ -396,6 +421,18 @@ int musnake::Game::moveSnake(int dir) {
 		if (returnVal == 0) combo++;
 	}
 	return returnVal;
+}
+
+void musnake::Game::refreshFood() {
+	while (true) {
+		int x = Rander() % 20, y = Rander() % 15;  // 这种roll方式肯定要改的，不然到后期很难roll到空的就很不妙
+		if (gameMap[x][y]->objType == MU_GRID_OBJECT_TYPE_EMPTY) {
+			food = new Food;
+			food->setFlame(foodFlame[0]);
+			gameMap[x][y]->setFood(food);
+			break;
+		}
+	}
 }
 
 void musnake::Game::refreshTime() {
@@ -460,9 +497,15 @@ void musnake::Game::run() {
 			}
 		}
 
-		if (getTimeVal() - note->time > 300) moveSnake(MU_SNAKE_DIRECT_NONE);
+		if ((long long)getTimeVal() - note->time > 300) moveSnake(MU_SNAKE_DIRECT_NONE);
+		// 事实证明，该转long long的地方保持unsigned，会出现贼鸡儿奇葩的BUG
 
 		triggerDelayFunc(&timingFunc);
+
+		if (!food)
+			refreshFood();
+		else
+			food->draw(gameRender);
 
 		for (int i = 0;i < 20;i++) {
 			for (int j = 0;j < 15;j++) {
@@ -472,10 +515,6 @@ void musnake::Game::run() {
 		}
 		snakeTail->update();
 		snakeTail->draw(gameRender);  // 为了保证蛇尾即使处于消失阶段也能正确绘制，在这里调一下它
-
-		if (movingLock)SDL_SetRenderDrawColor(gameRender, 50, 0, 0, 255);
-		else SDL_SetRenderDrawColor(gameRender, 50, 50, 0, 255);
-		SDL_RenderDrawRect(gameRender, &r);
 
 		SDL_RenderPresent(gameRender);
 	}

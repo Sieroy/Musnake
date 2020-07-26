@@ -155,6 +155,7 @@
   <ItemGroup>
     <ClInclude Include="MU_declaration.h" />
     <ClInclude Include="MU_flame.h" />
+    <ClInclude Include="MU_food.h" />
     <ClInclude Include="MU_game.h" />
     <ClInclude Include="MU_grid.h" />
     <ClInclude Include="MU_note.h" />
