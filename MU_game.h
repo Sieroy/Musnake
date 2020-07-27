@@ -37,14 +37,19 @@ public:
 
 	// 为小蛇解移动锁
 	void unlockMoving();
+
+	// 开播BGM
+	void playBGM();
 	
 	// 游戏运行的小主函数
 	void run();
 
 	// 刷新延时函数和Note的时延值，在开局和结束暂停时调用
-	void refreshTime();
+	void refreshTime(int delta);
 
 	void init(char* levelname);
+
+	void draw();
 
 private:
 	char level[32] = "level\\";
@@ -92,6 +97,32 @@ void musnake::Game::init(char* levelname){
 
 	// 这里定位文件的位置
 	char tmpPath[256];
+
+	// 装载Note图
+	catPath(tmpPath, (char*)"image\\notesign.png");
+	picSurf = IMG_Load(tmpPath);
+	tmpTex = SDL_CreateTextureFromSurface(gameRender, picSurf);
+	SDL_FreeSurface(picSurf);
+	notesignFlame[0] = new Flame(tmpTex, -1);
+	notesignFlame[0]->setNext(nullptr);
+
+	// 装载血条图
+	catPath(tmpPath, (char*)"image\\hp.png");
+	picSurf = IMG_Load(tmpPath);
+	for (int i = 0;i < 6;i++) {
+		SDL_Rect srect = { i * 20, 0, 20, 20 };
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+		tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+#else
+		tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+#endif
+		SDL_BlitSurface(picSurf, &srect, tmpSurf, NULL);
+		tmpTex = SDL_CreateTextureFromSurface(gameRender, tmpSurf);
+		SDL_FreeSurface(tmpSurf);
+		hpFlame[i / 2][i & 1] = new Flame(tmpTex, -1);
+		hpFlame[i / 2][i & 1]->setNext(nullptr);
+	}
 
 	// 装载食物图
 	catPath(tmpPath, (char*)"image\\food_0.png");
@@ -252,7 +283,7 @@ void musnake::Game::init(char* levelname){
 		}
 		else {
 			long long nt = 0;
-			int p = 1;
+			unsigned long p = 1;
 			do {
 				ntp--;
 				nt += (*ntp - '0') * p;
@@ -329,6 +360,10 @@ inline void musnake::Game::unlockMoving() {
 	movingLock = false;
 }
 
+inline void musnake::Game::playBGM() {
+	if(bgm) Mix_PlayMusic(bgm, 1);
+}
+
 void unlockMoving_D(unsigned long arg) {
 	musnake::thisGame->unlockMoving();
 }
@@ -392,6 +427,7 @@ int musnake::Game::moveSnake(int dir) {
 		if (gp->getSnake() != snakeTail) {  // 如果所指为蛇身，则开始伤害判定并取消此次移动
 	case MU_GRID_OBJECT_TYPE_BLOCK:  // 如果前方是障碍，则同
 			hp -= 3;  // 算了，改简单一些，就扣3血
+			if (hp < 0) hp = 0;
 			combo = 0;
 			return 1;
 		}  // 如果所指为蛇尾，接着下一个case开始生头并缩尾
@@ -399,7 +435,7 @@ int musnake::Game::moveSnake(int dir) {
 	case MU_GRID_OBJECT_TYPE_FOOD:
 		// 先处理尾巴的问题
 		if (gp->objType == MU_GRID_OBJECT_TYPE_FOOD) {
-			hp += 1;
+			if (hp < 10) hp += 1;
 			delete gp->getFood();
 			gp->setFood(nullptr);
 			food = nullptr;
@@ -435,8 +471,8 @@ void musnake::Game::refreshFood() {
 	}
 }
 
-void musnake::Game::refreshTime() {
-	long long dt = getTimeVal() - pausingTime;
+void musnake::Game::refreshTime(int delta) {
+	long long dt = getTimeVal() - pausingTime + delta;
 	DelayFunc* dfp = timingFunc;
 	Note* np = note;
 
@@ -452,13 +488,19 @@ void musnake::Game::refreshTime() {
 	}
 }
 
+void playBGM_D(unsigned long arg) {
+	musnake::thisGame->playBGM();
+}
+
 void musnake::Game::run() {
 	SDL_Rect r = { 0, 0, 20, 20 };
 	// 先想想大致的流程吧
 	state = MU_GAME_STATE_RUNNING;
 	updateTime();
-	refreshTime();
-	Mix_PlayMusic(bgm, 1);
+	refreshTime(2000);
+	movingLock = true;
+	setDelayFunc(&unlockMoving_D, 0, 1500);
+	setDelayFunc(&playBGM_D, 0, 2000);
 
 	while (state != MU_GAME_STATE_OVER) {
 		SDL_Event evt;
@@ -504,21 +546,63 @@ void musnake::Game::run() {
 
 		if (!food)
 			refreshFood();
-		else
-			food->draw(gameRender);
 
-		for (int i = 0;i < 20;i++) {
-			for (int j = 0;j < 15;j++) {
-				gameMap[i][j]->update();
-				gameMap[i][j]->draw(gameRender);
-			}
-		}
-		snakeTail->update();
-		snakeTail->draw(gameRender);  // 为了保证蛇尾即使处于消失阶段也能正确绘制，在这里调一下它
+		draw();
 
 		SDL_RenderPresent(gameRender);
 	}
 }
+
+void musnake::Game::draw() {
+	// 先绘制地图上的内容
+	if (food) food->draw(gameRender);
+
+	for (int i = 0;i < 20;i++) {
+		for (int j = 0;j < 15;j++) {
+			gameMap[i][j]->update();
+			gameMap[i][j]->draw(gameRender);
+		}
+	}
+	snakeTail->update();
+	snakeTail->draw(gameRender);  // 为了保证蛇尾即使处于消失阶段也能正确绘制，在这里调一下它
+
+	// 再绘制GUI内容
+	// 坚定了我重构时要写基类的决心
+	
+	// 下面绘制血条
+	SDL_Rect hpRect[5] = {
+		{800 - 110, 10, 20, 20},
+		{800 -  90, 10, 20, 20},
+		{800 -  70, 10, 20, 20},
+		{800 -  50, 10, 20, 20},
+		{800 -  30, 10, 20, 20},
+	};  // hp显示
+	int fg = movingLock ? 1 : 0;
+	for (int i = 0;i < 5;i++) {
+		if (i < hp / 2) {
+			hpFlame[0][fg]->draw(gameRender, &hpRect[i]);
+		}
+		else if (i * 2 + 1 == hp) {
+			hpFlame[1][fg]->draw(gameRender, &hpRect[i]);
+		}
+		else {
+			hpFlame[2][fg]->draw(gameRender, &hpRect[i]);
+		}
+	}
+
+	// 下面绘制Note
+	Note* np = note;
+	while (np) {
+		int dt;
+		if ((dt = np->time - getTimeVal()) > 1500) break;
+		dt = (dt + 500) * 800 / 2000;
+		SDL_Rect r = { dt, 500, 5, 100 };
+		notesignFlame[0]->draw(gameRender, &r);
+		np = np->next;
+	}
+	
+}
+
 
 void discardTail(unsigned long arg) {
 	using namespace musnake;

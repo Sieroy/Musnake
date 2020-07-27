@@ -1,6 +1,7 @@
 #pragma once
 
 #include <random>
+#include "SDL.h"
 
 namespace musnake {
 	// 程序状态枚举
@@ -10,6 +11,8 @@ namespace musnake {
 	};
 	// 程序当前状态
 	int musnakeState;
+
+	SDL_Rect drawableScreenArea;
 
 	// ================================ MU_flame.h =================================
 
@@ -162,8 +165,10 @@ namespace musnake {
 	Grid* gameMap[20][15] = { nullptr };  // 单局游戏用到的地格们，第一维为X坐标，第二维为Y坐标
 	Flame* snakeFlame[50] = { nullptr };  // 绘制蛇要用到的帧们
 	Flame* foodFlame[1] = { nullptr };  // 绘制食物要用的帧组们，测试阶段一个就够
+	Flame* hpFlame[3][2] = { nullptr };  // 绘制血条要用到的帧组们
+	Flame* notesignFlame[2] = { nullptr };
 	Game* thisGame = nullptr;  // 当前进行中的游戏对象（鱼，好大的鱼，虎纹鲨鱼……）
-	int noteDelta = 0;  // 节奏偏移
+	int noteDelta = 60;  // 节奏偏移
 
 	std::default_random_engine Rander;  // 随机数生成器
 }

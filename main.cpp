@@ -24,6 +24,7 @@ int main(int argc, char* argv[]) {
 
 	window = SDL_CreateWindow("Musnake", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_RESIZABLE);
 	render = SDL_CreateRenderer(window, -1, 0);
+	SDL_GetDisplayUsableBounds(0, &drawableScreenArea);
 	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
 	/*
 	while (musnakeState) {
