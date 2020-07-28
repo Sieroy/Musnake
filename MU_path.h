@@ -1,6 +1,7 @@
 #pragma once
 
 #include<string.h>
+#include<stdio.h>
 
 #include "MU_declaration.h"
 
@@ -16,4 +17,8 @@ inline void musnake::initPath(char* path) {
 inline void musnake::catPath(char* dest, char* relative) {
 	strcpy(dest, PATH);
 	strcat(dest, relative);
+}
+
+inline void int2str(char* dest, int num) {
+	sprintf(dest, "%d", num);
 }

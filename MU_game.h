@@ -51,6 +51,8 @@ public:
 
 	void draw();
 
+	void drawText(char* text, int x, int y, int size);
+
 private:
 	char level[32] = "level\\";
 	int hp = 5;  // 蛇的血量，初始为5
@@ -58,7 +60,8 @@ private:
 	Food* food = nullptr;  // 食物
 	Mix_Music* bgm = nullptr;  // BGM
 	bool movingLock = false;  // 为实现Moves per Second限制而加的移动锁
-	int combo = 0;  // 连击数
+	unsigned int combo = 0;  // 连击数
+	unsigned int score = 0;  // 得分
 	unsigned long long pausingTime = 0;  // 暂停时的时间值
 	SDL_Rect drawRect;  // 当前屏幕绘制区域对应的完整地图的矩形
 	Snake* snakeHead, * snakeTail;  // 蛇头和蛇尾
@@ -131,6 +134,27 @@ void musnake::Game::init(char* levelname){
 	SDL_FreeSurface(picSurf);
 	foodFlame[0] = new Flame(tmpTex, -1);
 	foodFlame[0]->setNext(nullptr);
+
+	// 开始装载字符图
+	catPath(tmpPath, (char*)"image\\char.png");
+	picSurf = IMG_Load(tmpPath);
+	for (int i = 0;i < 6;i++) {  // 6行文字排列
+		for (int j = 0;j < 16;j++) {  // 每行16个字符
+			SDL_Rect srect = { j * 80, i * 160, 80, 160 };
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+			tmpSurf = SDL_CreateRGBSurface(0, 80, 160, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+#else
+			tmpSurf = SDL_CreateRGBSurface(0, 80, 160, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+#endif
+
+			SDL_BlitSurface(picSurf, &srect, tmpSurf, NULL);
+			tmpTex = SDL_CreateTextureFromSurface(gameRender, tmpSurf);
+			SDL_FreeSurface(tmpSurf);
+			charFlame[16 * i + j] = new Flame(tmpTex, -1);
+		}
+	}
+	SDL_FreeSurface(picSurf);
 
 	// 开始装载蛇头图，有向蛇头对应的枚举从14号（MU_SNAKE_FLAME_HEAD_0toUP）开始，29号结束
 	catPath(tmpPath, (char*)"image\\snake_0_head.png");
@@ -375,7 +399,7 @@ int musnake::Game::moveSnake(int dir) {
 	int x = gp->x, y = gp->y;
 
 	if (movingLock) {  // 如果超出了10MPS的限制，则判定为手抖
-		return 0;
+		return 1;
 	}
 	else {
 		movingLock = true;
@@ -439,6 +463,7 @@ int musnake::Game::moveSnake(int dir) {
 			delete gp->getFood();
 			gp->setFood(nullptr);
 			food = nullptr;
+			score += 100;
 			snakeTail->shakeTail();
 		}
 		else {
@@ -516,19 +541,19 @@ void musnake::Game::run() {
 				switch (evt.key.keysym.sym) {
 				case SDLK_UP:
 				case SDLK_w:  // 这个死键位先保留着吧，以后开放自行设置键位时再说别的实现方法
-					moveSnake(MU_SNAKE_DIRECT_UP);
+					if (!moveSnake(MU_SNAKE_DIRECT_UP)) score += 10 + combo / 10;
 					break;
 				case SDLK_RIGHT:
 				case SDLK_d:
-					moveSnake(MU_SNAKE_DIRECT_RIGHT);
+					if (!moveSnake(MU_SNAKE_DIRECT_RIGHT)) score += 10 + combo / 10;
 					break;
 				case SDLK_DOWN:
 				case SDLK_s:
-					moveSnake(MU_SNAKE_DIRECT_DOWN);
+					if (!moveSnake(MU_SNAKE_DIRECT_DOWN)) score += 10 + combo / 10;
 					break;
 				case SDLK_LEFT:
 				case SDLK_a:
-					moveSnake(MU_SNAKE_DIRECT_LEFT);
+					if (!moveSnake(MU_SNAKE_DIRECT_LEFT)) score += 10 + combo / 10;
 					break;
 				}
 				break;
@@ -571,11 +596,11 @@ void musnake::Game::draw() {
 	
 	// 下面绘制血条
 	SDL_Rect hpRect[5] = {
-		{800 - 110, 10, 20, 20},
-		{800 -  90, 10, 20, 20},
-		{800 -  70, 10, 20, 20},
-		{800 -  50, 10, 20, 20},
-		{800 -  30, 10, 20, 20},
+		{800 - 210, 10, 40, 40},
+		{800 - 170, 10, 40, 40},
+		{800 - 130, 10, 40, 40},
+		{800 -  90, 10, 40, 40},
+		{800 -  50, 10, 40, 40},
 	};  // hp显示
 	int fg = movingLock ? 1 : 0;
 	for (int i = 0;i < 5;i++) {
@@ -596,13 +621,34 @@ void musnake::Game::draw() {
 		int dt;
 		if ((dt = np->time - getTimeVal()) > 1500) break;
 		dt = (dt + 500) * 800 / 2000;
-		SDL_Rect r = { dt, 500, 5, 100 };
+		SDL_Rect r = { dt, 520, 5, 60 };
 		notesignFlame[0]->draw(gameRender, &r);
 		np = np->next;
 	}
 	
+	// 绘制得分
+	char ss[16] = { 0 };  // 我就不信有人能打超15位数的分了！
+	drawText((char*)"score:", 10, 10, 10);
+	int2str(ss, score);
+	drawText(ss, 10, 23, 20);
+
+	// 绘制连击数
+	if (combo >= 2) {
+		int2str(ss, combo);
+		SDL_strlcat(ss, " hits!", 16);
+		drawText(ss, 10, 440, 20);
+	}
 }
 
+void musnake::Game::drawText(char* text, int x, int y, int size) {
+	char* cp = text;
+	while (*cp) {
+		SDL_Rect r = { x, y, size, size * 2 };
+		charFlame[*cp - 32]->draw(gameRender, &r);
+		cp++;
+		x += size;
+	}
+}
 
 void discardTail(unsigned long arg) {
 	using namespace musnake;

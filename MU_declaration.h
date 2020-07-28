@@ -167,6 +167,7 @@ namespace musnake {
 	Flame* foodFlame[1] = { nullptr };  // 绘制食物要用的帧组们，测试阶段一个就够
 	Flame* hpFlame[3][2] = { nullptr };  // 绘制血条要用到的帧组们
 	Flame* notesignFlame[2] = { nullptr };
+	Flame* charFlame[96] = { nullptr };  // 绘制文字要用的帧，从ASCII-32开始
 	Game* thisGame = nullptr;  // 当前进行中的游戏对象（鱼，好大的鱼，虎纹鲨鱼……）
 	int noteDelta = 60;  // 节奏偏移
 
