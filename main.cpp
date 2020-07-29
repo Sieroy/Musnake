@@ -6,6 +6,7 @@
 #include"SDL_mixer.h"
 
 #include"MU_declaration.h"
+#include"MU_flame.h"
 #include"MU_path.h"
 #include"MU_game.h"
 
@@ -16,9 +17,13 @@ SDL_Window* window;
 SDL_Renderer* render;
 
 void load(SDL_Renderer* render);
+void drawStart(SDL_Renderer* render);
+void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning);
 
 int main(int argc, char* argv[]) {
 	SDL_Event evt;
+	LevelPanel* nowLevel = nullptr;
+	int panelTurning = 0;
 
 	initPath(argv[0]);
 	SDL_Init(SDL_INIT_EVERYTHING);
@@ -30,22 +35,67 @@ int main(int argc, char* argv[]) {
 	SDL_GetDisplayUsableBounds(0, &drawableScreenArea);
 	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
 	musnakeState = MU_STATE_RUNNING;
-	
+
+	load(render);
+	nowLevel = levels;
+
 	while (musnakeState) {
+		updateTime();
+		SDL_RenderClear(render);
+
 		while (SDL_PollEvent(&evt)) {
 			switch (evt.type) {
 			case SDL_QUIT:
 				musnakeState = false;
 				break;
+			case SDL_KEYDOWN:
+				switch (evt.key.keysym.sym) {
+				case SDLK_RETURN:
+					goto __menu;
+					break;
+				}
 			}
 		}
+		drawStart(render);
+		SDL_RenderPresent(render);
+	}
 
+__menu:
+	Mix_PlayMusic(nowLevel->sample, -1);
+	while (musnakeState) {
+		updateTime();
+		SDL_RenderClear(render);
+
+		while (SDL_PollEvent(&evt)) {
+			switch (evt.type) {
+			case SDL_QUIT:
+				musnakeState = false;
+				break;
+			case SDL_KEYDOWN:
+				switch (evt.key.keysym.sym) {
+				case SDLK_UP:
+					if (!panelTurning) panelTurning = -200;
+					break;
+				case SDLK_DOWN:
+					if (!panelTurning) panelTurning = 200;
+					break;
+				case SDLK_RETURN:
+					if (!panelTurning) {
+						Mix_HaltMusic();
+						thisGame = new Game();
+						thisGame->setRenderer(render);
+						thisGame->init(nowLevel->name);
+						thisGame->run();
+						delete thisGame;
+					}
+					break;
+				}
+			}
+		}
+		drawPanels(render, &nowLevel, &panelTurning);
+		SDL_RenderPresent(render);
 	}
 	
-	thisGame = new Game();
-	thisGame->setRenderer(render);
-	thisGame->init((char*)"Jinshekuangwu");
-	thisGame->run();
 
 	IMG_Quit();
 	Mix_Quit();
@@ -67,13 +117,15 @@ void load(SDL_Renderer* render) {
 	// 装载曲目信息
 	catPath(tmpPath, (char*)"level\\list.mu");
 	SDL_RWops* f = SDL_RWFromFile(tmpPath, "r");
-	char c, * nsp;
+	char c, * nsp = &c;
+	char ss[48];
 	LevelPanel* lp = nullptr;
 	while (SDL_RWread(f, &c, 1, 1)) {
 		switch (c) {  // 遇见换行，就要开新的曲表了
 		case '\n':
 			if (lp) {  // 并非第一行的情况
 				*nsp = 0;
+				if (*(--nsp) == '\r') *nsp = 0;  // 兼容Windows下的逗逼换行
 				lp->next = new LevelPanel;
 				lp->next->prev = lp;
 				lp = lp->next;
@@ -86,6 +138,19 @@ void load(SDL_Renderer* render) {
 			break;
 		case '`':
 			*nsp = 0;
+			// 装载这些曲目的试听段和封面绘图
+			SDL_strlcpy(ss, "level\\", 48);
+			SDL_strlcat(ss, lp->name, 48);
+			SDL_strlcat(ss, "\\sample.mp3", 48);
+			catPath(tmpPath, ss);
+			lp->sample = Mix_LoadMUS(tmpPath);
+			SDL_strlcpy(ss, "level\\", 48);
+			SDL_strlcat(ss, lp->name, 48);
+			SDL_strlcat(ss, "\\cover.png", 48);
+			catPath(tmpPath, ss);
+			tmpSurf = IMG_Load(tmpPath);
+			lp->cover = new Flame(SDL_CreateTextureFromSurface(render, tmpSurf), -1);
+			SDL_FreeSurface(tmpSurf);
 			nsp = lp->time;
 			break;
 		default:
@@ -93,10 +158,11 @@ void load(SDL_Renderer* render) {
 			nsp++;
 			break;
 		}
-	}
+	}  // 最后闭合成环
+	*nsp = 0;
 	lp->next = levels;
 	levels->prev = lp;
-
+	SDL_RWclose(f);
 
 	// 装载Note图
 	catPath(tmpPath, (char*)"image\\notesign.png");
@@ -105,6 +171,13 @@ void load(SDL_Renderer* render) {
 	SDL_FreeSurface(picSurf);
 	notesignFlame[0] = new Flame(tmpTex, -1);
 	notesignFlame[0]->setNext(nullptr);
+
+	catPath(tmpPath, (char*)"image\\notesign_fever.png");
+	picSurf = IMG_Load(tmpPath);
+	tmpTex = SDL_CreateTextureFromSurface(render, picSurf);
+	SDL_FreeSurface(picSurf);
+	notesignFlame[1] = new Flame(tmpTex, -1);
+	notesignFlame[1]->setNext(nullptr);
 
 	// 装载血条图
 	catPath(tmpPath, (char*)"image\\hp.png");
@@ -273,6 +346,66 @@ void load(SDL_Renderer* render) {
 	snakeFlame[MU_SNAKE_FLAME_TAIL_DOWNtoLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFT]);
 }
 
-void drawStart(SDL_Renderer* render) {  // 绘制游戏开始页面
+void unload() {
+	
+}
 
+void drawStart(SDL_Renderer* render) {  // 绘制游戏开始页面
+	long long nt = (getTimeVal() / 500) & 1 ? 4 - (getTimeVal() % 1000 / 100) : getTimeVal() % 1000 / 100;
+	drawText(render, (char*)"musnake", 196, 100, 60);
+	drawText(render, (char*)"enter", 350 - 5 * nt / 4, 330 - nt / 2, 20 + nt / 2);
+	drawText(render, (char*)"by sieroy", 5, 580, 8);
+}
+
+void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning) {
+	static int turningFlag = 0;
+	LevelPanel* panel = *nowPanel;
+	if (!*turning) {  // 仅绘制当前曲目
+		SDL_Rect rect = {100, 150, 300, 300};
+		panel->cover->draw(render, &rect);
+		drawText(render, panel->name, 430, 200, 20);
+		drawText(render, panel->time, 430, 250, 16);
+	}
+	else if (*turning > 0) {  // 向下滚动，面板要有向上移动的效果
+		LevelPanel* lp = panel->next;
+		SDL_Rect re1 = { 100, 150 + *turning * 3, 300, 300 }, re2 = { 100, -450 + *turning * 3, 300, 300 };
+		if (turningFlag == 0) {  // 滚动后的首次调用
+			turningFlag = 1;  // 1代表原先的音乐正处结束状态
+			Mix_FadeOutMusic(190);
+		}
+		lp->cover->draw(render, &re1);
+		drawText(render, lp->name, 430, 200 + *turning * 3, 20);
+		drawText(render, lp->time, 430, 250 + *turning * 3, 16);
+		panel->cover->draw(render, &re2);
+		drawText(render, panel->name, 430, -400 + *turning * 3, 20);
+		drawText(render, panel->time, 430, -350 + *turning * 3, 16);
+		*turning -= getTimeDelta();
+		if (*turning <= 0) {
+			*turning = 0;
+			turningFlag = 0;
+			Mix_PlayMusic(lp->sample, -1);
+			*nowPanel = lp;
+		}
+	}
+	else if (*turning < 0) {  // 向上滚动，面板要有向下移动的效果
+		LevelPanel* lp = panel->prev;
+		SDL_Rect re1 = { 100, 150 + *turning * 3, 300, 300 }, re2 = { 100, 750 + *turning * 3, 300, 300 };
+		if (turningFlag == 0) {  // 滚动后的首次调用
+			turningFlag = 1;  // 1代表原先的音乐正处结束状态
+			Mix_FadeOutMusic(190);
+		}
+		lp->cover->draw(render, &re1);
+		drawText(render, lp->name, 430, 200 + *turning * 3, 20);
+		drawText(render, lp->time, 430, 250 + *turning * 3, 16);
+		panel->cover->draw(render, &re2);
+		drawText(render, panel->name, 430, 800 + *turning * 3, 20);
+		drawText(render, panel->time, 430, 850 + *turning * 3, 16);
+		*turning += getTimeDelta();
+		if (*turning >= 0) {
+			*turning = 0;
+			turningFlag = 0;
+			Mix_PlayMusic(lp->sample, -1);
+			*nowPanel = lp;
+		}
+	}
 }

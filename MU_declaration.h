@@ -4,16 +4,6 @@
 #include "SDL.h"
 
 namespace musnake {
-	typedef struct _LevelPanel {
-		char name[24];
-		char time[8];  // h:mm:ss，不会有比这还长的曲子了吧？即使有我也不会往游戏里加~
-		Mix_Music* sample;  // 预览歌
-		Flame* flame;  // 封面
-		struct _LevelPanel* prev;
-		struct _LevelPanel* next;
-	}LevelPanel;
-	LevelPanel* levels = nullptr;
-
 	// 程序状态枚举
 	enum MusnakeState {
 		MU_STATE_OVER,
@@ -183,4 +173,20 @@ namespace musnake {
 	int noteDelta = 60;  // 节奏偏移
 
 	std::default_random_engine Rander;  // 随机数生成器
+
+	void drawText(SDL_Renderer* render, char* text, int x, int y, int size);
+
+
+	// ================================ MU_menu.h ================================
+	// 现阶段还没建这个标头
+
+	typedef struct _LevelPanel {
+		char name[24];
+		char time[8];  // h:mm:ss，不会有比这还长的曲子了吧？即使有我也不会往游戏里加~
+		Mix_Music* sample;  // 预览歌
+		Flame* cover;  // 封面
+		struct _LevelPanel* prev;
+		struct _LevelPanel* next;
+	}LevelPanel;
+	LevelPanel* levels = nullptr;
 }

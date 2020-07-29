@@ -23,3 +23,11 @@ void addNote(Note** list, Note* note) {
 		np->next = note;
 	}
 }
+
+void clearNotes(Note** list) {
+	Note* np;
+	while (np = *list) {
+		*list = np->next;
+		delete np;
+	}
+}

@@ -51,11 +51,10 @@ public:
 
 	void draw();
 
-	void drawText(char* text, int x, int y, int size);
-
 private:
 	char level[32] = "level\\";
 	int hp = 5;  // 蛇的血量，初始为5
+	int fever = 0;  // FEVER状态，2倍得分
 	Note* note = nullptr;  // 节拍
 	Food* food = nullptr;  // 食物
 	Mix_Music* bgm = nullptr;  // BGM
@@ -84,6 +83,7 @@ musnake::Game::~Game() {
 	delete snakeHead;
 
 	clearDelayFunc(&timingFunc);
+	clearNotes(&note);
 
 	Mix_HaltMusic();
 	Mix_FreeMusic(bgm);
@@ -278,10 +278,11 @@ int musnake::Game::moveSnake(int dir) {
 		// 先处理尾巴的问题
 		if (gp->objType == MU_GRID_OBJECT_TYPE_FOOD) {
 			if (hp < 10) hp += 1;
+			else fever = 5;
 			delete gp->getFood();
 			gp->setFood(nullptr);
 			food = nullptr;
-			score += 100;
+			score += fever > 0 ? 200 : 100;
 			snakeTail->shakeTail();
 		}
 		else {
@@ -359,19 +360,55 @@ void musnake::Game::run() {
 				switch (evt.key.keysym.sym) {
 				case SDLK_UP:
 				case SDLK_w:  // 这个死键位先保留着吧，以后开放自行设置键位时再说别的实现方法
-					if (!moveSnake(MU_SNAKE_DIRECT_UP)) score += 10 + combo / 10;
+					if (!moveSnake(MU_SNAKE_DIRECT_UP)) {
+						if (fever > 0) {
+							score += (10 + combo / 10) * 2;
+							fever--;
+						}
+						else
+							score += (10 + combo / 10);
+					}
+					else
+						fever = 0;
 					break;
 				case SDLK_RIGHT:
 				case SDLK_d:
-					if (!moveSnake(MU_SNAKE_DIRECT_RIGHT)) score += 10 + combo / 10;
+					if (!moveSnake(MU_SNAKE_DIRECT_RIGHT)) {
+						if (fever > 0) {
+							score += (10 + combo / 10) * 2;
+							fever--;
+						}
+						else
+							score += (10 + combo / 10);
+					}
+					else
+						fever = 0;
 					break;
 				case SDLK_DOWN:
 				case SDLK_s:
-					if (!moveSnake(MU_SNAKE_DIRECT_DOWN)) score += 10 + combo / 10;
+					if (!moveSnake(MU_SNAKE_DIRECT_DOWN)) {
+						if (fever > 0) {
+							score += (10 + combo / 10) * 2;
+							fever--;
+						}
+						else
+							score += (10 + combo / 10);
+					}
+					else
+						fever = 0;
 					break;
 				case SDLK_LEFT:
 				case SDLK_a:
-					if (!moveSnake(MU_SNAKE_DIRECT_LEFT)) score += 10 + combo / 10;
+					if (!moveSnake(MU_SNAKE_DIRECT_LEFT)) {
+						if (fever > 0) {
+							score += (10 + combo / 10) * 2;
+							fever--;
+						}
+						else
+							score += (10 + combo / 10);
+					}
+					else
+						fever = 0;
 					break;
 				}
 				break;
@@ -435,34 +472,41 @@ void musnake::Game::draw() {
 
 	// 下面绘制Note
 	Note* np = note;
+	int fn = fever;
 	while (np) {
 		int dt;
 		if ((dt = np->time - getTimeVal()) > 1500) break;
 		dt = (dt + 500) * 800 / 2000;
 		SDL_Rect r = { dt, 520, 5, 60 };
-		notesignFlame[0]->draw(gameRender, &r);
+		if (fn > 0) {
+			notesignFlame[1]->draw(gameRender, &r);
+			fn--;
+		}
+		else {
+			notesignFlame[0]->draw(gameRender, &r);
+		}
 		np = np->next;
 	}
 	
 	// 绘制得分
 	char ss[16] = { 0 };  // 我就不信有人能打超15位数的分了！
-	drawText((char*)"score:", 10, 10, 10);
+	drawText(gameRender, (char*)"score:", 10, 10, 10);
 	int2str(ss, score);
-	drawText(ss, 10, 23, 20);
+	drawText(gameRender, ss, 10, 23, 20);
 
 	// 绘制连击数
 	if (combo >= 2) {
 		int2str(ss, combo);
 		SDL_strlcat(ss, " hits!", 16);
-		drawText(ss, 10, 440, 20);
+		drawText(gameRender, ss, 10, 440, 20);
 	}
 }
 
-void musnake::Game::drawText(char* text, int x, int y, int size) {
+void musnake::drawText(SDL_Renderer* render, char* text, int x, int y, int size) {
 	char* cp = text;
 	while (*cp) {
 		SDL_Rect r = { x, y, size, size * 2 };
-		charFlame[*cp - 32]->draw(gameRender, &r);
+		charFlame[*cp - 32]->draw(render, &r);
 		cp++;
 		x += size;
 	}
