@@ -98,7 +98,8 @@ namespace musnake {
 		MU_GAME_STATE_RUNNING,
 		MU_GAME_STATE_LOADING,
 		MU_GAME_STATE_PAUSED,
-		MU_GAME_STATE_OVER
+		MU_GAME_STATE_OVER,
+		MU_GAME_STATE_END
 	};
 
 	// 蛇体帧组助记符
@@ -183,6 +184,7 @@ namespace musnake {
 	typedef struct _LevelPanel {
 		char name[24];
 		char time[8];  // h:mm:ss，不会有比这还长的曲子了吧？即使有我也不会往游戏里加~
+		int timev;  // 总时间ms
 		Mix_Music* sample;  // 预览歌
 		Flame* cover;  // 封面
 		struct _LevelPanel* prev;

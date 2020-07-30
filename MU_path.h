@@ -22,3 +22,9 @@ inline void musnake::catPath(char* dest, char* relative) {
 inline void int2str(char* dest, int num) {
 	sprintf(dest, "%d", num);
 }
+
+inline int str2int(char* src) {
+	int i;
+	sscanf(src, "%d", &i);
+	return i;
+}

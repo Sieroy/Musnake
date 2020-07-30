@@ -44,23 +44,30 @@ public:
 	// 游戏运行的小主函数
 	void run();
 
+	// 暂停时函数
+	void pause();
+
 	// 刷新延时函数和Note的时延值，在开局和结束暂停时调用
 	void refreshTime(int delta);
 
-	void init(char* levelname);
+	void init(LevelPanel* lp);
 
 	void draw();
 
 private:
 	char level[32] = "level\\";
-	int hp = 5;  // 蛇的血量，初始为5
-	int fever = 0;  // FEVER状态，2倍得分
+	unsigned short combo = 0;  // 连击数
+	unsigned short noteCount = 0;  // 总的音符数
+	unsigned int score = 0;  // 得分
+	short hp = 5;  // 蛇的血量，初始为5
+	unsigned short hits = 0;  // 击中的音符数
+	short fever = 0;  // FEVER状态，2倍得分
+	unsigned short length = 4;  // 一局游戏吃65531个苹果？那就真的NB了，按照0.1s的移动锁，这即使是欧皇在玩也要玩上个俩小时
+	LevelPanel* levelinfo = nullptr;
 	Note* note = nullptr;  // 节拍
 	Food* food = nullptr;  // 食物
 	Mix_Music* bgm = nullptr;  // BGM
 	bool movingLock = false;  // 为实现Moves per Second限制而加的移动锁
-	unsigned int combo = 0;  // 连击数
-	unsigned int score = 0;  // 得分
 	unsigned long long pausingTime = 0;  // 暂停时的时间值
 	SDL_Rect drawRect;  // 当前屏幕绘制区域对应的完整地图的矩形
 	Snake* snakeHead, * snakeTail;  // 蛇头和蛇尾
@@ -89,14 +96,15 @@ musnake::Game::~Game() {
 	Mix_FreeMusic(bgm);
 }
 
-void musnake::Game::init(char* levelname){
+void musnake::Game::init(LevelPanel* lp){
 	// 按说这里应该是从配置文件里读数据来初始化地格的，现阶段就先写死吧
 	SDL_Surface* picSurf, * tmpSurf;
 	SDL_Texture* tmpTex;
 
 	state = MU_GAME_STATE_LOADING;
 
-	SDL_strlcat(level, levelname, 25);
+	levelinfo = lp;
+	SDL_strlcat(level, lp->name, 25);
 
 	// 这里定位文件的位置
 	char tmpPath[256];
@@ -138,6 +146,7 @@ void musnake::Game::init(char* levelname){
 				endn->next = newNote(nt);
 				endn = endn->next;
 			}
+			noteCount++;
 		}
 	}
 	SDL_RWclose(f);
@@ -277,8 +286,9 @@ int musnake::Game::moveSnake(int dir) {
 	case MU_GRID_OBJECT_TYPE_FOOD:
 		// 先处理尾巴的问题
 		if (gp->objType == MU_GRID_OBJECT_TYPE_FOOD) {
+			length += 1;
 			if (hp < 10) hp += 1;
-			else fever = 5;
+			else fever = 4 + length / 10;  // 只要蛇够长，连击不断，那么每一步都是FEVER了~
 			delete gp->getFood();
 			gp->setFood(nullptr);
 			food = nullptr;
@@ -336,18 +346,23 @@ void playBGM_D(unsigned long arg) {
 	musnake::thisGame->playBGM();
 }
 
+void passLevel(unsigned long arg) {
+	musnake::thisGame->state = musnake::MU_GAME_STATE_OVER;
+}
+
 void musnake::Game::run() {
-	SDL_Rect r = { 0, 0, 20, 20 };
+	SDL_Event evt;
+	int timing = 0;
 	// 先想想大致的流程吧
 	state = MU_GAME_STATE_RUNNING;
 	updateTime();
 	refreshTime(2000);
 	movingLock = true;
+	setDelayFunc(&passLevel, 0, levelinfo->timev + 3000);  // 结束后，如果蛇还没死，就过关
 	setDelayFunc(&unlockMoving_D, 0, 1500);
 	setDelayFunc(&playBGM_D, 0, 2000);
 
-	while (state != MU_GAME_STATE_OVER) {
-		SDL_Event evt;
+	while (state == MU_GAME_STATE_RUNNING) {
 		updateTime();
 		SDL_RenderClear(gameRender);  // 就硬清！
 
@@ -361,6 +376,7 @@ void musnake::Game::run() {
 				case SDLK_UP:
 				case SDLK_w:  // 这个死键位先保留着吧，以后开放自行设置键位时再说别的实现方法
 					if (!moveSnake(MU_SNAKE_DIRECT_UP)) {
+						hits++;
 						if (fever > 0) {
 							score += (10 + combo / 10) * 2;
 							fever--;
@@ -374,6 +390,7 @@ void musnake::Game::run() {
 				case SDLK_RIGHT:
 				case SDLK_d:
 					if (!moveSnake(MU_SNAKE_DIRECT_RIGHT)) {
+						hits++;
 						if (fever > 0) {
 							score += (10 + combo / 10) * 2;
 							fever--;
@@ -387,6 +404,7 @@ void musnake::Game::run() {
 				case SDLK_DOWN:
 				case SDLK_s:
 					if (!moveSnake(MU_SNAKE_DIRECT_DOWN)) {
+						hits++;
 						if (fever > 0) {
 							score += (10 + combo / 10) * 2;
 							fever--;
@@ -400,6 +418,7 @@ void musnake::Game::run() {
 				case SDLK_LEFT:
 				case SDLK_a:
 					if (!moveSnake(MU_SNAKE_DIRECT_LEFT)) {
+						hits++;
 						if (fever > 0) {
 							score += (10 + combo / 10) * 2;
 							fever--;
@@ -410,19 +429,28 @@ void musnake::Game::run() {
 					else
 						fever = 0;
 					break;
+				case SDLK_ESCAPE:
+					state = MU_GAME_STATE_PAUSED;
+					pause();
+					break;
 				}
 				break;
 			case SDL_QUIT:
-				state = MU_GAME_STATE_OVER;
+				state = MU_GAME_STATE_END;
 				musnakeState = MU_STATE_OVER;
 				break;  // 正在考虑要不要goto直接出来或return，不然还会遍历剩下的事件。emmm...
 			}
 		}
 
-		if ((long long)getTimeVal() - note->time > 300) moveSnake(MU_SNAKE_DIRECT_NONE);
+		if (note && ((long long)getTimeVal() - note->time > 300)) moveSnake(MU_SNAKE_DIRECT_NONE);
 		// 事实证明，该转long long的地方保持unsigned，会出现贼鸡儿奇葩的BUG
 
 		triggerDelayFunc(&timingFunc);
+
+		if (hp <= 0) {
+			state = MU_GAME_STATE_OVER;
+			Mix_FadeOutMusic(1000);
+		}
 
 		if (!food)
 			refreshFood();
@@ -431,6 +459,163 @@ void musnake::Game::run() {
 
 		SDL_RenderPresent(gameRender);
 	}
+
+	timing = 0;
+	while (state == MU_GAME_STATE_OVER) {
+		char ss[32];
+		updateTime();
+		SDL_RenderClear(gameRender);
+
+		while (SDL_PollEvent(&evt)) {
+			switch (evt.type) {
+			case SDL_QUIT:
+				state = MU_GAME_STATE_END;
+				musnakeState = MU_STATE_OVER;
+				break;
+			case SDL_KEYDOWN:
+				switch (evt.key.keysym.sym) {
+				case SDLK_RETURN:
+				case SDLK_ESCAPE:
+					state = MU_GAME_STATE_END;
+					musnakeState = MU_STATE_RUNNING;
+					break;
+				case SDLK_r:
+					state = MU_GAME_STATE_END;
+					musnakeState = MU_STATE_GAMING;
+					break;
+				}
+				break;
+			}
+		}
+
+		if (hp > 0) {  // 顺利结束
+			switch (hits * 10 / noteCount) {
+			case 10:
+				drawText(gameRender, (char*)"SSS", -300 + timing, 150, 80);
+				break;
+			case 9:
+				if (hits * 100 / noteCount >= 95)
+					drawText(gameRender, (char*)"SS", -220 + timing, 150, 80);
+				else
+					drawText(gameRender, (char*)"S", -140 + timing, 150, 80);
+				break;
+			case 8:
+				drawText(gameRender, (char*)"A", -140 + timing, 150, 80);
+				break;
+			case 7:
+				drawText(gameRender, (char*)"B", -140 + timing, 150, 80);
+				break;
+			case 6:
+				drawText(gameRender, (char*)"C", -140 + timing, 150, 80);
+				break;
+			default:
+				drawText(gameRender, (char*)"D", -140 + timing, 150, 80);
+			}
+			
+			// 绘制得分
+			drawText(gameRender, (char*)"score", 1200 - 2 * timing, 150, 20);
+			drawText(gameRender, (char*)"length", 1200 - 2 * timing, 300, 20);
+			int2str(ss, score);
+			drawText(gameRender, ss, 1200 - 2 * timing, 205, 40);
+			int2str(ss, length);
+			drawText(gameRender, ss, 1200 - 2 * timing, 355, 40);
+
+			if (timing < 400) timing += getTimeDelta();
+		}
+		else {  // 死亡
+			draw();
+			SDL_SetRenderDrawColor(gameRender, 0, 0, 0, 75);
+			SDL_RenderFillRect(gameRender, NULL);
+			SDL_SetRenderDrawColor(gameRender, 0, 0, 0, 255);
+			drawText(gameRender, (char*)"you", 340, 150, 40);
+			drawText(gameRender, (char*)"are", 340, 250, 40);
+			drawText(gameRender, (char*)"dead", 280, 350, 60);
+		}
+		// 绘制FPS
+		int2str(ss, fps);
+		drawText(gameRender, ss, 740 - 10 * SDL_strlen(ss), 570, 10);
+		drawText(gameRender, (char*)"FPS", 750, 570, 10);
+
+		SDL_RenderPresent(gameRender);
+	}
+
+	SDL_RenderClear(gameRender);
+}
+
+void musnake::Game::pause() {
+	int choosing = 0;
+	char fpss[10];  // 他要是能超9位数，那这电脑就可以起飞了
+	SDL_Event evt;
+
+	Mix_PauseMusic();
+	pausingTime = getTimeVal();
+
+	while (state == MU_GAME_STATE_PAUSED) {
+		SDL_RenderClear(gameRender);
+		updateTime();
+
+		while (SDL_PollEvent(&evt)) {
+			switch (evt.type) {
+			case SDL_QUIT:
+				state = MU_GAME_STATE_END;
+				musnakeState = MU_STATE_OVER;
+				break;
+			case SDL_KEYDOWN:
+				switch (evt.key.keysym.sym) {
+				case SDLK_w:
+				case SDLK_UP:
+					if (choosing > 0) choosing--;
+					break;
+				case SDLK_s:
+				case SDLK_DOWN:
+					if (choosing < 2) choosing++;
+					break;
+				case SDLK_RETURN:
+					if (choosing == 0) {  // RESUME
+				case SDLK_ESCAPE:
+						state = MU_GAME_STATE_RUNNING;
+						draw();
+						SDL_Delay(300);
+						break;
+					}
+					else if (choosing == 1) {  // RETRY
+						state = MU_GAME_STATE_END;
+					}
+					else if (choosing == 2) {  // BACK
+						state = MU_GAME_STATE_END;
+						musnakeState = MU_STATE_RUNNING;
+					}
+				}
+			}
+		}
+
+		// 绘制FPS
+		int2str(fpss, fps);
+		drawText(gameRender, fpss, 740 - 10 * SDL_strlen(fpss), 570, 10);
+		drawText(gameRender, (char*)"FPS", 750, 570, 10);
+
+		// 绘制暂停菜单
+		long long nt = (getTimeVal() / 500) & 1 ? 4 - (getTimeVal() % 1000 / 200) : getTimeVal() % 1000 / 100;
+		drawText(gameRender, (char*)"PAUSED", 280, 60, 40);
+		if (choosing == 0)
+			drawText(gameRender, (char*)"resume", 330 - 3 * nt, 230 - nt, 20 + nt);
+		else
+			drawText(gameRender, (char*)"resume", 330, 230, 20);
+		if (choosing == 1)
+			drawText(gameRender, (char*)"replay", 330 - 3 * nt, 300 - nt, 20 + nt);
+		else
+			drawText(gameRender, (char*)"replay", 330, 300, 20);
+		if (choosing == 2)
+			drawText(gameRender, (char*)"giveup", 330 - 3 * nt, 370 - nt, 20 + nt);
+		else
+			drawText(gameRender, (char*)"giveup", 330, 370, 20);
+
+		SDL_RenderPresent(gameRender);
+	}
+	updateTime();
+	SDL_RenderClear(gameRender);
+	refreshTime(30);
+	Mix_ResumeMusic();
 }
 
 void musnake::Game::draw() {
@@ -500,6 +685,11 @@ void musnake::Game::draw() {
 		SDL_strlcat(ss, " hits!", 16);
 		drawText(gameRender, ss, 10, 440, 20);
 	}
+
+	// 绘制FPS
+	int2str(ss, fps);
+	drawText(gameRender, ss, 740 - 10 * SDL_strlen(ss), 570, 10);
+	drawText(gameRender, (char*)"FPS", 750, 570, 10);
 }
 
 void musnake::drawText(SDL_Renderer* render, char* text, int x, int y, int size) {

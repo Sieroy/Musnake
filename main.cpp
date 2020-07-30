@@ -39,6 +39,7 @@ int main(int argc, char* argv[]) {
 	load(render);
 	nowLevel = levels;
 
+__start:
 	while (musnakeState) {
 		updateTime();
 		SDL_RenderClear(render);
@@ -52,6 +53,9 @@ int main(int argc, char* argv[]) {
 				switch (evt.key.keysym.sym) {
 				case SDLK_RETURN:
 					goto __menu;
+					break;
+				case SDLK_ESCAPE:
+					musnakeState = MU_STATE_OVER;
 					break;
 				}
 			}
@@ -73,6 +77,12 @@ __menu:
 				break;
 			case SDL_KEYDOWN:
 				switch (evt.key.keysym.sym) {
+				case SDLK_ESCAPE:
+					if (!panelTurning) {
+						Mix_FadeOutMusic(100);
+						goto __start;
+					}
+					break;
 				case SDLK_UP:
 					if (!panelTurning) panelTurning = -200;
 					break;
@@ -81,12 +91,16 @@ __menu:
 					break;
 				case SDLK_RETURN:
 					if (!panelTurning) {
-						Mix_HaltMusic();
-						thisGame = new Game();
-						thisGame->setRenderer(render);
-						thisGame->init(nowLevel->name);
-						thisGame->run();
-						delete thisGame;
+						musnakeState = MU_STATE_GAMING;
+						while (musnakeState == MU_STATE_GAMING) {
+							Mix_HaltMusic();
+							thisGame = new Game();
+							thisGame->setRenderer(render);
+							thisGame->init(nowLevel);
+							thisGame->run();
+							delete thisGame;
+						}
+						Mix_PlayMusic(nowLevel->sample, -1);
 					}
 					break;
 				}
@@ -126,6 +140,7 @@ void load(SDL_Renderer* render) {
 			if (lp) {  // 并非第一行的情况
 				*nsp = 0;
 				if (*(--nsp) == '\r') *nsp = 0;  // 兼容Windows下的逗逼换行
+				lp->timev = str2int(ss);
 				lp->next = new LevelPanel;
 				lp->next->prev = lp;
 				lp = lp->next;
@@ -136,7 +151,7 @@ void load(SDL_Renderer* render) {
 				nsp = lp->name;
 			}
 			break;
-		case '`':
+		case '`':  // 名字已经读完了
 			*nsp = 0;
 			// 装载这些曲目的试听段和封面绘图
 			SDL_strlcpy(ss, "level\\", 48);
@@ -152,6 +167,10 @@ void load(SDL_Renderer* render) {
 			lp->cover = new Flame(SDL_CreateTextureFromSurface(render, tmpSurf), -1);
 			SDL_FreeSurface(tmpSurf);
 			nsp = lp->time;
+			break;
+		case '^':
+			*nsp = 0;
+			nsp = ss;
 			break;
 		default:
 			*nsp = c;
@@ -351,9 +370,9 @@ void unload() {
 }
 
 void drawStart(SDL_Renderer* render) {  // 绘制游戏开始页面
-	long long nt = (getTimeVal() / 500) & 1 ? 4 - (getTimeVal() % 1000 / 100) : getTimeVal() % 1000 / 100;
+	long long nt = (getTimeVal() / 500) & 1 ? 4 - (getTimeVal() % 1000 / 200) : getTimeVal() % 1000 / 100;
 	drawText(render, (char*)"musnake", 196, 100, 60);
-	drawText(render, (char*)"enter", 350 - 5 * nt / 4, 330 - nt / 2, 20 + nt / 2);
+	drawText(render, (char*)"enter!", 330 - 3 * nt, 330 - nt, 20 + nt);
 	drawText(render, (char*)"by sieroy", 5, 580, 8);
 }
 
@@ -361,14 +380,14 @@ void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning) {
 	static int turningFlag = 0;
 	LevelPanel* panel = *nowPanel;
 	if (!*turning) {  // 仅绘制当前曲目
-		SDL_Rect rect = {100, 150, 300, 300};
+		SDL_Rect rect = {200, 200, 200, 200};
 		panel->cover->draw(render, &rect);
 		drawText(render, panel->name, 430, 200, 20);
 		drawText(render, panel->time, 430, 250, 16);
 	}
 	else if (*turning > 0) {  // 向下滚动，面板要有向上移动的效果
 		LevelPanel* lp = panel->next;
-		SDL_Rect re1 = { 100, 150 + *turning * 3, 300, 300 }, re2 = { 100, -450 + *turning * 3, 300, 300 };
+		SDL_Rect re1 = { 200, 200 + *turning * 3, 200, 200 }, re2 = { 200, -400 + *turning * 3, 200, 200 };
 		if (turningFlag == 0) {  // 滚动后的首次调用
 			turningFlag = 1;  // 1代表原先的音乐正处结束状态
 			Mix_FadeOutMusic(190);
@@ -389,7 +408,7 @@ void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning) {
 	}
 	else if (*turning < 0) {  // 向上滚动，面板要有向下移动的效果
 		LevelPanel* lp = panel->prev;
-		SDL_Rect re1 = { 100, 150 + *turning * 3, 300, 300 }, re2 = { 100, 750 + *turning * 3, 300, 300 };
+		SDL_Rect re1 = { 200, 200 + *turning * 3, 200, 200 }, re2 = { 200, 800 + *turning * 3, 200, 200 };
 		if (turningFlag == 0) {  // 滚动后的首次调用
 			turningFlag = 1;  // 1代表原先的音乐正处结束状态
 			Mix_FadeOutMusic(190);
