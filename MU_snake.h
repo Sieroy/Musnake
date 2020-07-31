@@ -63,6 +63,9 @@ public:
 	// 更新蛇体
 	void update();
 
+	// 计入因暂停等而推掉的flameTime
+	void refreshTime(int delta);
+
 	// 绘制蛇体
 	void draw(SDL_Renderer* render);
 
@@ -311,13 +314,21 @@ inline void musnake::Snake::update() {
 	flameTime -= getTimeDelta();
 	if (flameTime <= 0) {
 		if (flame) flame = flame->getNext();
-		if (flame)
+		if (flame) {
+		__next:
+			// if (flame->getDuration() < 0) break;
 			flameTime += flame->getDuration();
+			if (flameTime <= 0 && flame->getDuration() > 0) goto __next;
+		}
 		else
 			;
 		// 一般这里应该是转头或甩尾动画结束的时候触发的，不过动画结束时，下一帧直接就设置到静态动画了。。
 		// 所以，感觉不太可能来到这里，那就留着这个分支图一乐？
 	}
+}
+
+inline void musnake::Snake::refreshTime(int delta) {
+	flameTime += delta;
 }
 
 inline void musnake::Snake::draw(SDL_Renderer* render) {

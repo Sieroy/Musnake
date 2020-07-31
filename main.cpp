@@ -179,6 +179,7 @@ void load(SDL_Renderer* render) {
 		}
 	}  // 最后闭合成环
 	*nsp = 0;
+	lp->timev = str2int(ss);
 	lp->next = levels;
 	levels->prev = lp;
 	SDL_RWclose(f);
@@ -400,6 +401,13 @@ void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning) {
 		drawText(render, panel->time, 430, -350 + *turning * 3, 16);
 		*turning -= getTimeDelta();
 		if (*turning <= 0) {
+			SDL_RenderClear(render);
+			re1.y = 200;
+			lp->cover->draw(render, &re1);
+			drawText(render, lp->name, 430, 200, 20);
+			drawText(render, lp->time, 430, 250, 16);
+			SDL_RenderPresent(render);
+
 			*turning = 0;
 			turningFlag = 0;
 			Mix_PlayMusic(lp->sample, -1);
@@ -421,6 +429,13 @@ void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning) {
 		drawText(render, panel->time, 430, 850 + *turning * 3, 16);
 		*turning += getTimeDelta();
 		if (*turning >= 0) {
+			SDL_RenderClear(render);
+			re1.y = 200;
+			lp->cover->draw(render, &re1);
+			drawText(render, lp->name, 430, 200, 20);
+			drawText(render, lp->time, 430, 250, 16);
+			SDL_RenderPresent(render);
+
 			*turning = 0;
 			turningFlag = 0;
 			Mix_PlayMusic(lp->sample, -1);

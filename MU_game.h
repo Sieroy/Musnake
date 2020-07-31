@@ -63,6 +63,7 @@ private:
 	unsigned short hits = 0;  // 击中的音符数
 	short fever = 0;  // FEVER状态，2倍得分
 	unsigned short length = 4;  // 一局游戏吃65531个苹果？那就真的NB了，按照0.1s的移动锁，这即使是欧皇在玩也要玩上个俩小时
+
 	LevelPanel* levelinfo = nullptr;
 	Note* note = nullptr;  // 节拍
 	Food* food = nullptr;  // 食物
@@ -239,7 +240,7 @@ int musnake::Game::moveSnake(int dir) {
 		returnVal = 1;
 	}
 
-	if (note->time > (long long)getTimeVal()) {  // 当前没有音符
+	if (!note || note->time > (long long)getTimeVal()) {  // 当前没有音符
 		combo = 0;
 		returnVal = 1;
 	}
@@ -340,6 +341,17 @@ void musnake::Game::refreshTime(int delta) {
 		np->time += dt;
 		np = np->next;
 	}
+
+	if (pausingTime) {
+		Snake* sp = snakeHead;
+		dt = getTimeVal() - pausingTime;
+
+		sp->refreshTime(dt);
+		do {
+			sp = sp->getNext();
+			sp->refreshTime(dt);
+		} while (sp != snakeTail);
+	}
 }
 
 void playBGM_D(unsigned long arg) {
@@ -430,6 +442,16 @@ void musnake::Game::run() {
 						fever = 0;
 					break;
 				case SDLK_ESCAPE:
+					state = MU_GAME_STATE_PAUSED;
+					pause();
+					break;
+				}
+				break;
+			case SDL_WINDOWEVENT:
+				switch (evt.window.type) {
+				case SDL_WINDOWEVENT_MOVED:
+				case SDL_WINDOWEVENT_FOCUS_LOST:  // 2345弹出广告~哦呼完蛋~
+				case SDL_WINDOWEVENT_HIDDEN:
 					state = MU_GAME_STATE_PAUSED;
 					pause();
 					break;
@@ -612,10 +634,10 @@ void musnake::Game::pause() {
 
 		SDL_RenderPresent(gameRender);
 	}
-	updateTime();
 	SDL_RenderClear(gameRender);
-	refreshTime(30);
 	Mix_ResumeMusic();
+	updateTime();
+	refreshTime(0);
 }
 
 void musnake::Game::draw() {
