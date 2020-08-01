@@ -346,10 +346,10 @@ void musnake::Game::refreshTime(int delta) {
 		Snake* sp = snakeHead;
 		dt = getTimeVal() - pausingTime;
 
-		sp->refreshTime(dt);
+		sp->delayFlameTime(dt);
 		do {
 			sp = sp->getNext();
-			sp->refreshTime(dt);
+			sp->delayFlameTime(dt);
 		} while (sp != snakeTail);
 	}
 }
@@ -647,7 +647,7 @@ void musnake::Game::draw() {
 	for (int i = 0;i < 20;i++) {
 		for (int j = 0;j < 15;j++) {
 			gameMap[i][j]->update();
-			gameMap[i][j]->draw(gameRender);
+			gameMap[i][j]->draw(gameRender, NULL);
 		}
 	}
 	snakeTail->update();

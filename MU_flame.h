@@ -8,6 +8,7 @@ class musnake::Flame {
 public:
 	Flame();
 	Flame(SDL_Texture* texture, int duration);
+	Flame(SDL_Surface* surf, SDL_Rect* blitrect, int duration);
 	~Flame();
 
 	void setTexture(SDL_Texture* texture);  // 设置帧的纹理
@@ -22,22 +23,45 @@ public:
 	void draw(SDL_Renderer* render, SDL_Rect* rect);  // 在指定地点绘制
 
 private:
+	int w = 0;
+	int h = 0;
 	int groupId = -1;
-	SDL_Texture* tex;  // 该帧的纹理图对象
-	long long duration;  // 该帧要持续的时间，-1表示始终
-	Flame* next;  // 下一帧
+	SDL_Texture* tex = nullptr;  // 该帧的纹理图对象
+	long long duration = -1;  // 该帧要持续的时间，-1表示始终
+	Flame* next = nullptr;  // 下一帧
 };
 
 musnake::Flame::Flame() {
-	tex = nullptr;
-	duration = 0;
-	next = nullptr;
+
 }
 
 musnake::Flame::Flame(SDL_Texture* texture, int duration) {
 	tex = texture;
 	Flame::duration = duration;
-	next = nullptr;
+}
+
+musnake::Flame::Flame(SDL_Surface* surf, SDL_Rect* blitrect, int duration) {
+	SDL_Texture* texture;
+	if (!blitrect) {
+		texture = SDL_CreateTextureFromSurface(render, surf);
+		w = surf->w;
+		h = surf->h;
+	}
+	else {
+		SDL_Surface* tmpSurf;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+		tmpSurf = SDL_CreateRGBSurface(0, blitrect->w, blitrect->h, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+#else
+		tmpSurf = SDL_CreateRGBSurface(0, blitrect->w, blitrect->h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+#endif
+		SDL_BlitSurface(surf, blitrect, tmpSurf, NULL);
+		texture = SDL_CreateTextureFromSurface(render, tmpSurf);
+		w = tmpSurf->w;
+		h = tmpSurf->h;
+		SDL_FreeSurface(tmpSurf);
+	}
+	setTexture(texture);
+	setDuration(duration);
 }
 
 musnake::Flame::~Flame() {

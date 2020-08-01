@@ -70,5 +70,8 @@
     <ClInclude Include="MU_food.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="MU_element.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

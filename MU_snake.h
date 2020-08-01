@@ -3,6 +3,7 @@
 #include "SDL.h"
 
 #include "MU_declaration.h"
+#include "MU_element.h"
 #include "MU_game.h"
 #include "MU_time.h"
 #include "MU_flame.h"
@@ -11,7 +12,7 @@
 /* 蛇的身体朝向枚举 */
 
 /* 蛇的身体类 */
-class musnake::Snake {
+class musnake::Snake: public Element {
 public:
 	// 直接造一个蛇
 	Snake();
@@ -24,9 +25,6 @@ public:
 
 	// 设置蛇尾向方向
 	void setTailDir(int dir);
-
-	// 直接改变蛇体的当前帧
-	void setFlame(Flame* flame);
 
 	// 设置相邻蛇体
 	void setNext(Snake* snake);
@@ -60,45 +58,22 @@ public:
 	// 尾巴因前进而消失于一个地图块
 	void endTail();  // 实验性的函数，试试有没有简化效果
 
-	// 更新蛇体
-	void update();
-
-	// 计入因暂停等而推掉的flameTime
-	void refreshTime(int delta);
-
-	// 绘制蛇体
-	void draw(SDL_Renderer* render);
-
 private:
-	int headDir;  // 蛇头向的朝向
-	int tailDir;  // 蛇尾向的朝向
+	int headDir = MU_SNAKE_DIRECT_NONE;  // 蛇头向的朝向
+	int tailDir = MU_SNAKE_DIRECT_NONE;  // 蛇尾向的朝向
 
-	SDL_Rect rect;  // 自身矩形
-	Flame* flame;  // 蛇体当前帧
-	long long flameTime;  // 蛇体当前帧剩余持续时间
+	Snake* next = nullptr;  // 下一段（尾向）蛇体
+	Snake* prev = nullptr;  // 上一段（头向）蛇体
 
-	Snake* next;  // 下一段（尾向）蛇体
-	Snake* prev;  // 上一段（头向）蛇体
-
-	Grid* grid;  // 蛇体当前所处的格子
+	Grid* grid = nullptr;  // 蛇体当前所处的格子
 };
 
 inline musnake::Snake::Snake(){
-	headDir = MU_SNAKE_DIRECT_NONE;
-	tailDir = MU_SNAKE_DIRECT_NONE;
-	flame = nullptr;
-	flameTime = 0;
-	next = nullptr;
-	prev = nullptr;
-	grid = nullptr;
+
 }
 
 inline musnake::Snake::Snake(int tailDir) {
-	headDir = MU_SNAKE_DIRECT_NONE;
 	Snake::tailDir = tailDir;
-	next = nullptr;
-	prev = nullptr;
-	grid = nullptr;
 
 	switch (tailDir) {
 	case MU_SNAKE_DIRECT_UP:
@@ -130,11 +105,6 @@ inline void musnake::Snake::setHeadDir(int dir) {
 
 inline void musnake::Snake::setTailDir(int dir) {
 	tailDir = dir;
-}
-
-inline void musnake::Snake::setFlame(Flame* flame) {
-	Snake::flame = flame;
-	flameTime = flame->getDuration();
 }
 
 inline void musnake::Snake::setNext(Snake* snake) {
@@ -307,30 +277,4 @@ inline void musnake::Snake::shakeTail() {
 		setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFTshake]);
 		break;
 	}
-}
-
-inline void musnake::Snake::update() {
-	if (flameTime < 0) return;  // 对于永续帧，不再更新
-	flameTime -= getTimeDelta();
-	if (flameTime <= 0) {
-		if (flame) flame = flame->getNext();
-		if (flame) {
-		__next:
-			// if (flame->getDuration() < 0) break;
-			flameTime += flame->getDuration();
-			if (flameTime <= 0 && flame->getDuration() > 0) goto __next;
-		}
-		else
-			;
-		// 一般这里应该是转头或甩尾动画结束的时候触发的，不过动画结束时，下一帧直接就设置到静态动画了。。
-		// 所以，感觉不太可能来到这里，那就留着这个分支图一乐？
-	}
-}
-
-inline void musnake::Snake::refreshTime(int delta) {
-	flameTime += delta;
-}
-
-inline void musnake::Snake::draw(SDL_Renderer* render) {
-	if(flame) flame->draw(render, &rect);
 }

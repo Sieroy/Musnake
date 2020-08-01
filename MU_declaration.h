@@ -63,6 +63,10 @@ namespace musnake {
 
 	// ================================ MU_snake.h ================================
 
+	class Element;
+
+	// ================================ MU_snake.h ================================
+
 	enum SnakeDirect {
 		MU_SNAKE_DIRECT_NONE = -1,
 		MU_SNAKE_DIRECT_UP = 0,
@@ -164,6 +168,7 @@ namespace musnake {
 
 	class Game;
 
+	SDL_Renderer* render = nullptr;
 	Grid* gameMap[20][15] = { nullptr };  // 单局游戏用到的地格们，第一维为X坐标，第二维为Y坐标
 	Flame* snakeFlame[50] = { nullptr };  // 绘制蛇要用到的帧们
 	Flame* foodFlame[1] = { nullptr };  // 绘制食物要用的帧组们，测试阶段一个就够

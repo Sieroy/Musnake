@@ -14,7 +14,6 @@ using namespace musnake;
 
 
 SDL_Window* window;
-SDL_Renderer* render;
 
 void load(SDL_Renderer* render);
 void drawStart(SDL_Renderer* render);
@@ -205,24 +204,16 @@ void load(SDL_Renderer* render) {
 	for (int i = 0;i < 6;i++) {
 		SDL_Rect srect = { i * 20, 0, 20, 20 };
 
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-		tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-#else
-		tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-#endif
-		SDL_BlitSurface(picSurf, &srect, tmpSurf, NULL);
-		tmpTex = SDL_CreateTextureFromSurface(render, tmpSurf);
-		SDL_FreeSurface(tmpSurf);
-		hpFlame[i / 2][i & 1] = new Flame(tmpTex, -1);
+		hpFlame[i / 2][i & 1] = new Flame(picSurf, &srect, -1);
 		hpFlame[i / 2][i & 1]->setNext(nullptr);
 	}
+	SDL_FreeSurface(picSurf);
 
 	// 装载食物图
 	catPath(tmpPath, (char*)"image\\food_0.png");
 	picSurf = IMG_Load(tmpPath);
-	tmpTex = SDL_CreateTextureFromSurface(render, picSurf);
+	foodFlame[0] = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
-	foodFlame[0] = new Flame(tmpTex, -1);
 	foodFlame[0]->setNext(nullptr);
 
 	// 开始装载字符图
@@ -231,17 +222,7 @@ void load(SDL_Renderer* render) {
 	for (int i = 0;i < 6;i++) {  // 6行文字排列
 		for (int j = 0;j < 16;j++) {  // 每行16个字符
 			SDL_Rect srect = { j * 80, i * 160, 80, 160 };
-
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-			tmpSurf = SDL_CreateRGBSurface(0, 80, 160, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-#else
-			tmpSurf = SDL_CreateRGBSurface(0, 80, 160, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-#endif
-
-			SDL_BlitSurface(picSurf, &srect, tmpSurf, NULL);
-			tmpTex = SDL_CreateTextureFromSurface(render, tmpSurf);
-			SDL_FreeSurface(tmpSurf);
-			charFlame[16 * i + j] = new Flame(tmpTex, -1);
+			charFlame[16 * i + j] = new Flame(picSurf, &srect, -1);
 		}
 	}
 	SDL_FreeSurface(picSurf);
@@ -254,16 +235,7 @@ void load(SDL_Renderer* render) {
 		for (int j = 0;j < 8;j++) {  // 每种运动情况有8帧
 			SDL_Rect srect = { j * 20, i * 20, 20, 20 };
 
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-			tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-#else
-			tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-#endif
-
-			SDL_BlitSurface(picSurf, &srect, tmpSurf, NULL);
-			tmpTex = SDL_CreateTextureFromSurface(render, tmpSurf);
-			SDL_FreeSurface(tmpSurf);
-			flames[j] = new Flame(tmpTex, 10);
+			flames[j] = new Flame(picSurf, &srect, 10);
 			flames[j]->setGroupId(MU_SNAKE_FLAME_HEAD_0toUP + i);
 			if (j)flames[j - 1]->setNext(flames[j]);
 		}
@@ -279,16 +251,7 @@ void load(SDL_Renderer* render) {
 		for (int j = 0;j < 8;j++) {
 			SDL_Rect srect = { j * 20, i * 20, 20, 20 };
 
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-			tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-#else
-			tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-#endif
-
-			SDL_BlitSurface(picSurf, &srect, tmpSurf, NULL);
-			tmpTex = SDL_CreateTextureFromSurface(render, tmpSurf);
-			SDL_FreeSurface(tmpSurf);
-			flames[j] = new Flame(tmpTex, 10);
+			flames[j] = new Flame(picSurf, &srect, 10);
 			flames[j]->setGroupId(MU_SNAKE_FLAME_TAIL_UPshake + i);
 			if (j)flames[j - 1]->setNext(flames[j]);
 		}
@@ -302,31 +265,13 @@ void load(SDL_Renderer* render) {
 	for (int j = MU_SNAKE_FLAME_HEAD_UP;j <= MU_SNAKE_FLAME_TAIL_LEFT;j++) {
 		SDL_Rect srect = { j * 20, 0, 20, 20 };
 
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-		tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-#else
-		tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-#endif
-
-		SDL_BlitSurface(picSurf, &srect, tmpSurf, NULL);
-		tmpTex = SDL_CreateTextureFromSurface(render, tmpSurf);
-		SDL_FreeSurface(tmpSurf);
-		snakeFlame[j] = new Flame(tmpTex, -1);
+		snakeFlame[j] = new Flame(picSurf, &srect, -1);
 		snakeFlame[j]->setGroupId(j);
 	}
 	for (int j = MU_SNAKE_FLAME_BODY_UPDOWN;j <= MU_SNAKE_FLAME_BODY_UPLEFT;j++) {
 		SDL_Rect srect = { (j - MU_SNAKE_FLAME_BODY_UPDOWN) * 20, 20, 20, 20 };
 
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-		tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-#else
-		tmpSurf = SDL_CreateRGBSurface(0, 20, 20, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-#endif
-
-		SDL_BlitSurface(picSurf, &srect, tmpSurf, NULL);
-		tmpTex = SDL_CreateTextureFromSurface(render, tmpSurf);
-		SDL_FreeSurface(tmpSurf);
-		snakeFlame[j] = new Flame(tmpTex, -1);
+		snakeFlame[j] = new Flame(picSurf, &srect, -1);
 		snakeFlame[j]->setGroupId(j);
 	}
 
