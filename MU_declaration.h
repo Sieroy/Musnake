@@ -2,6 +2,7 @@
 
 #include <random>
 #include "SDL.h"
+#include "SDL_ttf.h"
 
 namespace musnake {
 	// 程序状态枚举
@@ -13,7 +14,7 @@ namespace musnake {
 	// 程序当前状态
 	int musnakeState;
 
-	SDL_Rect drawableScreenArea;
+	
 
 	// ================================ MU_flame.h =================================
 
@@ -170,11 +171,33 @@ namespace musnake {
 
 	SDL_Renderer* render = nullptr;
 	Grid* gameMap[20][15] = { nullptr };  // 单局游戏用到的地格们，第一维为X坐标，第二维为Y坐标
+
 	Flame* snakeFlame[50] = { nullptr };  // 绘制蛇要用到的帧们
 	Flame* foodFlame[1] = { nullptr };  // 绘制食物要用的帧组们，测试阶段一个就够
 	Flame* hpFlame[3][2] = { nullptr };  // 绘制血条要用到的帧组们
 	Flame* notesignFlame[2] = { nullptr };
 	Flame* charFlame[96] = { nullptr };  // 绘制文字要用的帧，从ASCII-32开始
+
+	TTF_Font* titleMusnakeFont = nullptr;  // 标题，游戏名的字体
+	TTF_Font* titleAuthorFont = nullptr;  // 标题下角的作者名字体
+	TTF_Font* menuSongnameFont = nullptr;  // 菜单处歌名字体
+	TTF_Font* menuSongtimeFont = nullptr;  // 菜单处歌曲时长字体
+	TTF_Font* gameScorelabelFont = nullptr;  // 游戏时分数提示文字字体
+	TTF_Font* gameScorenumFont = nullptr;  // 游戏时分数数字字体
+	TTF_Font* gameCombolabelFont = nullptr;  // 游戏时连击提示文字字体
+	TTF_Font* gameCombonumFont = nullptr;  // 游戏时连击数字字体
+	TTF_Font* gamePauseTitleFont = nullptr;  // 游戏暂停标题字体
+	TTF_Font* gamePauseSongnameFont = nullptr;  // 游戏暂停歌名字体
+	TTF_Font* gamePauseChosenFont = nullptr;  // 游戏暂停被选择项字体
+	TTF_Font* gamePauseNotChosenFont = nullptr;  // 游戏暂停未选择项字体
+	TTF_Font* gameWinSongnameFont = nullptr;  // 游戏通关页的歌曲名字体
+	TTF_Font* gameWinScorelabelFont = nullptr;  // 游戏通关得分提示文字字体
+	TTF_Font* gameWinScorenumFont = nullptr;  // 游戏通关得分数字字体
+	TTF_Font* gameWinLengthlabelFont = nullptr;  // 游戏通关蛇长提示字体
+	TTF_Font* gameWinLengthnumFont = nullptr;  // 游戏通关蛇长数字字体
+	TTF_Font* gameLoseTitleFont = nullptr;  // 游戏失败标题字体
+	TTF_Font* gameLoseSongnameFont = nullptr;  // 游戏失败歌名字体
+
 	Game* thisGame = nullptr;  // 当前进行中的游戏对象（鱼，好大的鱼，虎纹鲨鱼……）
 	int noteDelta = 60;  // 节奏偏移
 
@@ -192,6 +215,8 @@ namespace musnake {
 		int timev;  // 总时间ms
 		Mix_Music* sample;  // 预览歌
 		Flame* cover;  // 封面
+		Flame* nameFlm;
+		Flame* timeFlm;
 		struct _LevelPanel* prev;
 		struct _LevelPanel* next;
 	}LevelPanel;

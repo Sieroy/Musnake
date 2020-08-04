@@ -31,7 +31,6 @@ int main(int argc, char* argv[]) {
 
 	window = SDL_CreateWindow("Musnake", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_RESIZABLE);
 	render = SDL_CreateRenderer(window, -1, 0);
-	SDL_GetDisplayUsableBounds(0, &drawableScreenArea);
 	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
 	musnakeState = MU_STATE_RUNNING;
 
@@ -127,12 +126,37 @@ void load(SDL_Renderer* render) {
 	// 这里定位文件的位置
 	char tmpPath[256];
 
+	// 装载字体
+	catPath(tmpPath, (char*)"font\\SHOWG.TTF");
+	titleMusnakeFont = TTF_OpenFont(tmpPath, 100);  // 标题就得牌面！
+	gameWinLengthnumFont =
+	gameWinScorelabelFont = TTF_OpenFont(tmpPath, 50);
+	gameScorenumFont =
+	gameCombonumFont = TTF_OpenFont(tmpPath, 40);
+	gameCombolabelFont = TTF_OpenFont(tmpPath, 20);
+	gamePauseTitleFont =
+	gameLoseTitleFont = TTF_OpenFont(tmpPath, 80);
+
+	catPath(tmpPath, (char*)"font\\msyhbd.ttc");
+	titleAuthorFont = TTF_OpenFont(tmpPath, 10);
+	menuSongtimeFont = 
+	gameScorelabelFont = 
+	gamePauseSongnameFont = 
+	gameLoseSongnameFont = TTF_OpenFont(tmpPath, 20);
+	menuSongnameFont = 
+	gameWinSongnameFont =
+	gameWinScorelabelFont = 
+	gameWinLengthlabelFont = 
+	gamePauseNotChosenFont = TTF_OpenFont(tmpPath, 30);
+	gamePauseChosenFont = TTF_OpenFont(tmpPath, 40);
+
 	// 装载曲目信息
 	catPath(tmpPath, (char*)"level\\list.mu");
 	SDL_RWops* f = SDL_RWFromFile(tmpPath, "r");
 	char c, * nsp = &c;
 	char ss[48];
 	LevelPanel* lp = nullptr;
+	SDL_Color tfg = { 255, 255, 255, 255 };
 	while (SDL_RWread(f, &c, 1, 1)) {
 		switch (c) {  // 遇见换行，就要开新的曲表了
 		case '\n':
@@ -165,10 +189,16 @@ void load(SDL_Renderer* render) {
 			tmpSurf = IMG_Load(tmpPath);
 			lp->cover = new Flame(SDL_CreateTextureFromSurface(render, tmpSurf), -1);
 			SDL_FreeSurface(tmpSurf);
+			tmpSurf = TTF_RenderText_Blended(menuSongnameFont, lp->name, tfg);
+			lp->nameFlm = new Flame(tmpSurf, NULL, -1);
+			SDL_FreeSurface(tmpSurf);
 			nsp = lp->time;
 			break;
 		case '^':
 			*nsp = 0;
+			tmpSurf = TTF_RenderText_Blended(menuSongtimeFont, lp->time, tfg);
+			lp->timeFlm = new Flame(tmpSurf, NULL, -1);
+			SDL_FreeSurface(tmpSurf);
 			nsp = ss;
 			break;
 		default:
