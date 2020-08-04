@@ -2,6 +2,7 @@
 
 #include"SDL.h"
 #include"SDL_main.h"
+#include"SDL_ttf.h"
 #include"SDL_image.h"
 #include"SDL_mixer.h"
 
@@ -21,6 +22,8 @@ void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning);
 
 int main(int argc, char* argv[]) {
 	SDL_Event evt;
+	SDL_Color tmpColor = { 255, 255, 255, 255 };
+	SDL_Surface* tmpSurf = nullptr;
 	LevelPanel* nowLevel = nullptr;
 	int panelTurning = 0;
 
@@ -28,6 +31,7 @@ int main(int argc, char* argv[]) {
 	SDL_Init(SDL_INIT_EVERYTHING);
 	IMG_Init(IMG_INIT_PNG);
 	Mix_Init(MIX_INIT_MP3);
+	TTF_Init();
 
 	window = SDL_CreateWindow("Musnake", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_RESIZABLE);
 	render = SDL_CreateRenderer(window, -1, 0);
@@ -37,7 +41,15 @@ int main(int argc, char* argv[]) {
 	load(render);
 	nowLevel = levels;
 
+	tmpSurf = TTF_RenderText_Blended(titleMusnakeFont, "MUSNAKE", tmpColor);
+	titleMusnakeFlame = new Flame(tmpSurf, NULL, -1);
+	SDL_FreeSurface(tmpSurf);
+	tmpSurf = TTF_RenderText_Blended(titleAuthorFont, "By Sieroy & StdCat", tmpColor);
+	titleAuthorFlame = new Flame(tmpSurf, NULL, -1);
+	SDL_FreeSurface(tmpSurf);
+
 __start:
+	Mix_FadeInMusic(titleBGM, -1, 1000);
 	while (musnakeState) {
 		updateTime();
 		SDL_RenderClear(render);
@@ -50,6 +62,7 @@ __start:
 			case SDL_KEYDOWN:
 				switch (evt.key.keysym.sym) {
 				case SDLK_RETURN:
+					Mix_HaltMusic();
 					goto __menu;
 					break;
 				case SDLK_ESCAPE:
@@ -108,7 +121,7 @@ __menu:
 		SDL_RenderPresent(render);
 	}
 	
-
+	TTF_Quit();
 	IMG_Quit();
 	Mix_Quit();
 	SDL_DestroyRenderer(render);
@@ -189,7 +202,7 @@ void load(SDL_Renderer* render) {
 			tmpSurf = IMG_Load(tmpPath);
 			lp->cover = new Flame(SDL_CreateTextureFromSurface(render, tmpSurf), -1);
 			SDL_FreeSurface(tmpSurf);
-			tmpSurf = TTF_RenderText_Blended(menuSongnameFont, lp->name, tfg);
+			tmpSurf = TTF_RenderUTF8_Blended(menuSongnameFont, lp->name, tfg);
 			lp->nameFlm = new Flame(tmpSurf, NULL, -1);
 			SDL_FreeSurface(tmpSurf);
 			nsp = lp->time;
@@ -212,6 +225,10 @@ void load(SDL_Renderer* render) {
 	lp->next = levels;
 	levels->prev = lp;
 	SDL_RWclose(f);
+
+	// 装载标题界面BGM
+	catPath(tmpPath, (char*)"sound\\bgm.mp3");
+	titleBGM = Mix_LoadMUS(tmpPath);
 
 	// 装载Note图
 	catPath(tmpPath, (char*)"image\\notesign.png");
@@ -347,9 +364,9 @@ void unload() {
 
 void drawStart(SDL_Renderer* render) {  // 绘制游戏开始页面
 	long long nt = (getTimeVal() / 500) & 1 ? 4 - (getTimeVal() % 1000 / 200) : getTimeVal() % 1000 / 100;
-	drawText(render, (char*)"musnake", 196, 100, 60);
+	titleMusnakeFlame->draw(render, 175, 100);
 	drawText(render, (char*)"enter!", 330 - 3 * nt, 330 - nt, 20 + nt);
-	drawText(render, (char*)"by sieroy", 5, 580, 8);
+	titleAuthorFlame->draw(render, 5, 580);
 }
 
 void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning) {
@@ -358,8 +375,10 @@ void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning) {
 	if (!*turning) {  // 仅绘制当前曲目
 		SDL_Rect rect = {200, 200, 200, 200};
 		panel->cover->draw(render, &rect);
-		drawText(render, panel->name, 430, 200, 20);
-		drawText(render, panel->time, 430, 250, 16);
+		panel->nameFlm->draw(render, 430, 200);
+		panel->timeFlm->draw(render, 430, 250);
+		//drawText(render, panel->name, 430, 200, 20);
+		//drawText(render, panel->time, 430, 250, 16);
 	}
 	else if (*turning > 0) {  // 向下滚动，面板要有向上移动的效果
 		LevelPanel* lp = panel->next;
@@ -369,18 +388,24 @@ void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning) {
 			Mix_FadeOutMusic(190);
 		}
 		lp->cover->draw(render, &re1);
-		drawText(render, lp->name, 430, 200 + *turning * 3, 20);
-		drawText(render, lp->time, 430, 250 + *turning * 3, 16);
+		lp->nameFlm->draw(render, 430, 200 + *turning * 3);
+		lp->timeFlm->draw(render, 430, 250 + *turning * 3);
+		//drawText(render, lp->name, 430, 200 + *turning * 3, 20);
+		//drawText(render, lp->time, 430, 250 + *turning * 3, 16);
 		panel->cover->draw(render, &re2);
-		drawText(render, panel->name, 430, -400 + *turning * 3, 20);
-		drawText(render, panel->time, 430, -350 + *turning * 3, 16);
+		panel->nameFlm->draw(render, 430, -400 + *turning * 3);
+		panel->timeFlm->draw(render, 430, -350 + *turning * 3);
+		//drawText(render, panel->name, 430, -400 + *turning * 3, 20);
+		//drawText(render, panel->time, 430, -350 + *turning * 3, 16);
 		*turning -= getTimeDelta();
 		if (*turning <= 0) {
 			SDL_RenderClear(render);
 			re1.y = 200;
 			lp->cover->draw(render, &re1);
-			drawText(render, lp->name, 430, 200, 20);
-			drawText(render, lp->time, 430, 250, 16);
+			lp->nameFlm->draw(render, 430, 200);
+			lp->timeFlm->draw(render, 430, 250);
+			//drawText(render, lp->name, 430, 200, 20);
+			//drawText(render, lp->time, 430, 250, 16);
 			SDL_RenderPresent(render);
 
 			*turning = 0;
@@ -397,18 +422,24 @@ void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning) {
 			Mix_FadeOutMusic(190);
 		}
 		lp->cover->draw(render, &re1);
-		drawText(render, lp->name, 430, 200 + *turning * 3, 20);
-		drawText(render, lp->time, 430, 250 + *turning * 3, 16);
+		lp->nameFlm->draw(render, 430, 200 + *turning * 3);
+		lp->timeFlm->draw(render, 430, 250 + *turning * 3);
+		//drawText(render, lp->name, 430, 200 + *turning * 3, 20);
+		//drawText(render, lp->time, 430, 250 + *turning * 3, 16);
 		panel->cover->draw(render, &re2);
-		drawText(render, panel->name, 430, 800 + *turning * 3, 20);
-		drawText(render, panel->time, 430, 850 + *turning * 3, 16);
+		panel->nameFlm->draw(render, 430, 800 + *turning * 3);
+		panel->timeFlm->draw(render, 430, 850 + *turning * 3);
+		//drawText(render, panel->name, 430, 800 + *turning * 3, 20);
+		//drawText(render, panel->time, 430, 850 + *turning * 3, 16);
 		*turning += getTimeDelta();
 		if (*turning >= 0) {
 			SDL_RenderClear(render);
 			re1.y = 200;
 			lp->cover->draw(render, &re1);
-			drawText(render, lp->name, 430, 200, 20);
-			drawText(render, lp->time, 430, 250, 16);
+			lp->nameFlm->draw(render, 430, 200);
+			lp->timeFlm->draw(render, 430, 250);
+			//drawText(render, lp->name, 430, 200, 20);
+			//drawText(render, lp->time, 430, 250, 16);
 			SDL_RenderPresent(render);
 
 			*turning = 0;

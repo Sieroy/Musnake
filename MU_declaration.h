@@ -172,11 +172,16 @@ namespace musnake {
 	SDL_Renderer* render = nullptr;
 	Grid* gameMap[20][15] = { nullptr };  // 单局游戏用到的地格们，第一维为X坐标，第二维为Y坐标
 
+	Mix_Music* titleBGM = nullptr;
+
 	Flame* snakeFlame[50] = { nullptr };  // 绘制蛇要用到的帧们
 	Flame* foodFlame[1] = { nullptr };  // 绘制食物要用的帧组们，测试阶段一个就够
 	Flame* hpFlame[3][2] = { nullptr };  // 绘制血条要用到的帧组们
 	Flame* notesignFlame[2] = { nullptr };
 	Flame* charFlame[96] = { nullptr };  // 绘制文字要用的帧，从ASCII-32开始
+
+	Flame* titleMusnakeFlame = nullptr;
+	Flame* titleAuthorFlame = nullptr;
 
 	TTF_Font* titleMusnakeFont = nullptr;  // 标题，游戏名的字体
 	TTF_Font* titleAuthorFont = nullptr;  // 标题下角的作者名字体

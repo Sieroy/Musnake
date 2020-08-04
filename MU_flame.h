@@ -21,6 +21,7 @@ public:
 	long long getDuration();  // 获取当前帧应持续的时间
 
 	void draw(SDL_Renderer* render, SDL_Rect* rect);  // 在指定地点绘制
+	void draw(SDL_Renderer* render, int x, int y);  // 指定基点绘制
 
 private:
 	int w = 0;
@@ -100,4 +101,9 @@ inline long long musnake::Flame::getDuration() {
 
 inline void musnake::Flame::draw(SDL_Renderer* render, SDL_Rect* rect){
 	SDL_RenderCopy(render, tex, NULL, rect);
+}
+
+inline void musnake::Flame::draw(SDL_Renderer* render, int x, int y) {
+	SDL_Rect r = { x, y, w, h };
+	SDL_RenderCopy(render, tex, NULL, &r);
 }
