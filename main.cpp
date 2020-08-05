@@ -40,6 +40,8 @@ int main(int argc, char* argv[]) {
 
 	load(render);
 	nowLevel = levels;
+	SDL_SetRenderDrawBlendMode(render, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderDrawColor(render, 0, 0, 0, 150);
 
 	tmpSurf = TTF_RenderText_Blended(titleMusnakeFont, "MUSNAKE", tmpColor);
 	titleMusnakeFlame = new Flame(tmpSurf, NULL, -1);
@@ -230,6 +232,30 @@ void load(SDL_Renderer* render) {
 	catPath(tmpPath, (char*)"sound\\bgm.mp3");
 	titleBGM = Mix_LoadMUS(tmpPath);
 
+	// 装载标题界面背景图
+	catPath(tmpPath, (char*)"image\\menu_bg.png");
+	picSurf = IMG_Load(tmpPath);
+	titleBGFlame = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
+	// 装载BACK提示标
+	catPath(tmpPath, (char*)"image\\button_back.png");
+	picSurf = IMG_Load(tmpPath);
+	menuBackButtonFlame = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
+	// 装载UP提示标
+	catPath(tmpPath, (char*)"image\\button_up.png");
+	picSurf = IMG_Load(tmpPath);
+	menuUpButtonFlame = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
+	// 装载DOWN提示标
+	catPath(tmpPath, (char*)"image\\button_down.png");
+	picSurf = IMG_Load(tmpPath);
+	menuDownButtonFlame = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
 	// 装载Note图
 	catPath(tmpPath, (char*)"image\\notesign.png");
 	picSurf = IMG_Load(tmpPath);
@@ -363,15 +389,28 @@ void unload() {
 }
 
 void drawStart(SDL_Renderer* render) {  // 绘制游戏开始页面
+	static int dt = 0;
 	long long nt = (getTimeVal() / 500) & 1 ? 4 - (getTimeVal() % 1000 / 200) : getTimeVal() % 1000 / 100;
+	dt += getTimeDelta();
+	dt %= 3290;
+	titleBGFlame->draw(render, 0, -dt / 10);
 	titleMusnakeFlame->draw(render, 175, 100);
 	drawText(render, (char*)"enter!", 330 - 3 * nt, 330 - nt, 20 + nt);
 	titleAuthorFlame->draw(render, 5, 580);
 }
 
 void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning) {
+	static int dt = 0;
 	static int turningFlag = 0;
+	SDL_Rect prect = { 170, 0, 500, 600 };
 	LevelPanel* panel = *nowPanel;
+	dt += getTimeDelta();
+	dt %= 3290;
+	titleBGFlame->draw(render, 0, -dt / 10);
+	menuBackButtonFlame->draw(render, 0, 0);
+	menuUpButtonFlame->draw(render, 0, 100);
+	menuDownButtonFlame->draw(render, 0, 170);
+	SDL_RenderFillRect(render, &prect);
 	if (!*turning) {  // 仅绘制当前曲目
 		SDL_Rect rect = {200, 200, 200, 200};
 		panel->cover->draw(render, &rect);
@@ -400,6 +439,11 @@ void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning) {
 		*turning -= getTimeDelta();
 		if (*turning <= 0) {
 			SDL_RenderClear(render);
+			titleBGFlame->draw(render, 0, -dt / 10);
+			menuBackButtonFlame->draw(render, 0, 0);
+			menuUpButtonFlame->draw(render, 0, 100);
+			menuDownButtonFlame->draw(render, 0, 170);
+			SDL_RenderFillRect(render, &prect);
 			re1.y = 200;
 			lp->cover->draw(render, &re1);
 			lp->nameFlm->draw(render, 430, 200);
@@ -434,6 +478,11 @@ void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning) {
 		*turning += getTimeDelta();
 		if (*turning >= 0) {
 			SDL_RenderClear(render);
+			titleBGFlame->draw(render, 0, -dt / 10);
+			menuBackButtonFlame->draw(render, 0, 0);
+			menuUpButtonFlame->draw(render, 0, 100);
+			menuDownButtonFlame->draw(render, 0, 170);
+			SDL_RenderFillRect(render, &prect);
 			re1.y = 200;
 			lp->cover->draw(render, &re1);
 			lp->nameFlm->draw(render, 430, 200);

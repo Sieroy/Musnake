@@ -52,6 +52,8 @@ namespace musnake {
 	unsigned long long timeDelta = 0;
 	unsigned long fps = 0;
 
+	DelayFunc* publicTimingFunc = nullptr;
+
 	/* 更新时间值 */
 	inline unsigned long long updateTime();
 
@@ -180,8 +182,13 @@ namespace musnake {
 	Flame* notesignFlame[2] = { nullptr };
 	Flame* charFlame[96] = { nullptr };  // 绘制文字要用的帧，从ASCII-32开始
 
+	Flame* titleBGFlame = nullptr;
 	Flame* titleMusnakeFlame = nullptr;
 	Flame* titleAuthorFlame = nullptr;
+
+	Flame* menuBackButtonFlame = nullptr;
+	Flame* menuUpButtonFlame = nullptr;
+	Flame* menuDownButtonFlame = nullptr;
 
 	TTF_Font* titleMusnakeFont = nullptr;  // 标题，游戏名的字体
 	TTF_Font* titleAuthorFont = nullptr;  // 标题下角的作者名字体
