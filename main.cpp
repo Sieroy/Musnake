@@ -22,7 +22,6 @@ void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning);
 
 int main(int argc, char* argv[]) {
 	SDL_Event evt;
-	SDL_Color tmpColor = { 255, 255, 255, 255 };
 	SDL_Surface* tmpSurf = nullptr;
 	LevelPanel* nowLevel = nullptr;
 	int panelTurning = 0;
@@ -42,13 +41,6 @@ int main(int argc, char* argv[]) {
 	nowLevel = levels;
 	SDL_SetRenderDrawBlendMode(render, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderDrawColor(render, 0, 0, 0, 150);
-
-	tmpSurf = TTF_RenderText_Blended(titleMusnakeFont, "MUSNAKE", tmpColor);
-	titleMusnakeFlame = new Flame(tmpSurf, NULL, -1);
-	SDL_FreeSurface(tmpSurf);
-	tmpSurf = TTF_RenderText_Blended(titleAuthorFont, "By Sieroy & StdCat", tmpColor);
-	titleAuthorFlame = new Flame(tmpSurf, NULL, -1);
-	SDL_FreeSurface(tmpSurf);
 
 __start:
 	Mix_FadeInMusic(titleBGM, -1, 1000);
@@ -137,23 +129,24 @@ void load(SDL_Renderer* render) {
 	// 按说这里应该是从配置文件里读数据来初始化地格的，现阶段就先写死吧
 	SDL_Surface* picSurf, * tmpSurf;
 	SDL_Texture* tmpTex;
+	SDL_Color tmpColor = { 255, 255, 255, 255 };
 
 	// 这里定位文件的位置
 	char tmpPath[256];
 
 	// 装载字体
 	catPath(tmpPath, (char*)"font\\SHOWG.TTF");
-	titleMusnakeFont = TTF_OpenFont(tmpPath, 100);  // 标题就得牌面！
+	titleMusnakeFont = TTF_OpenFont(tmpPath, 144);  // 标题就得牌面！
+	gamePauseTitleFont =
+	gameLoseTitleFont = TTF_OpenFont(tmpPath, 80);
 	gameWinLengthnumFont =
 	gameWinScorelabelFont = TTF_OpenFont(tmpPath, 50);
 	gameScorenumFont =
 	gameCombonumFont = TTF_OpenFont(tmpPath, 40);
 	gameCombolabelFont = TTF_OpenFont(tmpPath, 20);
-	gamePauseTitleFont =
-	gameLoseTitleFont = TTF_OpenFont(tmpPath, 80);
 
 	catPath(tmpPath, (char*)"font\\msyhbd.ttc");
-	titleAuthorFont = TTF_OpenFont(tmpPath, 10);
+	titleAuthorFont = TTF_OpenFont(tmpPath, 16);
 	menuSongtimeFont = 
 	gameScorelabelFont = 
 	gamePauseSongnameFont = 
@@ -238,6 +231,12 @@ void load(SDL_Renderer* render) {
 	titleBGFlame = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
+	// 装载ENTER提示标
+	catPath(tmpPath, (char*)"image\\button_enter.png");
+	picSurf = IMG_Load(tmpPath);
+	titleEnterButtonFlame = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
 	// 装载BACK提示标
 	catPath(tmpPath, (char*)"image\\button_back.png");
 	picSurf = IMG_Load(tmpPath);
@@ -256,20 +255,60 @@ void load(SDL_Renderer* render) {
 	menuDownButtonFlame = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
+	// 装载PLAY提示标
+	catPath(tmpPath, (char*)"image\\button_play.png");
+	picSurf = IMG_Load(tmpPath);
+	menuPlayButtonFlame = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
+	// 装载RESUME提示标
+	catPath(tmpPath, (char*)"image\\button_resume_nc.png");
+	picSurf = IMG_Load(tmpPath);
+	gamePauseResumeButtonFlame[0] = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
+	catPath(tmpPath, (char*)"image\\button_resume_c.png");
+	picSurf = IMG_Load(tmpPath);
+	gamePauseResumeButtonFlame[1] = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
+	// 装载RETRY提示标
+	catPath(tmpPath, (char*)"image\\button_retry_nc.png");
+	picSurf = IMG_Load(tmpPath);
+	gamePauseRetryButtonFlame[0] = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
+	catPath(tmpPath, (char*)"image\\button_retry_c.png");
+	picSurf = IMG_Load(tmpPath);
+	gamePauseRetryButtonFlame[1] = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
+	// 装载BACK提示标
+	catPath(tmpPath, (char*)"image\\button_back_nc.png");
+	picSurf = IMG_Load(tmpPath);
+	gamePauseBackButtonFlame[0] = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
+	catPath(tmpPath, (char*)"image\\button_back_c.png");
+	picSurf = IMG_Load(tmpPath);
+	gamePauseBackButtonFlame[1] = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
 	// 装载Note图
 	catPath(tmpPath, (char*)"image\\notesign.png");
 	picSurf = IMG_Load(tmpPath);
-	tmpTex = SDL_CreateTextureFromSurface(render, picSurf);
+	notesignFlame[0] = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
-	notesignFlame[0] = new Flame(tmpTex, -1);
-	notesignFlame[0]->setNext(nullptr);
 
 	catPath(tmpPath, (char*)"image\\notesign_fever.png");
 	picSurf = IMG_Load(tmpPath);
-	tmpTex = SDL_CreateTextureFromSurface(render, picSurf);
+	notesignFlame[1] = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
-	notesignFlame[1] = new Flame(tmpTex, -1);
-	notesignFlame[1]->setNext(nullptr);
+
+	catPath(tmpPath, (char*)"image\\notesign_edge.png");
+	picSurf = IMG_Load(tmpPath);
+	notesignFlame[2] = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
 
 	// 装载血条图
 	catPath(tmpPath, (char*)"image\\hp.png");
@@ -382,6 +421,32 @@ void load(SDL_Renderer* render) {
 	snakeFlame[MU_SNAKE_FLAME_TAIL_UPtoLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFT]);
 	snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHTtoLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFT]);
 	snakeFlame[MU_SNAKE_FLAME_TAIL_DOWNtoLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFT]);
+
+	// 绘制Title界面要用的文字
+	tmpSurf = TTF_RenderText_Blended(titleMusnakeFont, "MUSNAKE", tmpColor);
+	titleMusnakeFlame = new Flame(tmpSurf, NULL, -1);
+	SDL_FreeSurface(tmpSurf);
+	tmpSurf = TTF_RenderText_Blended(titleAuthorFont, "By Sieroy & StdCat", tmpColor);
+	titleAuthorFlame = new Flame(tmpSurf, NULL, -1);
+	SDL_FreeSurface(tmpSurf);
+
+	// 装载Pause界面的遮罩图
+	catPath(tmpPath, (char*)"image\\mask_gamepause.png");
+	picSurf = IMG_Load(tmpPath);
+	gamePauseBGMask = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
+	// 绘制GamePause界面要用到的文字
+	tmpSurf = TTF_RenderText_Blended(gamePauseTitleFont, "- PAUSED -", tmpColor);
+	gamePauseTitleFlame = new Flame(tmpSurf, NULL, -1);
+	SDL_FreeSurface(tmpSurf);
+
+	// 装载GameWin界面的背景
+	catPath(tmpPath, (char*)"image\\gamewin_bg.png");
+	picSurf = IMG_Load(tmpPath);
+	gamewinBGFlame = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
 }
 
 void unload() {
@@ -390,19 +455,18 @@ void unload() {
 
 void drawStart(SDL_Renderer* render) {  // 绘制游戏开始页面
 	static int dt = 0;
-	long long nt = (getTimeVal() / 500) & 1 ? 4 - (getTimeVal() % 1000 / 200) : getTimeVal() % 1000 / 100;
 	dt += getTimeDelta();
 	dt %= 3290;
 	titleBGFlame->draw(render, 0, -dt / 10);
-	titleMusnakeFlame->draw(render, 175, 100);
-	drawText(render, (char*)"enter!", 330 - 3 * nt, 330 - nt, 20 + nt);
-	titleAuthorFlame->draw(render, 5, 580);
+	titleMusnakeFlame->draw(render, 75, 120);
+	titleEnterButtonFlame->draw(render, 300, 440);
+	titleAuthorFlame->draw(render, 5, 570);
 }
 
 void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning) {
 	static int dt = 0;
 	static int turningFlag = 0;
-	SDL_Rect prect = { 170, 0, 500, 600 };
+	SDL_Rect prect = { 170, 0, 610, 600 };
 	LevelPanel* panel = *nowPanel;
 	dt += getTimeDelta();
 	dt %= 3290;
@@ -410,6 +474,7 @@ void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning) {
 	menuBackButtonFlame->draw(render, 0, 0);
 	menuUpButtonFlame->draw(render, 0, 100);
 	menuDownButtonFlame->draw(render, 0, 170);
+	menuPlayButtonFlame->draw(render, 0, 520);
 	SDL_RenderFillRect(render, &prect);
 	if (!*turning) {  // 仅绘制当前曲目
 		SDL_Rect rect = {200, 200, 200, 200};
@@ -443,6 +508,7 @@ void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning) {
 			menuBackButtonFlame->draw(render, 0, 0);
 			menuUpButtonFlame->draw(render, 0, 100);
 			menuDownButtonFlame->draw(render, 0, 170);
+			menuPlayButtonFlame->draw(render, 0, 520);
 			SDL_RenderFillRect(render, &prect);
 			re1.y = 200;
 			lp->cover->draw(render, &re1);
@@ -482,6 +548,7 @@ void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning) {
 			menuBackButtonFlame->draw(render, 0, 0);
 			menuUpButtonFlame->draw(render, 0, 100);
 			menuDownButtonFlame->draw(render, 0, 170);
+			menuPlayButtonFlame->draw(render, 0, 520);
 			SDL_RenderFillRect(render, &prect);
 			re1.y = 200;
 			lp->cover->draw(render, &re1);

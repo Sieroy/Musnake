@@ -179,16 +179,24 @@ namespace musnake {
 	Flame* snakeFlame[50] = { nullptr };  // 绘制蛇要用到的帧们
 	Flame* foodFlame[1] = { nullptr };  // 绘制食物要用的帧组们，测试阶段一个就够
 	Flame* hpFlame[3][2] = { nullptr };  // 绘制血条要用到的帧组们
-	Flame* notesignFlame[2] = { nullptr };
+	Flame* notesignFlame[3] = { nullptr };
 	Flame* charFlame[96] = { nullptr };  // 绘制文字要用的帧，从ASCII-32开始
 
 	Flame* titleBGFlame = nullptr;
 	Flame* titleMusnakeFlame = nullptr;
 	Flame* titleAuthorFlame = nullptr;
+	Flame* gamePauseBGMask = nullptr;
+	Flame* gamePauseTitleFlame = nullptr;
+	Flame* gamewinBGFlame = nullptr;
 
+	Flame* titleEnterButtonFlame = nullptr;
 	Flame* menuBackButtonFlame = nullptr;
 	Flame* menuUpButtonFlame = nullptr;
 	Flame* menuDownButtonFlame = nullptr;
+	Flame* menuPlayButtonFlame = nullptr;
+	Flame* gamePauseResumeButtonFlame[2] = { nullptr };
+	Flame* gamePauseRetryButtonFlame[2] = { nullptr };
+	Flame* gamePauseBackButtonFlame[2] = { nullptr };
 
 	TTF_Font* titleMusnakeFont = nullptr;  // 标题，游戏名的字体
 	TTF_Font* titleAuthorFont = nullptr;  // 标题下角的作者名字体
@@ -222,7 +230,7 @@ namespace musnake {
 	// 现阶段还没建这个标头
 
 	typedef struct _LevelPanel {
-		char name[24];
+		char name[32];  // 10个汉字，勉勉强强吧
 		char time[8];  // h:mm:ss，不会有比这还长的曲子了吧？即使有我也不会往游戏里加~
 		int timev;  // 总时间ms
 		Mix_Music* sample;  // 预览歌

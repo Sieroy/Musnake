@@ -364,7 +364,7 @@ void passLevel(unsigned long arg) {
 
 void musnake::Game::run() {
 	SDL_Event evt;
-	int timing = 0;
+	long long timing = 0;
 	// 先想想大致的流程吧
 	state = MU_GAME_STATE_RUNNING;
 	updateTime();
@@ -511,44 +511,52 @@ void musnake::Game::run() {
 		}
 
 		if (hp > 0) {  // 顺利结束
-			switch (hits * 10 / noteCount) {
-			case 10:
-				drawText(gameRender, (char*)"SSS", -300 + timing, 150, 80);
-				break;
-			case 9:
-				if (hits * 100 / noteCount >= 95)
-					drawText(gameRender, (char*)"SS", -220 + timing, 150, 80);
-				else
-					drawText(gameRender, (char*)"S", -140 + timing, 150, 80);
-				break;
-			case 8:
-				drawText(gameRender, (char*)"A", -140 + timing, 150, 80);
-				break;
-			case 7:
-				drawText(gameRender, (char*)"B", -140 + timing, 150, 80);
-				break;
-			case 6:
-				drawText(gameRender, (char*)"C", -140 + timing, 150, 80);
-				break;
-			default:
-				drawText(gameRender, (char*)"D", -140 + timing, 150, 80);
+			if (timing < 1000) {
+				SDL_Rect r = { 100, 1120 - timing, 600, 400 };
+				gamewinBGFlame->draw(gameRender, 0, 600 - timing);
+				SDL_RenderFillRect(gameRender, &r);
 			}
-			
-			// 绘制得分
-			drawText(gameRender, (char*)"score", 1200 - 2 * timing, 150, 20);
-			drawText(gameRender, (char*)"length", 1200 - 2 * timing, 300, 20);
-			int2str(ss, score);
-			drawText(gameRender, ss, 1200 - 2 * timing, 205, 40);
-			int2str(ss, length);
-			drawText(gameRender, ss, 1200 - 2 * timing, 355, 40);
+			else {
+				SDL_Rect r = { 100, 120, 600, 400 };
+				gamewinBGFlame->draw(gameRender, 0, -400 - (timing / 10 - 100) % 130);
+				SDL_RenderFillRect(gameRender, &r);
+				int l = timing > 1400 ? 400 : timing - 1000;
+				switch (hits * 10 / noteCount) {
+				case 10:
+					drawText(gameRender, (char*)"SSS", -300 + l, 150, 80);
+					break;
+				case 9:
+					if (hits * 100 / noteCount >= 95)
+						drawText(gameRender, (char*)"SS", -220 + l, 150, 80);
+					else
+						drawText(gameRender, (char*)"S", -140 + l, 150, 80);
+					break;
+				case 8:
+					drawText(gameRender, (char*)"A", -140 + l, 150, 80);
+					break;
+				case 7:
+					drawText(gameRender, (char*)"B", -140 + l, 150, 80);
+					break;
+				case 6:
+					drawText(gameRender, (char*)"C", -140 + l, 150, 80);
+					break;
+				default:
+					drawText(gameRender, (char*)"D", -140 + l, 150, 80);
+				}
 
-			if (timing < 400) timing += getTimeDelta();
+				// 绘制得分
+				drawText(gameRender, (char*)"score", 1200 - 2 * l, 150, 20);
+				drawText(gameRender, (char*)"length", 1200 - 2 * l, 300, 20);
+				int2str(ss, score);
+				drawText(gameRender, ss, 1200 - 2 * l, 205, 40);
+				int2str(ss, length);
+				drawText(gameRender, ss, 1200 - 2 * l, 355, 40);
+			}
+			timing += getTimeDelta();
 		}
 		else {  // 死亡
 			draw();
-			SDL_SetRenderDrawColor(gameRender, 0, 0, 0, 75);
 			SDL_RenderFillRect(gameRender, NULL);
-			SDL_SetRenderDrawColor(gameRender, 0, 0, 0, 255);
 			drawText(gameRender, (char*)"you", 340, 150, 40);
 			drawText(gameRender, (char*)"are", 340, 250, 40);
 			drawText(gameRender, (char*)"dead", 280, 350, 60);
@@ -565,6 +573,7 @@ void musnake::Game::run() {
 }
 
 void musnake::Game::pause() {
+	static int dt = 0;
 	int choosing = 0;
 	char fpss[10];  // 他要是能超9位数，那这电脑就可以起飞了
 	SDL_Event evt;
@@ -610,6 +619,8 @@ void musnake::Game::pause() {
 				}
 			}
 		}
+		dt += getTimeDelta();
+		dt %= 3290;
 
 		// 绘制FPS
 		int2str(fpss, fps);
@@ -618,20 +629,12 @@ void musnake::Game::pause() {
 
 		// 绘制暂停菜单
 		long long nt = (getTimeVal() / 500) & 1 ? 4 - (getTimeVal() % 1000 / 200) : getTimeVal() % 1000 / 100;
-		drawText(gameRender, (char*)"PAUSED", 280, 60, 40);
-		if (choosing == 0)
-			drawText(gameRender, (char*)"resume", 330 - 3 * nt, 230 - nt, 20 + nt);
-		else
-			drawText(gameRender, (char*)"resume", 330, 230, 20);
-		if (choosing == 1)
-			drawText(gameRender, (char*)"replay", 330 - 3 * nt, 300 - nt, 20 + nt);
-		else
-			drawText(gameRender, (char*)"replay", 330, 300, 20);
-		if (choosing == 2)
-			drawText(gameRender, (char*)"giveup", 330 - 3 * nt, 370 - nt, 20 + nt);
-		else
-			drawText(gameRender, (char*)"giveup", 330, 370, 20);
-
+		titleBGFlame->draw(gameRender, 0, -dt / 10);
+		gamePauseBGMask->draw(gameRender, 0, 0);
+		gamePauseTitleFlame->draw(gameRender, 200, 140);
+		gamePauseResumeButtonFlame[choosing == 0]->draw(gameRender, 280, 250);
+		gamePauseRetryButtonFlame[choosing == 1]->draw(gameRender, 280, 330);
+		gamePauseBackButtonFlame[choosing == 2]->draw(gameRender, 280, 410);
 		SDL_RenderPresent(gameRender);
 	}
 	SDL_RenderClear(gameRender);
@@ -680,6 +683,7 @@ void musnake::Game::draw() {
 	// 下面绘制Note
 	Note* np = note;
 	int fn = fever;
+	notesignFlame[2]->draw(gameRender, 80, 520);
 	while (np) {
 		int dt;
 		if ((dt = np->time - getTimeVal()) > 1500) break;
