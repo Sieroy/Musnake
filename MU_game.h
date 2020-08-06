@@ -152,6 +152,7 @@ void musnake::Game::init(LevelPanel* lp){
 	}
 	SDL_RWclose(f);
 
+	// 初始化地块
 	for (int i = 0;i < 20;i++) {
 		for (int j = 0;j < 15;j++) {
 			Grid* map = gameMap[i][j] = new Grid(i, j);
@@ -512,45 +513,49 @@ void musnake::Game::run() {
 
 		if (hp > 0) {  // 顺利结束
 			if (timing < 1000) {
-				SDL_Rect r = { 100, 1120 - timing, 600, 400 };
+				draw();
 				gamewinBGFlame->draw(gameRender, 0, 600 - timing);
-				SDL_RenderFillRect(gameRender, &r);
 			}
 			else {
-				SDL_Rect r = { 100, 120, 600, 400 };
-				gamewinBGFlame->draw(gameRender, 0, -400 - (timing / 10 - 100) % 130);
-				SDL_RenderFillRect(gameRender, &r);
 				int l = timing > 1400 ? 400 : timing - 1000;
+				SDL_Rect prect = { 970 - 2 * l, 0, 610, 600 };
+				gamewinBGFlame->draw(gameRender, 0, -400 - (timing / 10 - 100) % 130);
+				SDL_RenderFillRect(gameRender, &prect);
+				gameOverBackButtonFlame->draw(gameRender, l - 400, 0);
+				gameOverRetryButtonFlame->draw(gameRender, l - 400, 450);
+				gameOverOKButtonFlame->draw(gameRender, l - 400, 520);
+
 				switch (hits * 10 / noteCount) {
 				case 10:
-					drawText(gameRender, (char*)"SSS", -300 + l, 150, 80);
+					drawText(gameRender, (char*)"SSS", 1000 - 2 * l, 100, 80);
 					break;
 				case 9:
 					if (hits * 100 / noteCount >= 95)
-						drawText(gameRender, (char*)"SS", -220 + l, 150, 80);
+						drawText(gameRender, (char*)"SS", 1000 - 2 * l, 100, 80);
 					else
-						drawText(gameRender, (char*)"S", -140 + l, 150, 80);
+						drawText(gameRender, (char*)"S", 1000 - 2 * l, 100, 80);
 					break;
 				case 8:
-					drawText(gameRender, (char*)"A", -140 + l, 150, 80);
+					drawText(gameRender, (char*)"A", 1000 - 2 * l, 100, 80);
 					break;
 				case 7:
-					drawText(gameRender, (char*)"B", -140 + l, 150, 80);
+					drawText(gameRender, (char*)"B", 1000 - 2 * l, 100, 80);
 					break;
 				case 6:
-					drawText(gameRender, (char*)"C", -140 + l, 150, 80);
+					drawText(gameRender, (char*)"C", 1000 - 2 * l, 100, 80);
 					break;
 				default:
-					drawText(gameRender, (char*)"D", -140 + l, 150, 80);
+					drawText(gameRender, (char*)"D", 1000 - 2 * l, 100, 80);
 				}
 
 				// 绘制得分
-				drawText(gameRender, (char*)"score", 1200 - 2 * l, 150, 20);
-				drawText(gameRender, (char*)"length", 1200 - 2 * l, 300, 20);
+				levelinfo->nameFlm->draw(gameRender, 1300 - 2 * l, 140);
+				drawText(gameRender, (char*)"score", 1000 - 2 * l, 300, 20);
+				drawText(gameRender, (char*)"length", 1000 - 2 * l, 450, 20);
 				int2str(ss, score);
-				drawText(gameRender, ss, 1200 - 2 * l, 205, 40);
+				drawText(gameRender, ss, 1060 - 2 * l, 355, 40);
 				int2str(ss, length);
-				drawText(gameRender, ss, 1200 - 2 * l, 355, 40);
+				drawText(gameRender, ss, 1060 - 2 * l, 505, 40);
 			}
 			timing += getTimeDelta();
 		}
@@ -631,6 +636,9 @@ void musnake::Game::pause() {
 		long long nt = (getTimeVal() / 500) & 1 ? 4 - (getTimeVal() % 1000 / 200) : getTimeVal() % 1000 / 100;
 		titleBGFlame->draw(gameRender, 0, -dt / 10);
 		gamePauseBGMask->draw(gameRender, 0, 0);
+		//gamePauseBackButtonLFlame->draw(gameRender, 0, 0);
+		//gamePauseUpButtonFlame->draw(gameRender, 0, 100);
+		//gamePauseDownButtonFlame->draw(gameRender, 0, 170);
 		gamePauseTitleFlame->draw(gameRender, 200, 140);
 		gamePauseResumeButtonFlame[choosing == 0]->draw(gameRender, 280, 250);
 		gamePauseRetryButtonFlame[choosing == 1]->draw(gameRender, 280, 330);

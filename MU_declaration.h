@@ -194,9 +194,15 @@ namespace musnake {
 	Flame* menuUpButtonFlame = nullptr;
 	Flame* menuDownButtonFlame = nullptr;
 	Flame* menuPlayButtonFlame = nullptr;
+	Flame* gamePauseBackButtonLFlame = nullptr;
+	Flame* gamePauseUpButtonFlame = nullptr;
+	Flame* gamePauseDownButtonFlame = nullptr;
 	Flame* gamePauseResumeButtonFlame[2] = { nullptr };
 	Flame* gamePauseRetryButtonFlame[2] = { nullptr };
 	Flame* gamePauseBackButtonFlame[2] = { nullptr };
+	Flame* gameOverBackButtonFlame = nullptr;
+	Flame* gameOverOKButtonFlame = nullptr;
+	Flame* gameOverRetryButtonFlame = nullptr;
 
 	TTF_Font* titleMusnakeFont = nullptr;  // 标题，游戏名的字体
 	TTF_Font* titleAuthorFont = nullptr;  // 标题下角的作者名字体

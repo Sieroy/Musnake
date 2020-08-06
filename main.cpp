@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
 	Mix_Init(MIX_INIT_MP3);
 	TTF_Init();
 
-	window = SDL_CreateWindow("Musnake", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_RESIZABLE);
+	window = SDL_CreateWindow("Musnake", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
 	render = SDL_CreateRenderer(window, -1, 0);
 	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
 	musnakeState = MU_STATE_RUNNING;
@@ -240,19 +240,19 @@ void load(SDL_Renderer* render) {
 	// 装载BACK提示标
 	catPath(tmpPath, (char*)"image\\button_back.png");
 	picSurf = IMG_Load(tmpPath);
-	menuBackButtonFlame = new Flame(picSurf, NULL, -1);
+	menuBackButtonFlame = gamePauseBackButtonLFlame = gameOverBackButtonFlame = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
 	// 装载UP提示标
 	catPath(tmpPath, (char*)"image\\button_up.png");
 	picSurf = IMG_Load(tmpPath);
-	menuUpButtonFlame = new Flame(picSurf, NULL, -1);
+	menuUpButtonFlame = gamePauseUpButtonFlame = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
 	// 装载DOWN提示标
 	catPath(tmpPath, (char*)"image\\button_down.png");
 	picSurf = IMG_Load(tmpPath);
-	menuDownButtonFlame = new Flame(picSurf, NULL, -1);
+	menuDownButtonFlame = gamePauseDownButtonFlame = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
 	// 装载PLAY提示标
@@ -292,6 +292,18 @@ void load(SDL_Renderer* render) {
 	catPath(tmpPath, (char*)"image\\button_back_c.png");
 	picSurf = IMG_Load(tmpPath);
 	gamePauseBackButtonFlame[1] = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
+	// 装载RETRY提示标
+	catPath(tmpPath, (char*)"image\\button_retry.png");
+	picSurf = IMG_Load(tmpPath);
+	gameOverRetryButtonFlame = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
+	// 装载OK提示标
+	catPath(tmpPath, (char*)"image\\button_ok.png");
+	picSurf = IMG_Load(tmpPath);
+	gameOverOKButtonFlame = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
 	// 装载Note图
