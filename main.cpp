@@ -8,6 +8,7 @@
 
 #include"MU_declaration.h"
 #include"MU_flame.h"
+#include"MU_file.h"
 #include"MU_path.h"
 #include"MU_game.h"
 
@@ -18,13 +19,15 @@ SDL_Window* window;
 
 void load(SDL_Renderer* render);
 void drawStart(SDL_Renderer* render);
-void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning);
+void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, int* turningLevel, int* turningClass);
 
 int main(int argc, char* argv[]) {
 	SDL_Event evt;
 	SDL_Surface* tmpSurf = nullptr;
-	LevelPanel* nowLevel = nullptr;
+	Level* nowLevel = nullptr;
+	LevelClass* nowClass = nullptr;
 	int panelTurning = 0;
+	int classTurning = 0;
 
 	initPath(argv[0]);
 	SDL_Init(SDL_INIT_EVERYTHING);
@@ -38,7 +41,8 @@ int main(int argc, char* argv[]) {
 	musnakeState = MU_STATE_RUNNING;
 
 	load(render);
-	nowLevel = levels;
+	nowLevel = levelClasses->levels;
+	nowClass = levelClasses;
 	SDL_SetRenderDrawBlendMode(render, SDL_BLENDMODE_BLEND);
 	SDL_SetRenderDrawColor(render, 0, 0, 0, 150);
 
@@ -83,19 +87,25 @@ __menu:
 			case SDL_KEYDOWN:
 				switch (evt.key.keysym.sym) {
 				case SDLK_ESCAPE:
-					if (!panelTurning) {
+					if (!(panelTurning || classTurning)) {
 						Mix_FadeOutMusic(100);
 						goto __start;
 					}
 					break;
 				case SDLK_UP:
-					if (!panelTurning) panelTurning = -200;
+					if (!(panelTurning || classTurning)) panelTurning = -200;
 					break;
 				case SDLK_DOWN:
-					if (!panelTurning) panelTurning = 200;
+					if (!(panelTurning || classTurning)) panelTurning = 200;
+					break;
+				case SDLK_LEFT:
+					if (!(panelTurning || classTurning)) classTurning = -200;
+					break;
+				case SDLK_RIGHT:
+					if (!(panelTurning || classTurning)) classTurning = 200;
 					break;
 				case SDLK_RETURN:
-					if (!panelTurning) {
+					if (!(panelTurning || classTurning)) {
 						musnakeState = MU_STATE_GAMING;
 						while (musnakeState == MU_STATE_GAMING) {
 							Mix_HaltMusic();
@@ -111,7 +121,7 @@ __menu:
 				}
 			}
 		}
-		drawPanels(render, &nowLevel, &panelTurning);
+		drawPanels(render, &nowLevel,&nowClass, &panelTurning, &classTurning);
 		SDL_RenderPresent(render);
 	}
 	
@@ -130,6 +140,7 @@ void load(SDL_Renderer* render) {
 	SDL_Surface* picSurf, * tmpSurf;
 	SDL_Texture* tmpTex;
 	SDL_Color tmpColor = { 255, 255, 255, 255 };
+	SDL_Rect tmpRect = { 0,0,170,1000 };
 
 	// 这里定位文件的位置
 	char tmpPath[256];
@@ -155,71 +166,10 @@ void load(SDL_Renderer* render) {
 	gameWinSongnameFont =
 	gameWinScorelabelFont = 
 	gameWinLengthlabelFont = 
-	gamePauseNotChosenFont = TTF_OpenFont(tmpPath, 30);
-	gamePauseChosenFont = TTF_OpenFont(tmpPath, 40);
+	menuClassNameFont = TTF_OpenFont(tmpPath, 30);
 
 	// 装载曲目信息
-	catPath(tmpPath, (char*)"level\\list.mu");
-	SDL_RWops* f = SDL_RWFromFile(tmpPath, "r");
-	char c, * nsp = &c;
-	char ss[48];
-	LevelPanel* lp = nullptr;
-	SDL_Color tfg = { 255, 255, 255, 255 };
-	while (SDL_RWread(f, &c, 1, 1)) {
-		switch (c) {  // 遇见换行，就要开新的曲表了
-		case '\n':
-			if (lp) {  // 并非第一行的情况
-				*nsp = 0;
-				if (*(--nsp) == '\r') *nsp = 0;  // 兼容Windows下的逗逼换行
-				lp->timev = str2int(ss);
-				lp->next = new LevelPanel;
-				lp->next->prev = lp;
-				lp = lp->next;
-				nsp = lp->name;
-			}
-			else {  // 第一行的情况
-				levels = lp = new LevelPanel;
-				nsp = lp->name;
-			}
-			break;
-		case '`':  // 名字已经读完了
-			*nsp = 0;
-			// 装载这些曲目的试听段和封面绘图
-			SDL_strlcpy(ss, "level\\", 48);
-			SDL_strlcat(ss, lp->name, 48);
-			SDL_strlcat(ss, "\\sample.mp3", 48);
-			catPath(tmpPath, ss);
-			lp->sample = Mix_LoadMUS(tmpPath);
-			SDL_strlcpy(ss, "level\\", 48);
-			SDL_strlcat(ss, lp->name, 48);
-			SDL_strlcat(ss, "\\cover.png", 48);
-			catPath(tmpPath, ss);
-			tmpSurf = IMG_Load(tmpPath);
-			lp->cover = new Flame(SDL_CreateTextureFromSurface(render, tmpSurf), -1);
-			SDL_FreeSurface(tmpSurf);
-			tmpSurf = TTF_RenderUTF8_Blended(menuSongnameFont, lp->name, tfg);
-			lp->nameFlm = new Flame(tmpSurf, NULL, -1);
-			SDL_FreeSurface(tmpSurf);
-			nsp = lp->time;
-			break;
-		case '^':
-			*nsp = 0;
-			tmpSurf = TTF_RenderText_Blended(menuSongtimeFont, lp->time, tfg);
-			lp->timeFlm = new Flame(tmpSurf, NULL, -1);
-			SDL_FreeSurface(tmpSurf);
-			nsp = ss;
-			break;
-		default:
-			*nsp = c;
-			nsp++;
-			break;
-		}
-	}  // 最后闭合成环
-	*nsp = 0;
-	lp->timev = str2int(ss);
-	lp->next = levels;
-	levels->prev = lp;
-	SDL_RWclose(f);
+	loadLevels();
 
 	// 装载标题界面BGM
 	catPath(tmpPath, (char*)"sound\\bgm.mp3");
@@ -229,6 +179,10 @@ void load(SDL_Renderer* render) {
 	catPath(tmpPath, (char*)"image\\menu_bg.png");
 	picSurf = IMG_Load(tmpPath);
 	titleBGFlame = new Flame(picSurf, NULL, -1);
+	titleLBGFlame = new Flame(picSurf, &tmpRect, -1);
+	tmpRect.x = 780;
+	tmpRect.w = 20;
+	titleRBGFlame = new Flame(picSurf, &tmpRect, -1);
 	SDL_FreeSurface(picSurf);
 
 	// 装载ENTER提示标
@@ -259,6 +213,12 @@ void load(SDL_Renderer* render) {
 	catPath(tmpPath, (char*)"image\\button_play.png");
 	picSurf = IMG_Load(tmpPath);
 	menuPlayButtonFlame = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
+	// 装载CLASS提示标
+	catPath(tmpPath, (char*)"image\\button_class.png");
+	picSurf = IMG_Load(tmpPath);
+	menuClassButtonFlame = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
 	// 装载RESUME提示标
@@ -475,46 +435,140 @@ void drawStart(SDL_Renderer* render) {  // 绘制游戏开始页面
 	titleAuthorFlame->draw(render, 5, 570);
 }
 
-void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning) {
+void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, int* turningLevel, int* turningClass) {
 	static int dt = 0;
 	static int turningFlag = 0;
 	SDL_Rect prect = { 170, 0, 610, 600 };
-	LevelPanel* panel = *nowPanel;
+	Level* panel = *nowPanel;
+	LevelClass* levelClass = *nowClass;
 	dt += getTimeDelta();
 	dt %= 3290;
 	titleBGFlame->draw(render, 0, -dt / 10);
-	menuBackButtonFlame->draw(render, 0, 0);
-	menuUpButtonFlame->draw(render, 0, 100);
-	menuDownButtonFlame->draw(render, 0, 170);
-	menuPlayButtonFlame->draw(render, 0, 520);
 	SDL_RenderFillRect(render, &prect);
-	if (!*turning) {  // 仅绘制当前曲目
-		SDL_Rect rect = {200, 200, 200, 200};
-		panel->cover->draw(render, &rect);
-		panel->nameFlm->draw(render, 430, 200);
-		panel->timeFlm->draw(render, 430, 250);
-		//drawText(render, panel->name, 430, 200, 20);
-		//drawText(render, panel->time, 430, 250, 16);
+	if (!*turningClass) {  // 没有切换曲包
+		menuBackButtonFlame->draw(render, 0, 0);
+		menuUpButtonFlame->draw(render, 0, 100);
+		menuDownButtonFlame->draw(render, 0, 170);
+		menuPlayButtonFlame->draw(render, 0, 520);
+		if (!*turningLevel) {  // 仅绘制当前曲目
+			SDL_Rect rect = {200, 200, 200, 200};
+			panel->cover->draw(render, &rect);
+			panel->nameFlm->draw(render, 430, 200);
+			panel->timeFlm->draw(render, 430, 250);
+		}
+		else if (*turningLevel > 0) {  // 向下滚动，面板要有向上移动的效果
+			Level* lp = panel->next;
+			SDL_Rect re1 = { 200, 200 + *turningLevel * 3, 200, 200 }, re2 = { 200, -400 + *turningLevel * 3, 200, 200 };
+			if (turningFlag == 0) {  // 滚动后的首次调用
+				turningFlag = 1;  // 1代表原先的音乐正处结束状态
+				Mix_FadeOutMusic(190);
+			}
+			lp->cover->draw(render, &re1);
+			lp->nameFlm->draw(render, 430, 200 + *turningLevel * 3);
+			lp->timeFlm->draw(render, 430, 250 + *turningLevel * 3);
+
+			panel->cover->draw(render, &re2);
+			panel->nameFlm->draw(render, 430, -400 + *turningLevel * 3);
+			panel->timeFlm->draw(render, 430, -350 + *turningLevel * 3);
+
+			*turningLevel -= getTimeDelta();
+			if (*turningLevel <= 0) {
+				SDL_RenderClear(render);
+				titleBGFlame->draw(render, 0, -dt / 10);
+				menuBackButtonFlame->draw(render, 0, 0);
+				menuUpButtonFlame->draw(render, 0, 100);
+				menuDownButtonFlame->draw(render, 0, 170);
+				menuPlayButtonFlame->draw(render, 0, 520);
+				SDL_RenderFillRect(render, &prect);
+				re1.y = 200;
+				lp->cover->draw(render, &re1);
+				lp->nameFlm->draw(render, 430, 200);
+				lp->timeFlm->draw(render, 430, 250);
+
+				menuClassButtonFlame->draw(render, 275, 30);
+				(*nowClass)->nameFlm->draw(render, 412, 37);
+
+				SDL_RenderPresent(render);
+
+				*turningLevel = 0;
+				turningFlag = 0;
+				Mix_PlayMusic(lp->sample, -1);
+				*nowPanel = lp;
+			}
+		}
+		else if (*turningLevel < 0) {  // 向上滚动，面板要有向下移动的效果
+			Level* lp = panel->prev;
+			SDL_Rect re1 = { 200, 200 + *turningLevel * 3, 200, 200 }, re2 = { 200, 800 + *turningLevel * 3, 200, 200 };
+			if (turningFlag == 0) {  // 滚动后的首次调用
+				turningFlag = 1;  // 1代表原先的音乐正处结束状态
+				Mix_FadeOutMusic(190);
+			}
+			lp->cover->draw(render, &re1);
+			lp->nameFlm->draw(render, 430, 200 + *turningLevel * 3);
+			lp->timeFlm->draw(render, 430, 250 + *turningLevel * 3);
+
+			panel->cover->draw(render, &re2);
+			panel->nameFlm->draw(render, 430, 800 + *turningLevel * 3);
+			panel->timeFlm->draw(render, 430, 850 + *turningLevel * 3);
+
+			*turningLevel += getTimeDelta();
+			if (*turningLevel >= 0) {
+				SDL_RenderClear(render);
+				titleBGFlame->draw(render, 0, -dt / 10);
+				menuBackButtonFlame->draw(render, 0, 0);
+				menuUpButtonFlame->draw(render, 0, 100);
+				menuDownButtonFlame->draw(render, 0, 170);
+				menuPlayButtonFlame->draw(render, 0, 520);
+				SDL_RenderFillRect(render, &prect);
+				re1.y = 200;
+				lp->cover->draw(render, &re1);
+				lp->nameFlm->draw(render, 430, 200);
+				lp->timeFlm->draw(render, 430, 250);
+
+				menuClassButtonFlame->draw(render, 275, 30);
+				(*nowClass)->nameFlm->draw(render, 412, 37);
+
+				SDL_RenderPresent(render);
+
+				*turningLevel = 0;
+				turningFlag = 0;
+				Mix_PlayMusic(lp->sample, -1);
+				*nowPanel = lp;
+			}
+		}
+		menuClassButtonFlame->draw(render, 275, 30);
+		levelClass->nameFlm->draw(render, 412, 37);
 	}
-	else if (*turning > 0) {  // 向下滚动，面板要有向上移动的效果
-		LevelPanel* lp = panel->next;
-		SDL_Rect re1 = { 200, 200 + *turning * 3, 200, 200 }, re2 = { 200, -400 + *turning * 3, 200, 200 };
-		if (turningFlag == 0) {  // 滚动后的首次调用
-			turningFlag = 1;  // 1代表原先的音乐正处结束状态
+	else if (*turningClass > 0) {  // 曲包左移
+		LevelClass* clp = levelClass->next;
+		Level* lp = clp->levels;
+		SDL_Rect re1 = { 200 + *turningClass * 3, 200, 200, 200 }, re2 = { -400 + *turningClass * 3,200, 200, 200 };
+		if (turningFlag == 0) {
+			turningFlag = 1;
 			Mix_FadeOutMusic(190);
 		}
+		menuClassButtonFlame->draw(render, 275 + *turningClass * 3, 30);
+		menuClassButtonFlame->draw(render, -325 + *turningClass * 3, 30);
+		levelClass->nameFlm->draw(render, -188 + *turningClass * 3, 37);
+		clp->nameFlm->draw(render, 412 + *turningClass * 3, 37);
+
 		lp->cover->draw(render, &re1);
-		lp->nameFlm->draw(render, 430, 200 + *turning * 3);
-		lp->timeFlm->draw(render, 430, 250 + *turning * 3);
-		//drawText(render, lp->name, 430, 200 + *turning * 3, 20);
-		//drawText(render, lp->time, 430, 250 + *turning * 3, 16);
+		lp->nameFlm->draw(render, 430 + *turningClass * 3, 200);
+		lp->timeFlm->draw(render, 430 + *turningClass * 3, 250);
+
 		panel->cover->draw(render, &re2);
-		panel->nameFlm->draw(render, 430, -400 + *turning * 3);
-		panel->timeFlm->draw(render, 430, -350 + *turning * 3);
-		//drawText(render, panel->name, 430, -400 + *turning * 3, 20);
-		//drawText(render, panel->time, 430, -350 + *turning * 3, 16);
-		*turning -= getTimeDelta();
-		if (*turning <= 0) {
+		panel->nameFlm->draw(render, -170 + *turningClass * 3, 200);
+		panel->timeFlm->draw(render, -170 + *turningClass * 3, 250);
+
+		titleLBGFlame->draw(render, 0, -dt / 10);
+		titleRBGFlame->draw(render, 780, -dt / 10);
+		menuBackButtonFlame->draw(render, 0, 0);
+		menuUpButtonFlame->draw(render, 0, 100);
+		menuDownButtonFlame->draw(render, 0, 170);
+		menuPlayButtonFlame->draw(render, 0, 520);
+
+		*turningClass -= getTimeDelta();
+		if (*turningClass <= 0) {
 			SDL_RenderClear(render);
 			titleBGFlame->draw(render, 0, -dt / 10);
 			menuBackButtonFlame->draw(render, 0, 0);
@@ -522,39 +576,54 @@ void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning) {
 			menuDownButtonFlame->draw(render, 0, 170);
 			menuPlayButtonFlame->draw(render, 0, 520);
 			SDL_RenderFillRect(render, &prect);
-			re1.y = 200;
+
+			menuClassButtonFlame->draw(render, 275, 30);
+			clp->nameFlm->draw(render, 412, 37);
+
+			re1.x = 200;
 			lp->cover->draw(render, &re1);
 			lp->nameFlm->draw(render, 430, 200);
 			lp->timeFlm->draw(render, 430, 250);
-			//drawText(render, lp->name, 430, 200, 20);
-			//drawText(render, lp->time, 430, 250, 16);
+
 			SDL_RenderPresent(render);
 
-			*turning = 0;
+			*turningClass = 0;
 			turningFlag = 0;
 			Mix_PlayMusic(lp->sample, -1);
+			*nowClass = clp;
 			*nowPanel = lp;
 		}
 	}
-	else if (*turning < 0) {  // 向上滚动，面板要有向下移动的效果
-		LevelPanel* lp = panel->prev;
-		SDL_Rect re1 = { 200, 200 + *turning * 3, 200, 200 }, re2 = { 200, 800 + *turning * 3, 200, 200 };
-		if (turningFlag == 0) {  // 滚动后的首次调用
-			turningFlag = 1;  // 1代表原先的音乐正处结束状态
+	else if (*turningClass < 0) {  // 曲包右移
+		LevelClass* clp = levelClass->prev;
+		Level* lp = clp->levels;
+		SDL_Rect re1 = { 200 + *turningClass * 3, 200, 200, 200 }, re2 = { 800 + *turningClass * 3, 200, 200, 200 };
+		if (turningFlag == 0) {
+			turningFlag = 1;
 			Mix_FadeOutMusic(190);
 		}
+		menuClassButtonFlame->draw(render, 275 + *turningClass * 3, 30);
+		menuClassButtonFlame->draw(render, 875 + *turningClass * 3, 30);
+		levelClass->nameFlm->draw(render, 1012 + *turningClass * 3, 37);
+		clp->nameFlm->draw(render, 412 + *turningClass * 3, 37);
+
 		lp->cover->draw(render, &re1);
-		lp->nameFlm->draw(render, 430, 200 + *turning * 3);
-		lp->timeFlm->draw(render, 430, 250 + *turning * 3);
-		//drawText(render, lp->name, 430, 200 + *turning * 3, 20);
-		//drawText(render, lp->time, 430, 250 + *turning * 3, 16);
+		lp->nameFlm->draw(render, 430 + *turningClass * 3, 200);
+		lp->timeFlm->draw(render, 430 + *turningClass * 3, 250);
+
 		panel->cover->draw(render, &re2);
-		panel->nameFlm->draw(render, 430, 800 + *turning * 3);
-		panel->timeFlm->draw(render, 430, 850 + *turning * 3);
-		//drawText(render, panel->name, 430, 800 + *turning * 3, 20);
-		//drawText(render, panel->time, 430, 850 + *turning * 3, 16);
-		*turning += getTimeDelta();
-		if (*turning >= 0) {
+		panel->nameFlm->draw(render, 1030 + *turningClass * 3, 200);
+		panel->timeFlm->draw(render, 1030 + *turningClass * 3, 250);
+
+		titleLBGFlame->draw(render, 0, -dt / 10);
+		titleRBGFlame->draw(render, 780, -dt / 10);
+		menuBackButtonFlame->draw(render, 0, 0);
+		menuUpButtonFlame->draw(render, 0, 100);
+		menuDownButtonFlame->draw(render, 0, 170);
+		menuPlayButtonFlame->draw(render, 0, 520);
+
+		*turningClass += getTimeDelta();
+		if (*turningClass >= 0) {
 			SDL_RenderClear(render);
 			titleBGFlame->draw(render, 0, -dt / 10);
 			menuBackButtonFlame->draw(render, 0, 0);
@@ -562,18 +631,24 @@ void drawPanels(SDL_Renderer* render, LevelPanel** nowPanel, int* turning) {
 			menuDownButtonFlame->draw(render, 0, 170);
 			menuPlayButtonFlame->draw(render, 0, 520);
 			SDL_RenderFillRect(render, &prect);
-			re1.y = 200;
+
+			menuClassButtonFlame->draw(render, 275, 30);
+			clp->nameFlm->draw(render, 412, 37);
+
+			re1.x = 200;
 			lp->cover->draw(render, &re1);
 			lp->nameFlm->draw(render, 430, 200);
 			lp->timeFlm->draw(render, 430, 250);
-			//drawText(render, lp->name, 430, 200, 20);
-			//drawText(render, lp->time, 430, 250, 16);
+
 			SDL_RenderPresent(render);
 
-			*turning = 0;
+			*turningClass = 0;
 			turningFlag = 0;
 			Mix_PlayMusic(lp->sample, -1);
+			*nowClass = clp;
 			*nowPanel = lp;
 		}
 	}
+
+
 }

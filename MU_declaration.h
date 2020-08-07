@@ -1,6 +1,7 @@
 #pragma once
 
 #include <random>
+#include <time.h>
 #include "SDL.h"
 #include "SDL_ttf.h"
 
@@ -183,6 +184,8 @@ namespace musnake {
 	Flame* charFlame[96] = { nullptr };  // 绘制文字要用的帧，从ASCII-32开始
 
 	Flame* titleBGFlame = nullptr;
+	Flame* titleLBGFlame = nullptr;
+	Flame* titleRBGFlame = nullptr;
 	Flame* titleMusnakeFlame = nullptr;
 	Flame* titleAuthorFlame = nullptr;
 	Flame* gamePauseBGMask = nullptr;
@@ -194,6 +197,7 @@ namespace musnake {
 	Flame* menuUpButtonFlame = nullptr;
 	Flame* menuDownButtonFlame = nullptr;
 	Flame* menuPlayButtonFlame = nullptr;
+	Flame* menuClassButtonFlame = nullptr;
 	Flame* gamePauseBackButtonLFlame = nullptr;
 	Flame* gamePauseUpButtonFlame = nullptr;
 	Flame* gamePauseDownButtonFlame = nullptr;
@@ -206,6 +210,7 @@ namespace musnake {
 
 	TTF_Font* titleMusnakeFont = nullptr;  // 标题，游戏名的字体
 	TTF_Font* titleAuthorFont = nullptr;  // 标题下角的作者名字体
+	TTF_Font* menuClassNameFont = nullptr;  // 菜单处分区名字体
 	TTF_Font* menuSongnameFont = nullptr;  // 菜单处歌名字体
 	TTF_Font* menuSongtimeFont = nullptr;  // 菜单处歌曲时长字体
 	TTF_Font* gameScorelabelFont = nullptr;  // 游戏时分数提示文字字体
@@ -214,8 +219,6 @@ namespace musnake {
 	TTF_Font* gameCombonumFont = nullptr;  // 游戏时连击数字字体
 	TTF_Font* gamePauseTitleFont = nullptr;  // 游戏暂停标题字体
 	TTF_Font* gamePauseSongnameFont = nullptr;  // 游戏暂停歌名字体
-	TTF_Font* gamePauseChosenFont = nullptr;  // 游戏暂停被选择项字体
-	TTF_Font* gamePauseNotChosenFont = nullptr;  // 游戏暂停未选择项字体
 	TTF_Font* gameWinSongnameFont = nullptr;  // 游戏通关页的歌曲名字体
 	TTF_Font* gameWinScorelabelFont = nullptr;  // 游戏通关得分提示文字字体
 	TTF_Font* gameWinScorenumFont = nullptr;  // 游戏通关得分数字字体
@@ -227,7 +230,7 @@ namespace musnake {
 	Game* thisGame = nullptr;  // 当前进行中的游戏对象（鱼，好大的鱼，虎纹鲨鱼……）
 	int noteDelta = 60;  // 节奏偏移
 
-	std::default_random_engine Rander;  // 随机数生成器
+	std::default_random_engine Rander(time(NULL));  // 随机数生成器
 
 	void drawText(SDL_Renderer* render, char* text, int x, int y, int size);
 
@@ -235,7 +238,8 @@ namespace musnake {
 	// ================================ MU_menu.h ================================
 	// 现阶段还没建这个标头
 
-	typedef struct _LevelPanel {
+	typedef struct _Level {
+		char id[4];  // 最多3位ID号，用来确定路径
 		char name[32];  // 10个汉字，勉勉强强吧
 		char time[8];  // h:mm:ss，不会有比这还长的曲子了吧？即使有我也不会往游戏里加~
 		int timev;  // 总时间ms
@@ -243,8 +247,22 @@ namespace musnake {
 		Flame* cover;  // 封面
 		Flame* nameFlm;
 		Flame* timeFlm;
-		struct _LevelPanel* prev;
-		struct _LevelPanel* next;
-	}LevelPanel;
-	LevelPanel* levels = nullptr;
+		struct _Level* prev;
+		struct _Level* next;
+	}Level;
+
+	typedef struct _LevelClass {
+		char name[32];
+		Level* levels;
+		Flame* nameFlm;
+		struct _LevelClass* prev;
+		struct _LevelClass* next;
+	}LevelClass;
+
+	LevelClass* levelClasses = nullptr;
+
+
+	// ================================ MU_file.h ================================
+	void loadLevels();
+
 }

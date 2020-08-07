@@ -50,12 +50,12 @@ public:
 	// 刷新延时函数和Note的时延值，在开局和结束暂停时调用
 	void refreshTime(int delta);
 
-	void init(LevelPanel* lp);
+	void init(Level* lp);
 
 	void draw();
 
 private:
-	char level[32] = "level\\";
+	char levelPath[32] = "level\\";
 	unsigned short combo = 0;  // 连击数
 	unsigned short noteCount = 0;  // 总的音符数
 	unsigned int score = 0;  // 得分
@@ -64,7 +64,7 @@ private:
 	short fever = 0;  // FEVER状态，2倍得分
 	unsigned short length = 4;  // 一局游戏吃65531个苹果？那就真的NB了，按照0.1s的移动锁，这即使是欧皇在玩也要玩上个俩小时
 
-	LevelPanel* levelinfo = nullptr;
+	Level* levelinfo = nullptr;
 	Note* note = nullptr;  // 节拍
 	Food* food = nullptr;  // 食物
 	Mix_Music* bgm = nullptr;  // BGM
@@ -89,6 +89,7 @@ musnake::Game::~Game() {
 	}
 	// 再把蛇的释放加上吧，利用蛇的半递归析构应该不难
 	delete snakeHead;
+	if (food) delete food;
 
 	clearDelayFunc(&timingFunc);
 	clearNotes(&note);
@@ -97,7 +98,7 @@ musnake::Game::~Game() {
 	Mix_FreeMusic(bgm);
 }
 
-void musnake::Game::init(LevelPanel* lp){
+void musnake::Game::init(Level* lp){
 	// 按说这里应该是从配置文件里读数据来初始化地格的，现阶段就先写死吧
 	SDL_Surface* picSurf, * tmpSurf;
 	SDL_Texture* tmpTex;
@@ -105,7 +106,7 @@ void musnake::Game::init(LevelPanel* lp){
 	state = MU_GAME_STATE_LOADING;
 
 	levelinfo = lp;
-	SDL_strlcat(level, lp->name, 25);
+	SDL_strlcat(levelPath, lp->id, 25);
 
 	// 这里定位文件的位置
 	char tmpPath[256];
@@ -113,13 +114,13 @@ void musnake::Game::init(LevelPanel* lp){
 	// 关卡路径
 	char levelfile[64];
 	// 装载关卡音乐
-	SDL_strlcpy(levelfile, level, 64);
+	SDL_strlcpy(levelfile, levelPath, 64);
 	SDL_strlcat(levelfile, "\\bgm.mp3", 64);
 	catPath(tmpPath, levelfile);
 	bgm = Mix_LoadMUS(tmpPath);
 
 	// 装载关卡的节拍
-	SDL_strlcpy(levelfile, level, 64);
+	SDL_strlcpy(levelfile, levelPath, 64);
 	SDL_strlcat(levelfile, "\\notes.mu", 64);
 	catPath(tmpPath, levelfile);
 	SDL_RWops* f = SDL_RWFromFile(tmpPath, "r");
