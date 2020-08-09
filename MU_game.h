@@ -54,6 +54,8 @@ public:
 
 	void draw();
 
+	void loadMap();
+
 private:
 	char levelPath[32] = "level\\";
 	unsigned short combo = 0;  // 连击数
@@ -167,31 +169,32 @@ void musnake::Game::init(Level* lp){
 
 	// 特化一下我们的小蛇
 
-	Snake* sp[4];
-	gameMap[7][3]->setSnake(sp[0] = new Snake);
-	sp[0]->setTailDir(MU_SNAKE_DIRECT_LEFT);
-	gameMap[6][3]->setSnake(sp[1] = new Snake);
-	sp[1]->setHeadDir(MU_SNAKE_DIRECT_RIGHT);
-	sp[1]->setTailDir(MU_SNAKE_DIRECT_LEFT);
-	gameMap[5][3]->setSnake(sp[2] = new Snake);
-	sp[2]->setHeadDir(MU_SNAKE_DIRECT_RIGHT);
-	sp[2]->setTailDir(MU_SNAKE_DIRECT_LEFT);
-	gameMap[4][3]->setSnake(sp[3] = new Snake);
-	sp[3]->setHeadDir(MU_SNAKE_DIRECT_RIGHT);
+	// Snake* sp[4];
+	// gameMap[7][3]->setSnake(sp[0] = new Snake);
+	// sp[0]->setTailDir(MU_SNAKE_DIRECT_LEFT);
+	// gameMap[6][3]->setSnake(sp[1] = new Snake);
+	// sp[1]->setHeadDir(MU_SNAKE_DIRECT_RIGHT);
+	// sp[1]->setTailDir(MU_SNAKE_DIRECT_LEFT);
+	// gameMap[5][3]->setSnake(sp[2] = new Snake);
+	// sp[2]->setHeadDir(MU_SNAKE_DIRECT_RIGHT);
+	// sp[2]->setTailDir(MU_SNAKE_DIRECT_LEFT);
+	// gameMap[4][3]->setSnake(sp[3] = new Snake);
+	// sp[3]->setHeadDir(MU_SNAKE_DIRECT_RIGHT);
 
-	setSnakeHead(sp[0]);
-	sp[0]->setNext(sp[1]);
-	sp[1]->setNext(sp[2]);
-	sp[2]->setNext(sp[3]);
-	setSnakeTail(sp[3]);
-	sp[3]->setPrev(sp[2]);
-	sp[2]->setPrev(sp[1]);
-	sp[1]->setPrev(sp[0]);
+	// setSnakeHead(sp[0]);
+	// sp[0]->setNext(sp[1]);
+	// sp[1]->setNext(sp[2]);
+	// sp[2]->setNext(sp[3]);
+	// setSnakeTail(sp[3]);
+	// sp[3]->setPrev(sp[2]);
+	// sp[2]->setPrev(sp[1]);
+	// sp[1]->setPrev(sp[0]);
 
-	sp[0]->setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_LEFT]);
-	sp[1]->setFlame(snakeFlame[MU_SNAKE_FLAME_BODY_RIGHTLEFT]);
-	sp[2]->setFlame(snakeFlame[MU_SNAKE_FLAME_BODY_RIGHTLEFT]);
-	sp[3]->setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHT]);
+	// sp[0]->setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_LEFT]);
+	// sp[1]->setFlame(snakeFlame[MU_SNAKE_FLAME_BODY_RIGHTLEFT]);
+	// sp[2]->setFlame(snakeFlame[MU_SNAKE_FLAME_BODY_RIGHTLEFT]);
+	// sp[3]->setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHT]);
+	loadMap();
 }
 
 inline void musnake::Game::setRenderer(SDL_Renderer* render) {

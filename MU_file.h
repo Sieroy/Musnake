@@ -2,6 +2,7 @@
 #pragma warning(disable : 4996)
 
 #include <fstream>
+#include <iostream>
 #include "json/json.h"
 #include "SDL.h"
 #include "SDL_ttf.h"
@@ -11,6 +12,7 @@
 #include "MU_declaration.h"
 #include "MU_path.h"
 #include "MU_Flame.h"
+#include "MU_game.h"
 
 void musnake::loadLevels() {
 	SDL_Surface* tmpSurf;
@@ -79,3 +81,132 @@ void musnake::loadLevels() {
 	levelClasses->prev = clp;
 }
 
+void musnake::Game::loadMap() {
+	Json::Reader reader;
+	Json::Value levelRoot;
+	char tmpStr[256];
+	catPath(tmpStr, (char*)"map\\maps.mu");
+	std::ifstream ifs(tmpStr, std::ios::binary);
+
+	reader.parse(ifs, levelRoot);
+	int tailNum = levelRoot[levelinfo->id]["tailNum"].asInt();
+	Snake *oldSnake, *newSnake;
+	int oldx, oldy;
+	oldx = oldy = -1;
+	oldSnake = newSnake = nullptr;
+	for( int i = 0; i < tailNum; i++ ){
+		int x, y;
+		x = levelRoot[levelinfo->id]["tailPos"][i]["x"].asInt();
+		y = levelRoot[levelinfo->id]["tailPos"][i]["y"].asInt();
+		gameMap[x][y]->setSnake( newSnake = new Snake );
+		if( oldSnake ) {
+			if( x > oldx ) {
+				newSnake->setHeadDir(MU_SNAKE_DIRECT_LEFT);
+				oldSnake->setTailDir(MU_SNAKE_DIRECT_RIGHT);
+				Snake *oldoldSnake = oldSnake->getPrev();
+				if( !oldoldSnake ) {
+					oldSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_RIGHT]);
+				}
+				else {
+					if( oldoldSnake->getTailDir() == MU_SNAKE_DIRECT_DOWN ){
+						oldSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_BODY_UPRIGHT]);
+					}
+					else if( oldoldSnake->getTailDir() == MU_SNAKE_DIRECT_UP ){
+						oldSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_BODY_RIGHTDOWN]);
+					}
+					else {
+						oldSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_BODY_RIGHTLEFT]);
+					}
+				}
+				
+			}
+			else if( x < oldx ) {
+				newSnake->setHeadDir(MU_SNAKE_DIRECT_RIGHT);
+				oldSnake->setTailDir(MU_SNAKE_DIRECT_LEFT);
+				Snake *oldoldSnake = oldSnake->getPrev();
+				if( !oldoldSnake ) {
+					oldSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_LEFT]);
+				}
+				else {
+					if( oldoldSnake->getTailDir() == MU_SNAKE_DIRECT_DOWN ){
+						oldSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_BODY_UPLEFT]);
+					}
+					else if( oldoldSnake->getTailDir() == MU_SNAKE_DIRECT_UP ){
+						oldSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_BODY_DOWNLEFT]);
+					}
+					else {
+						oldSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_BODY_RIGHTLEFT]);
+					}
+				}
+			}
+			else if( y > oldy ) {
+				newSnake->setHeadDir(MU_SNAKE_DIRECT_UP);
+				oldSnake->setTailDir(MU_SNAKE_DIRECT_DOWN);
+				Snake *oldoldSnake = oldSnake->getPrev();
+				if( !oldoldSnake ) {
+					oldSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_DOWN]);
+				}
+				else {
+					if( oldoldSnake->getTailDir() == MU_SNAKE_DIRECT_RIGHT ){
+						oldSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_BODY_DOWNLEFT]);
+					}
+					else if( oldoldSnake->getTailDir() == MU_SNAKE_DIRECT_LEFT ){
+						oldSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_BODY_RIGHTDOWN]);
+					}
+					else {
+						oldSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_BODY_UPDOWN]);
+					}
+				}
+			}
+			else if( y < oldy ) {
+				newSnake->setHeadDir(MU_SNAKE_DIRECT_DOWN);
+				oldSnake->setTailDir(MU_SNAKE_DIRECT_UP);
+				Snake *oldoldSnake = oldSnake->getPrev();
+				if( !oldoldSnake ) {
+					oldSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_UP]);
+				}
+				else {
+					if( oldoldSnake->getTailDir() == MU_SNAKE_DIRECT_LEFT ){
+						oldSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_BODY_UPRIGHT]);
+					}
+					else if( oldoldSnake->getTailDir() == MU_SNAKE_DIRECT_RIGHT ){
+						oldSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_BODY_UPLEFT]);
+					}
+					else {
+						oldSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_BODY_UPDOWN]);
+					}
+				}
+			}
+
+			newSnake->setPrev(oldSnake);
+			oldSnake->setNext(newSnake);
+		}
+		else
+		{
+			setSnakeHead(newSnake);
+		}
+		
+		oldSnake = newSnake;
+		oldx = x;
+		oldy = y;
+	}
+	int lastDir = newSnake->getHeadDir();
+	if( lastDir == MU_SNAKE_DIRECT_DOWN )
+		newSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_DOWN]);
+	else if( lastDir == MU_SNAKE_DIRECT_UP )
+		newSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_UP]);
+	else if( lastDir == MU_SNAKE_DIRECT_LEFT )
+		newSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFT]);
+	else if( lastDir == MU_SNAKE_DIRECT_RIGHT )
+		newSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHT]);
+	setSnakeTail(newSnake);
+	int foodx, foody;
+	foodx = levelRoot[levelinfo->id]["foodPos"]["x"].asInt();
+	foody = levelRoot[levelinfo->id]["foodPos"]["y"].asInt();
+	if( foodx == -1 && foody == -1 ) return;
+	food = new Food;
+	food->setFlame(foodFlame[0]);
+	gameMap[foodx][foody]->setFood(food);
+
+
+}

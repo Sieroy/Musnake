@@ -26,5 +26,6 @@ set(SDL2_LIB
 include_directories(${SDL2_INCLUDE_DIR})
 
 add_executable(main 
-    main.cpp )
+    main.cpp
+    jsoncpp.cpp )
 target_link_libraries(main ${SDL2_LIB})
