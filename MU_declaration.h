@@ -6,13 +6,13 @@
 #include "SDL_ttf.h"
 
 namespace musnake {
-	// ����״̬ö��
+	// 锟斤拷锟斤拷状态枚锟斤拷
 	enum MusnakeState {
 		MU_STATE_OVER,
 		MU_STATE_RUNNING,
 		MU_STATE_GAMING,
 	};
-	// ����ǰ״̬
+	// 锟斤拷锟斤拷前状态
 	int musnakeState;
 
 	
@@ -24,12 +24,12 @@ namespace musnake {
 
 	// == MU_path.h
 
-	// ��������·��
+	// 锟斤拷锟斤拷锟斤拷锟斤拷路锟斤拷
 	char PATH[256];
 
-	// ��ʼ��·��
+	// 锟斤拷始锟斤拷路锟斤拷
 	void initPath(char* path);
-	// �����·����ȡ����·��
+	// 锟斤拷锟斤拷锟铰凤拷锟斤拷锟饺★拷锟斤拷锟铰凤拷锟�
 	void catPath(char* dest, char* relative);
 
 
@@ -37,16 +37,16 @@ namespace musnake {
 
 	typedef struct _DelayFunc {
 		void (*func)(unsigned long);
-		unsigned long arg;  // ����Ҫ�õĲ��������һ������������ָ����棬�ǵ�ǿת+�ͷ�
+		unsigned long arg;  // 锟斤拷锟斤拷要锟矫的诧拷锟斤拷锟斤拷锟斤拷锟揭伙拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟街革拷锟斤拷锟芥，锟角碉拷强转+锟酵凤拷
 		unsigned long long time;
 		struct _DelayFunc* next;
 	}DelayFunc;
 
-	/* ���������뵽ָ������ʱ�������� */
+	/* 锟斤拷锟斤拷锟斤拷锟斤拷锟诫到指锟斤拷锟斤拷锟斤拷时锟斤拷锟斤拷锟斤拷锟斤拷 */
 	void addDelayFunc(DelayFunc** list, void (*func)(unsigned long), unsigned long arg, long long delay);
-	/* ������������ʱ�����ʱ���� */
+	/* 锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷时锟斤拷锟斤拷锟绞憋拷锟斤拷锟� */
 	void triggerDelayFunc(DelayFunc** list);
-	/* ���Ŀ����ڵ���ʱ���� */
+	/* 锟斤拷锟侥匡拷锟斤拷锟节碉拷锟斤拷时锟斤拷锟斤拷 */
 	void clearDelayFunc(DelayFunc** list);
 
 	unsigned long long timeVal = 0;
@@ -55,13 +55,13 @@ namespace musnake {
 
 	DelayFunc* publicTimingFunc = nullptr;
 
-	/* ����ʱ��ֵ */
+	/* 锟斤拷锟斤拷时锟斤拷值 */
 	inline unsigned long long updateTime();
 
-	/* ��ȡ��ǰ��ʱ��ֵ */
+	/* 锟斤拷取锟斤拷前锟斤拷时锟斤拷值 */
 	inline unsigned long long getTimeVal();
 
-	/* ��ȡ��ǰʱ��ֵ����һ�θ��¼��ʱ��� */
+	/* 锟斤拷取锟斤拷前时锟斤拷值锟斤拷锟斤拷一锟轿革拷锟铰硷拷锟绞憋拷锟斤拷 */
 	inline unsigned long long getTimeDelta();
 
 
@@ -84,13 +84,13 @@ namespace musnake {
 	// ================================ MU_grid.h ================================
 
 	class Grid;
-	// ��������Ʒ����
+	// 锟斤拷锟斤拷锟斤拷锟斤拷品锟斤拷锟斤拷
 	enum GridObjectType {
-		MU_GRID_OBJECT_TYPE_DARK = -1,  // ���ƿ���ǽ�Ķ���
-		MU_GRID_OBJECT_TYPE_EMPTY = 0,  // �ո�
-		MU_GRID_OBJECT_TYPE_SNAKE,  // ����
-		MU_GRID_OBJECT_TYPE_BLOCK,  // �ϰ���
-		MU_GRID_OBJECT_TYPE_FOOD,  // ʳ��
+		MU_GRID_OBJECT_TYPE_DARK = -1,  // 锟斤拷锟狡匡拷锟斤拷墙锟侥讹拷锟斤拷
+		MU_GRID_OBJECT_TYPE_EMPTY = 0,  // 锟秸革拷
+		MU_GRID_OBJECT_TYPE_SNAKE,  // 锟斤拷锟斤拷
+		MU_GRID_OBJECT_TYPE_BLOCK,  // 锟较帮拷锟斤拷
+		MU_GRID_OBJECT_TYPE_FOOD,  // 食锟斤拷
 	};
 
 
@@ -101,7 +101,7 @@ namespace musnake {
 
 	// ================================ MU_game.h ================================
 
-	// ��Ϸ״̬ö��
+	// 锟斤拷戏状态枚锟斤拷
 	enum GameState {
 		MU_GAME_STATE_RUNNING,
 		MU_GAME_STATE_LOADING,
@@ -110,7 +110,7 @@ namespace musnake {
 		MU_GAME_STATE_END
 	};
 
-	// ����֡�����Ƿ�
+	// 锟斤拷锟斤拷帧锟斤拷锟斤拷锟角凤拷
 	enum SnakeFlameIndex {
 		MU_SNAKE_FLAME_HEAD_UP,
 		MU_SNAKE_FLAME_HEAD_RIGHT,
@@ -129,7 +129,7 @@ namespace musnake {
 		MU_SNAKE_FLAME_BODY_DOWNLEFT,
 		MU_SNAKE_FLAME_BODY_UPLEFT,
 
-		// �����Ƕ�̬��ͼ
+		// 锟斤拷锟斤拷锟角讹拷态锟斤拷图
 
 		MU_SNAKE_FLAME_HEAD_0toUP,
 		MU_SNAKE_FLAME_HEAD_UPtoRIGHT,
@@ -173,15 +173,15 @@ namespace musnake {
 	class Game;
 
 	SDL_Renderer* render = nullptr;
-	Grid* gameMap[64][64] = { nullptr };  // ������Ϸ�õ��ĵظ��ǣ���һάΪX���꣬�ڶ�άΪY����
+	Grid* gameMap[64][64] = { nullptr };  // 锟斤拷锟斤拷锟斤拷戏锟矫碉拷锟侥地革拷锟角ｏ拷锟斤拷一维为X锟斤拷锟疥，锟节讹拷维为Y锟斤拷锟斤拷
 
 	Mix_Music* titleBGM = nullptr;
 
-	Flame* snakeFlame[50] = { nullptr };  // ������Ҫ�õ���֡��
-	Flame* foodFlame[1] = { nullptr };  // ����ʳ��Ҫ�õ�֡���ǣ����Խ׶�һ���͹�
-	Flame* hpFlame[3][2] = { nullptr };  // ����Ѫ��Ҫ�õ���֡����
+	Flame* snakeFlame[50] = { nullptr };  // 锟斤拷锟斤拷锟斤拷要锟矫碉拷锟斤拷帧锟斤拷
+	Flame* foodFlame[1] = { nullptr };  // 锟斤拷锟斤拷食锟斤拷要锟矫碉拷帧锟斤拷锟角ｏ拷锟斤拷锟皆阶讹拷一锟斤拷锟酵癸拷
+	Flame* hpFlame[3][2] = { nullptr };  // 锟斤拷锟斤拷血锟斤拷要锟矫碉拷锟斤拷帧锟斤拷锟斤拷
 	Flame* notesignFlame[3] = { nullptr };
-	Flame* charFlame[96] = { nullptr };  // ��������Ҫ�õ�֡����ASCII-32��ʼ
+	Flame* charFlame[96] = { nullptr };  // 锟斤拷锟斤拷锟斤拷锟斤拷要锟矫碉拷帧锟斤拷锟斤拷ASCII-32锟斤拷始
 
 	Flame* titleBGFlame = nullptr;
 	Flame* titleLBGFlame = nullptr;
@@ -208,51 +208,50 @@ namespace musnake {
 	Flame* gameOverOKButtonFlame = nullptr;
 	Flame* gameOverRetryButtonFlame = nullptr;
 
-	TTF_Font* titleMusnakeFont = nullptr;  // ���⣬��Ϸ��������
-	TTF_Font* titleAuthorFont = nullptr;  // �����½ǵ�����������
-	TTF_Font* menuClassNameFont = nullptr;  // �˵�������������
-	TTF_Font* menuSongnameFont = nullptr;  // �˵�����������
-	TTF_Font* menuSongtimeFont = nullptr;  // �˵�������ʱ������
-	TTF_Font* gameScorelabelFont = nullptr;  // ��Ϸʱ������ʾ��������
-	TTF_Font* gameScorenumFont = nullptr;  // ��Ϸʱ������������
-	TTF_Font* gameCombolabelFont = nullptr;  // ��Ϸʱ������ʾ��������
-	TTF_Font* gameCombonumFont = nullptr;  // ��Ϸʱ������������
-	TTF_Font* gamePauseTitleFont = nullptr;  // ��Ϸ��ͣ��������
-	TTF_Font* gamePauseSongnameFont = nullptr;  // ��Ϸ��ͣ��������
-	TTF_Font* gameWinSongnameFont = nullptr;  // ��Ϸͨ��ҳ�ĸ���������
-	TTF_Font* gameWinScorelabelFont = nullptr;  // ��Ϸͨ�ص÷���ʾ��������
-	TTF_Font* gameWinScorenumFont = nullptr;  // ��Ϸͨ�ص÷���������
-	TTF_Font* gameWinLengthlabelFont = nullptr;  // ��Ϸͨ���߳���ʾ����
-	TTF_Font* gameWinLengthnumFont = nullptr;  // ��Ϸͨ���߳���������
-	TTF_Font* gameLoseTitleFont = nullptr;  // ��Ϸʧ�ܱ�������
-	TTF_Font* gameLoseSongnameFont = nullptr;  // ��Ϸʧ�ܸ�������
+	TTF_Font* titleMusnakeFont = nullptr;  // 标题，游戏名的字体
+	TTF_Font* titleAuthorFont = nullptr;  // 标题下角的作者名字体
+	TTF_Font* menuClassNameFont = nullptr;  // 菜单处分区名字体
+	TTF_Font* menuSongnameFont = nullptr;  // 菜单处歌名字体
+	TTF_Font* menuSongbyFont = nullptr;  // 菜单处的作者字体
+	TTF_Font* menuSongtimeFont = nullptr;  // 菜单处歌曲时长字体
+	TTF_Font* gameScorelabelFont = nullptr;  // 游戏时分数提示文字字体
+	TTF_Font* gameScorenumFont = nullptr;  // 游戏时分数数字字体
+	TTF_Font* gameCombolabelFont = nullptr;  // 游戏时连击提示文字字体
+	TTF_Font* gameCombonumFont = nullptr;  // 游戏时连击数字字体
+	TTF_Font* gamePauseTitleFont = nullptr;  // 游戏暂停标题字体
+	TTF_Font* gamePauseSongnameFont = nullptr;  // 游戏暂停歌名字体
+	TTF_Font* gameWinSongnameFont = nullptr;  // 游戏通关页的歌曲名字体
+	TTF_Font* gameWinScorelabelFont = nullptr;  // 游戏通关得分提示文字字体
+	TTF_Font* gameWinScorenumFont = nullptr;  // 游戏通关得分数字字体
+	TTF_Font* gameWinLengthlabelFont = nullptr;  // 游戏通关蛇长提示字体
+	TTF_Font* gameWinLengthnumFont = nullptr;  // 游戏通关蛇长数字字体
+	TTF_Font* gameLoseTitleFont = nullptr;  // 游戏失败标题字体
+	TTF_Font* gameLoseSongnameFont = nullptr;  // 游戏失败歌名字体
 
-	Game* thisGame = nullptr;  // ��ǰ�����е���Ϸ�����㣬�ô���㣬�������㡭����
-	int noteDelta = 60;  // ����ƫ��
+	Game* thisGame = nullptr;  // 当前进行中的游戏对象（鱼，好大的鱼，虎纹鲨鱼……）
+	int noteDelta = 60;  // 节奏偏移
 
-	std::default_random_engine Rander(time(NULL));  // �����������
+	std::default_random_engine Rander(time(NULL));  // 随机数生成器
 
 	void drawText(SDL_Renderer* render, char* text, int x, int y, int size);
 
 
 	// ================================ MU_menu.h ================================
-	// �ֽ׶λ�û�������ͷ
+	// 锟街阶段伙拷没锟斤拷锟斤拷锟斤拷锟酵�
 
 	typedef struct _Level {
-		char id[4];  // ���3λID�ţ�����ȷ��·��
-		char name[32];  // 10�����֣�����ǿǿ��
-		char time[8];  // h:mm:ss�������б��⻹���������˰ɣ���ʹ����Ҳ��������Ϸ���~
-		int timev;  // ��ʱ��ms
-		Mix_Music* sample;  // Ԥ����
-		Flame* cover;  // ����
+		char id[4];  // 最多3位ID号，用来确定路径
+		int timev;  // 总时间ms
+		Mix_Music* sample;  // 预览歌
+		Flame* cover;  // 封面
 		Flame* nameFlm;
 		Flame* timeFlm;
+		Flame* byFlm;
 		struct _Level* prev;
 		struct _Level* next;
 	}Level;
 
 	typedef struct _LevelClass {
-		char name[32];
 		Level* levels;
 		Flame* nameFlm;
 		struct _LevelClass* prev;
