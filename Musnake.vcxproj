@@ -88,7 +88,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Projects\VSpro\Musnake\Musnake\env\SDL2_mixer-2.0.4\include;D:\Projects\VSpro\Musnake\Musnake\env\SDL\include;D:\Projects\VSpro\Musnake\Musnake\env\SDL2_image-2.0.5;D:\Projects\VSpro\Musnake\Musnake\env\SDL2_ttf-2.0.15;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Projects\VSpro\Musnake\Musnake\env\SDL2_mixer-2.0.4\include;D:\Projects\VSpro\Musnake\Musnake\env\SDL\include;D:\Projects\VSpro\Musnake\Musnake\env\SDL2_image-2.0.5;D:\Projects\VSpro\Musnake\Musnake\env\SDL2_ttf-2.0.15;D:\Projects\VSpro\Musnake\Musnake\env\jsoncpp\include\json;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -140,6 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="jsoncpp.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -155,6 +156,7 @@
   <ItemGroup>
     <ClInclude Include="MU_declaration.h" />
     <ClInclude Include="MU_element.h" />
+    <ClInclude Include="MU_file.h" />
     <ClInclude Include="MU_flame.h" />
     <ClInclude Include="MU_food.h" />
     <ClInclude Include="MU_game.h" />
