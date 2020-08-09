@@ -33,8 +33,8 @@ void musnake::loadLevels() {
 			clp->next->prev = clp;
 			clp = clp->next;
 		}
-		*(clp->name + levelRoot["classes"][i]["name"].asString().copy(clp->name, 31, 0)) = 0;
-		tmpSurf = TTF_RenderUTF8_Blended(menuClassNameFont, clp->name, tmpColor);
+		*(tmpStr + levelRoot["classes"][i]["name"].asString().copy(tmpStr, 31, 0)) = 0;
+		tmpSurf = TTF_RenderUTF8_Blended(menuClassNameFont, tmpStr, tmpColor);
 		clp->nameFlm = new Flame(tmpSurf, NULL, -1);
 		SDL_FreeSurface(tmpSurf);
 
@@ -50,15 +50,24 @@ void musnake::loadLevels() {
 				lp = lp->next;
 			}
 			*(lp->id + levelRoot["classes"][i]["items"][j]["id"].asString().copy(lp->id, 3, 0)) = 0;
-			*(lp->name + levelRoot["classes"][i]["items"][j]["name"].asString().copy(lp->name, 31, 0)) = 0;
-			*(lp->time + levelRoot["classes"][i]["items"][j]["time"].asString().copy(lp->time, 31, 0)) = 0;
-			lp->timev = levelRoot["classes"][i]["items"][j]["timeVal"].asInt();
-			tmpSurf = TTF_RenderUTF8_Blended(menuSongnameFont, lp->name, tmpColor);
+
+			*(tmpStr + levelRoot["classes"][i]["items"][j]["name"].asString().copy(tmpStr, 31, 0)) = 0;
+			tmpSurf = TTF_RenderUTF8_Blended(menuSongnameFont, tmpStr, tmpColor);
 			lp->nameFlm = new Flame(tmpSurf, NULL, -1);
 			SDL_FreeSurface(tmpSurf);
-			tmpSurf = TTF_RenderText_Blended(menuSongtimeFont, lp->time, tmpColor);
+
+			*(tmpStr + levelRoot["classes"][i]["items"][j]["time"].asString().copy(tmpStr, 31, 0)) = 0;
+			tmpSurf = TTF_RenderText_Blended(menuSongtimeFont, tmpStr, tmpColor);
 			lp->timeFlm = new Flame(tmpSurf, NULL, -1);
 			SDL_FreeSurface(tmpSurf);
+
+			*tmpStr = 'B';  *(tmpStr + 1) = 'y';  *(tmpStr + 2) = ' ';
+			*(tmpStr + levelRoot["classes"][i]["items"][j]["by"].asString().copy(tmpStr + 3, 28, 0) + 3) = 0;
+			tmpSurf = TTF_RenderUTF8_Blended(menuSongbyFont, tmpStr, tmpColor);
+			lp->byFlm = new Flame(tmpSurf, NULL, -1);
+			SDL_FreeSurface(tmpSurf);
+
+			lp->timev = levelRoot["classes"][i]["items"][j]["timeVal"].asInt();
 			SDL_strlcpy(ss, "level\\", 48);
 			SDL_strlcat(ss, lp->id, 48);
 			SDL_strlcat(ss, "\\sample.mp3", 48);

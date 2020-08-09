@@ -16,6 +16,9 @@
     <Filter Include="外来库">
       <UniqueIdentifier>{d832b49d-4db0-4e92-83bf-2631f57bae3f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="配置文件">
+      <UniqueIdentifier>{7d797bf2-fb42-4b41-b334-70129d69689c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -44,6 +47,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
+    <None Include="level\list.mu">
+      <Filter>配置文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MU_time.h">

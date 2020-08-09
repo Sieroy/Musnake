@@ -450,7 +450,7 @@ void musnake::Game::run() {
 				}
 				break;
 			case SDL_WINDOWEVENT:
-				switch (evt.window.type) {
+				switch (evt.window.event) {
 				case SDL_WINDOWEVENT_MOVED:
 				case SDL_WINDOWEVENT_FOCUS_LOST:  // 2345弹出广告~哦呼完蛋~
 				case SDL_WINDOWEVENT_HIDDEN:

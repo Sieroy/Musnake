@@ -212,6 +212,7 @@ namespace musnake {
 	TTF_Font* titleAuthorFont = nullptr;  // 标题下角的作者名字体
 	TTF_Font* menuClassNameFont = nullptr;  // 菜单处分区名字体
 	TTF_Font* menuSongnameFont = nullptr;  // 菜单处歌名字体
+	TTF_Font* menuSongbyFont = nullptr;  // 菜单处的作者字体
 	TTF_Font* menuSongtimeFont = nullptr;  // 菜单处歌曲时长字体
 	TTF_Font* gameScorelabelFont = nullptr;  // 游戏时分数提示文字字体
 	TTF_Font* gameScorenumFont = nullptr;  // 游戏时分数数字字体
@@ -240,19 +241,17 @@ namespace musnake {
 
 	typedef struct _Level {
 		char id[4];  // 最多3位ID号，用来确定路径
-		char name[32];  // 10个汉字，勉勉强强吧
-		char time[8];  // h:mm:ss，不会有比这还长的曲子了吧？即使有我也不会往游戏里加~
 		int timev;  // 总时间ms
 		Mix_Music* sample;  // 预览歌
 		Flame* cover;  // 封面
 		Flame* nameFlm;
 		Flame* timeFlm;
+		Flame* byFlm;
 		struct _Level* prev;
 		struct _Level* next;
 	}Level;
 
 	typedef struct _LevelClass {
-		char name[32];
 		Level* levels;
 		Flame* nameFlm;
 		struct _LevelClass* prev;
