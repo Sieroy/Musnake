@@ -13,7 +13,7 @@ set(SDL2_INCLUDE_DIR
     "D:/lib/SDL2_image-2.0.5/include" 
     "D:/lib/SDL2_ttf-2.0.15/include" 
     "D:/lib/SDL2_mixer-2.0.4/include"
-    "./include")
+    "./")
 
 set(SDL2_LIB 
     "D:/lib/SDL2-2.0.10/lib/x86/SDL2.lib" 

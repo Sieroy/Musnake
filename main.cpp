@@ -61,6 +61,7 @@ __start:
 			case SDL_KEYDOWN:
 				switch (evt.key.keysym.sym) {
 				case SDLK_RETURN:
+				case SDLK_RETURN2:
 					Mix_HaltMusic();
 					goto __menu;
 					break;
@@ -106,6 +107,7 @@ __menu:
 					if (!(panelTurning || classTurning)) classTurning = 200;
 					break;
 				case SDLK_RETURN:
+				case SDLK_RETURN2:
 					if (!(panelTurning || classTurning)) {
 						musnakeState = MU_STATE_GAMING;
 						while (musnakeState == MU_STATE_GAMING) {

@@ -453,7 +453,7 @@ void musnake::Game::run() {
 				}
 				break;
 			case SDL_WINDOWEVENT:
-				switch (evt.window.type) {
+				switch (evt.window.event) {
 				case SDL_WINDOWEVENT_MOVED:
 				case SDL_WINDOWEVENT_FOCUS_LOST:  // 2345弹出广告~哦呼完蛋~
 				case SDL_WINDOWEVENT_HIDDEN:
@@ -502,6 +502,7 @@ void musnake::Game::run() {
 			case SDL_KEYDOWN:
 				switch (evt.key.keysym.sym) {
 				case SDLK_RETURN:
+				case SDLK_RETURN2:
 				case SDLK_ESCAPE:
 					state = MU_GAME_STATE_END;
 					musnakeState = MU_STATE_RUNNING;
@@ -611,6 +612,7 @@ void musnake::Game::pause() {
 					if (choosing < 2) choosing++;
 					break;
 				case SDLK_RETURN:
+				case SDLK_RETURN2:
 					if (choosing == 0) {  // RESUME
 				case SDLK_ESCAPE:
 						state = MU_GAME_STATE_RUNNING;
