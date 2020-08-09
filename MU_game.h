@@ -62,6 +62,7 @@ private:
 	char levelPath[32] = "level\\";
 	unsigned short combo = 0;  // ������
 	unsigned short noteCount = 0;  // �ܵ�������
+	unsigned short badCount = 0;  // 对于只会冲冲冲不会踩节奏的人的评级惩罚
 	unsigned int score = 0;  // �÷�
 	short hp = 5;  // �ߵ�Ѫ������ʼΪ5
 	unsigned short hits = 0;  // ���е�������
@@ -319,18 +320,44 @@ int musnake::Game::moveSnake(int dir) {
 
 		if (returnVal == 0) combo++;
 	}
-	updateBase();
 	return returnVal;
 }
 
 void musnake::Game::updateBase() {
+	static int dc = 0;
 	int x, y;
 	x = snakeHead->getGrid()->x;
 	y = snakeHead->getGrid()->y;
-	if( x + (base.x/40) > 15 ) base.x -= 40;
-	if( x + (base.x/40) < 4 ) base.x += 40;
-	if( y + (base.y/40) > 10 ) base.y -= 40;
-	if( y + (base.y/40) < 3 ) base.y += 40;
+	if (x * 40 + base.x > 600) {
+		dc += getTimeDelta();
+		while (dc >= 5) {
+			base.x -= 2;
+			dc -= 5;
+		}
+	}
+	else if (x * 40 + base.x < 160) {
+		dc += getTimeDelta();
+		while (dc >= 5) {
+			base.x += 2;
+			dc -= 5;
+		}
+	}
+	else if (y * 40 + base.y > 400) {
+		dc += getTimeDelta();
+		while (dc >= 5) {
+			base.y -= 2;
+			dc -= 5;
+		}
+	}
+	else if (y * 40 + base.y < 160) {
+		dc += getTimeDelta();
+		while (dc >= 5) {
+			base.y += 2;
+			dc -= 5;
+		}
+	}
+	else
+		dc = 0;
 }
 
 void musnake::Game::refreshFood() {
@@ -415,8 +442,10 @@ void musnake::Game::run() {
 						else
 							score += (10 + combo / 10);
 					}
-					else
+					else {
+						badCount++;
 						fever = 0;
+					}
 					break;
 				case SDLK_RIGHT:
 				case SDLK_d:
@@ -429,8 +458,10 @@ void musnake::Game::run() {
 						else
 							score += (10 + combo / 10);
 					}
-					else
+					else {
+						badCount++;
 						fever = 0;
+					}
 					break;
 				case SDLK_DOWN:
 				case SDLK_s:
@@ -443,8 +474,10 @@ void musnake::Game::run() {
 						else
 							score += (10 + combo / 10);
 					}
-					else
+					else {
+						badCount++;
 						fever = 0;
+					}
 					break;
 				case SDLK_LEFT:
 				case SDLK_a:
@@ -457,8 +490,10 @@ void musnake::Game::run() {
 						else
 							score += (10 + combo / 10);
 					}
-					else
+					else {
+						badCount++;
 						fever = 0;
+					}
 					break;
 				case SDLK_ESCAPE:
 					state = MU_GAME_STATE_PAUSED;
@@ -488,6 +523,8 @@ void musnake::Game::run() {
 
 		triggerDelayFunc(&timingFunc);
 
+		updateBase();
+
 		if (hp <= 0) {
 			state = MU_GAME_STATE_OVER;
 			Mix_FadeOutMusic(1000);
@@ -502,6 +539,7 @@ void musnake::Game::run() {
 	}
 
 	timing = 0;
+	int rank = hits * 10 / (noteCount + badCount);
 	while (state == MU_GAME_STATE_OVER) {
 		char ss[32];
 		updateTime();
@@ -566,12 +604,12 @@ void musnake::Game::run() {
 				gameOverRetryButtonFlame->draw(gameRender, l - 400, 450);
 				gameOverOKButtonFlame->draw(gameRender, l - 400, 520);
 
-				switch (hits * 10 / noteCount) {
+				switch (rank) {
 				case 10:
 					drawText(gameRender, (char*)"SSS", 1000 - 2 * l, 100, 80);
 					break;
 				case 9:
-					if (hits * 100 / noteCount >= 95)
+					if (rank >= 95)
 						drawText(gameRender, (char*)"SS", 1000 - 2 * l, 100, 80);
 					else
 						drawText(gameRender, (char*)"S", 1000 - 2 * l, 100, 80);
