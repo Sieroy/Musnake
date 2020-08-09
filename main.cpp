@@ -1,4 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
+#define SDL_MAIN_HANDLED
 
 #include"SDL.h"
 #include"SDL_main.h"
@@ -32,7 +33,7 @@ int main(int argc, char* argv[]) {
 	Mix_Init(MIX_INIT_MP3);
 	TTF_Init();
 
-	window = SDL_CreateWindow("Musnake", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_RESIZABLE);
+	window = SDL_CreateWindow("Musnake", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
 	render = SDL_CreateRenderer(window, -1, 0);
 	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
 	musnakeState = MU_STATE_RUNNING;
