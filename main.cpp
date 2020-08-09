@@ -69,6 +69,16 @@ __start:
 					musnakeState = MU_STATE_OVER;
 					break;
 				}
+			case SDL_MOUSEBUTTONDOWN:
+				if( evt.button.button == SDL_BUTTON_LEFT){
+					SDL_Point point{evt.button.x, evt.button.y};
+					SDL_Rect ReturnButton{ 300,440,150,60 };
+					if( SDL_PointInRect( &point, &ReturnButton ) ){
+						Mix_HaltMusic();
+						goto __menu;
+						break;
+					}
+				}
 			}
 		}
 		drawStart(render);
@@ -122,6 +132,47 @@ __menu:
 					}
 					break;
 				}
+				case SDL_MOUSEBUTTONDOWN:
+					if( evt.button.button == SDL_BUTTON_LEFT && !(classTurning || panelTurning ) ){
+						SDL_Point point{evt.button.x, evt.button.y};
+						SDL_Rect BackButton, UPButton, DownButton, PlayButton, LeftButton, RightButton, ImgButton ;
+						BackButton = { 0,0,150,60 };
+						UPButton = { 0,100,150,60 };
+						DownButton = { 0,170,150,60 };
+						PlayButton = { 0,520,150,60 };
+						LeftButton = { 305,40,40,40 };
+						RightButton = { 605,40,40,40 };
+						ImgButton = {200, 200, 200, 200};
+						if( SDL_PointInRect( &point, &BackButton ) ) {
+							goto __start;
+						}
+						else if( SDL_PointInRect( &point, &UPButton ) ) {
+							panelTurning = -200;
+						}
+						else if( SDL_PointInRect( &point, &DownButton ) ) {
+							panelTurning = 200;
+						}
+						else if( SDL_PointInRect( &point, &PlayButton ) || SDL_PointInRect( &point, &ImgButton ) ) {
+							musnakeState = MU_STATE_GAMING;
+							while (musnakeState == MU_STATE_GAMING) {
+								Mix_HaltMusic();
+								thisGame = new Game();
+								thisGame->setRenderer(render);
+								thisGame->init(nowLevel);
+								thisGame->run();
+								delete thisGame;
+							}
+							Mix_PlayMusic(nowLevel->sample, -1);
+						}
+						else if( SDL_PointInRect( &point, &LeftButton ) ) {
+							classTurning = -200;
+						}
+						else if( SDL_PointInRect( &point, &RightButton ) ) {
+							classTurning = 200;
+						}
+						
+					}
+					break;
 			}
 		}
 		drawPanels(render, &nowLevel,&nowClass, &panelTurning, &classTurning);
@@ -139,18 +190,18 @@ __menu:
 }
 
 void load(SDL_Renderer* render) {
-	// °´ËµÕâÀïÓ¦¸ÃÊÇ´ÓÅäÖÃÎÄ¼þÀï¶ÁÊý¾ÝÀ´³õÊ¼»¯µØ¸ñµÄ£¬ÏÖ½×¶Î¾ÍÏÈÐ´ËÀ°É
+	// ï¿½ï¿½Ëµï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½Ç´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½Ø¸ï¿½Ä£ï¿½ï¿½Ö½×¶Î¾ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½
 	SDL_Surface* picSurf, * tmpSurf;
 	SDL_Texture* tmpTex;
 	SDL_Color tmpColor = { 255, 255, 255, 255 };
 	SDL_Rect tmpRect = { 0,0,170,1000 };
 
-	// ÕâÀï¶¨Î»ÎÄ¼þµÄÎ»ÖÃ
+	// ï¿½ï¿½ï¿½ï¶¨Î»ï¿½Ä¼ï¿½ï¿½ï¿½Î»ï¿½ï¿½
 	char tmpPath[256];
 
-	// ×°ÔØ×ÖÌå
+	// ×°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	catPath(tmpPath, (char*)"font\\SHOWG.TTF");
-	titleMusnakeFont = TTF_OpenFont(tmpPath, 144);  // ±êÌâ¾ÍµÃÅÆÃæ£¡
+	titleMusnakeFont = TTF_OpenFont(tmpPath, 144);  // ï¿½ï¿½ï¿½ï¿½Íµï¿½ï¿½ï¿½ï¿½æ£¡
 	gamePauseTitleFont =
 	gameLoseTitleFont = TTF_OpenFont(tmpPath, 80);
 	gameWinLengthnumFont =
@@ -171,14 +222,14 @@ void load(SDL_Renderer* render) {
 	gameWinLengthlabelFont = 
 	menuClassNameFont = TTF_OpenFont(tmpPath, 30);
 
-	// ×°ÔØÇúÄ¿ÐÅÏ¢
+	// ×°ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½Ï¢
 	loadLevels();
 
-	// ×°ÔØ±êÌâ½çÃæBGM
+	// ×°ï¿½Ø±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½BGM
 	catPath(tmpPath, (char*)"sound\\bgm.mp3");
 	titleBGM = Mix_LoadMUS(tmpPath);
 
-	// ×°ÔØ±êÌâ½çÃæ±³¾°Í¼
+	// ×°ï¿½Ø±ï¿½ï¿½ï¿½ï¿½ï¿½æ±³ï¿½ï¿½Í¼
 	catPath(tmpPath, (char*)"image\\menu_bg.png");
 	picSurf = IMG_Load(tmpPath);
 	titleBGFlame = new Flame(picSurf, NULL, -1);
@@ -188,43 +239,43 @@ void load(SDL_Renderer* render) {
 	titleRBGFlame = new Flame(picSurf, &tmpRect, -1);
 	SDL_FreeSurface(picSurf);
 
-	// ×°ÔØENTERÌáÊ¾±ê
+	// ×°ï¿½ï¿½ENTERï¿½ï¿½Ê¾ï¿½ï¿½
 	catPath(tmpPath, (char*)"image\\button_enter.png");
 	picSurf = IMG_Load(tmpPath);
 	titleEnterButtonFlame = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
-	// ×°ÔØBACKÌáÊ¾±ê
+	// ×°ï¿½ï¿½BACKï¿½ï¿½Ê¾ï¿½ï¿½
 	catPath(tmpPath, (char*)"image\\button_back.png");
 	picSurf = IMG_Load(tmpPath);
 	menuBackButtonFlame = gamePauseBackButtonLFlame = gameOverBackButtonFlame = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
-	// ×°ÔØUPÌáÊ¾±ê
+	// ×°ï¿½ï¿½UPï¿½ï¿½Ê¾ï¿½ï¿½
 	catPath(tmpPath, (char*)"image\\button_up.png");
 	picSurf = IMG_Load(tmpPath);
 	menuUpButtonFlame = gamePauseUpButtonFlame = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
-	// ×°ÔØDOWNÌáÊ¾±ê
+	// ×°ï¿½ï¿½DOWNï¿½ï¿½Ê¾ï¿½ï¿½
 	catPath(tmpPath, (char*)"image\\button_down.png");
 	picSurf = IMG_Load(tmpPath);
 	menuDownButtonFlame = gamePauseDownButtonFlame = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
-	// ×°ÔØPLAYÌáÊ¾±ê
+	// ×°ï¿½ï¿½PLAYï¿½ï¿½Ê¾ï¿½ï¿½
 	catPath(tmpPath, (char*)"image\\button_play.png");
 	picSurf = IMG_Load(tmpPath);
 	menuPlayButtonFlame = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
-	// ×°ÔØCLASSÌáÊ¾±ê
+	// ×°ï¿½ï¿½CLASSï¿½ï¿½Ê¾ï¿½ï¿½
 	catPath(tmpPath, (char*)"image\\button_class.png");
 	picSurf = IMG_Load(tmpPath);
 	menuClassButtonFlame = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
-	// ×°ÔØRESUMEÌáÊ¾±ê
+	// ×°ï¿½ï¿½RESUMEï¿½ï¿½Ê¾ï¿½ï¿½
 	catPath(tmpPath, (char*)"image\\button_resume_nc.png");
 	picSurf = IMG_Load(tmpPath);
 	gamePauseResumeButtonFlame[0] = new Flame(picSurf, NULL, -1);
@@ -235,7 +286,7 @@ void load(SDL_Renderer* render) {
 	gamePauseResumeButtonFlame[1] = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
-	// ×°ÔØRETRYÌáÊ¾±ê
+	// ×°ï¿½ï¿½RETRYï¿½ï¿½Ê¾ï¿½ï¿½
 	catPath(tmpPath, (char*)"image\\button_retry_nc.png");
 	picSurf = IMG_Load(tmpPath);
 	gamePauseRetryButtonFlame[0] = new Flame(picSurf, NULL, -1);
@@ -246,7 +297,7 @@ void load(SDL_Renderer* render) {
 	gamePauseRetryButtonFlame[1] = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
-	// ×°ÔØBACKÌáÊ¾±ê
+	// ×°ï¿½ï¿½BACKï¿½ï¿½Ê¾ï¿½ï¿½
 	catPath(tmpPath, (char*)"image\\button_back_nc.png");
 	picSurf = IMG_Load(tmpPath);
 	gamePauseBackButtonFlame[0] = new Flame(picSurf, NULL, -1);
@@ -257,19 +308,19 @@ void load(SDL_Renderer* render) {
 	gamePauseBackButtonFlame[1] = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
-	// ×°ÔØRETRYÌáÊ¾±ê
+	// ×°ï¿½ï¿½RETRYï¿½ï¿½Ê¾ï¿½ï¿½
 	catPath(tmpPath, (char*)"image\\button_retry.png");
 	picSurf = IMG_Load(tmpPath);
 	gameOverRetryButtonFlame = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
-	// ×°ÔØOKÌáÊ¾±ê
+	// ×°ï¿½ï¿½OKï¿½ï¿½Ê¾ï¿½ï¿½
 	catPath(tmpPath, (char*)"image\\button_ok.png");
 	picSurf = IMG_Load(tmpPath);
 	gameOverOKButtonFlame = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
-	// ×°ÔØNoteÍ¼
+	// ×°ï¿½ï¿½NoteÍ¼
 	catPath(tmpPath, (char*)"image\\notesign.png");
 	picSurf = IMG_Load(tmpPath);
 	notesignFlame[0] = new Flame(picSurf, NULL, -1);
@@ -285,7 +336,7 @@ void load(SDL_Renderer* render) {
 	notesignFlame[2] = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
-	// ×°ÔØÑªÌõÍ¼
+	// ×°ï¿½ï¿½Ñªï¿½ï¿½Í¼
 	catPath(tmpPath, (char*)"image\\hp.png");
 	picSurf = IMG_Load(tmpPath);
 	for (int i = 0;i < 6;i++) {
@@ -296,30 +347,30 @@ void load(SDL_Renderer* render) {
 	}
 	SDL_FreeSurface(picSurf);
 
-	// ×°ÔØÊ³ÎïÍ¼
+	// ×°ï¿½ï¿½Ê³ï¿½ï¿½Í¼
 	catPath(tmpPath, (char*)"image\\food_0.png");
 	picSurf = IMG_Load(tmpPath);
 	foodFlame[0] = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 	foodFlame[0]->setNext(nullptr);
 
-	// ¿ªÊ¼×°ÔØ×Ö·ûÍ¼
+	// ï¿½ï¿½Ê¼×°ï¿½ï¿½ï¿½Ö·ï¿½Í¼
 	catPath(tmpPath, (char*)"image\\char.png");
 	picSurf = IMG_Load(tmpPath);
-	for (int i = 0;i < 6;i++) {  // 6ÐÐÎÄ×ÖÅÅÁÐ
-		for (int j = 0;j < 16;j++) {  // Ã¿ÐÐ16¸ö×Ö·û
+	for (int i = 0;i < 6;i++) {  // 6ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		for (int j = 0;j < 16;j++) {  // Ã¿ï¿½ï¿½16ï¿½ï¿½ï¿½Ö·ï¿½
 			SDL_Rect srect = { j * 80, i * 160, 80, 160 };
 			charFlame[16 * i + j] = new Flame(picSurf, &srect, -1);
 		}
 	}
 	SDL_FreeSurface(picSurf);
 
-	// ¿ªÊ¼×°ÔØÉßÍ·Í¼£¬ÓÐÏòÉßÍ·¶ÔÓ¦µÄÃ¶¾Ù´Ó14ºÅ£¨MU_SNAKE_FLAME_HEAD_0toUP£©¿ªÊ¼£¬29ºÅ½áÊø
+	// ï¿½ï¿½Ê¼×°ï¿½ï¿½ï¿½ï¿½Í·Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í·ï¿½ï¿½Ó¦ï¿½ï¿½Ã¶ï¿½Ù´ï¿½14ï¿½Å£ï¿½MU_SNAKE_FLAME_HEAD_0toUPï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½29ï¿½Å½ï¿½ï¿½ï¿½
 	catPath(tmpPath, (char*)"image\\snake_0_head.png");
 	picSurf = IMG_Load(tmpPath);
-	for (int i = 0;i < 16;i++) {  // 16ÖÖÉßÍ·ÔË¶¯Çé¿ö
+	for (int i = 0;i < 16;i++) {  // 16ï¿½ï¿½ï¿½ï¿½Í·ï¿½Ë¶ï¿½ï¿½ï¿½ï¿½
 		Flame* flames[8];
-		for (int j = 0;j < 8;j++) {  // Ã¿ÖÖÔË¶¯Çé¿öÓÐ8Ö¡
+		for (int j = 0;j < 8;j++) {  // Ã¿ï¿½ï¿½ï¿½Ë¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½8Ö¡
 			SDL_Rect srect = { j * 20, i * 20, 20, 20 };
 
 			flames[j] = new Flame(picSurf, &srect, 10);
@@ -330,10 +381,10 @@ void load(SDL_Renderer* render) {
 	}
 	SDL_FreeSurface(picSurf);
 
-	// ¿ªÊ¼×°ÔØÉßÎ²Í¼£¬ÓÐÏòÉßÎ²¶ÔÓ¦µÄÃ¶¾Ù´Ó30ºÅ£¨MU_SNAKE_FLAME_TAIL_UPshake£©¿ªÊ¼£¬49ºÅ½áÊø
+	// ï¿½ï¿½Ê¼×°ï¿½ï¿½ï¿½ï¿½Î²Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î²ï¿½ï¿½Ó¦ï¿½ï¿½Ã¶ï¿½Ù´ï¿½30ï¿½Å£ï¿½MU_SNAKE_FLAME_TAIL_UPshakeï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½49ï¿½Å½ï¿½ï¿½ï¿½
 	catPath(tmpPath, (char*)"image\\snake_0_tail.png");
 	picSurf = IMG_Load(tmpPath);
-	for (int i = 0;i < 20;i++) {  // 20ÖÖÓÐÏòÉßÎ²µÄÇé¿ö
+	for (int i = 0;i < 20;i++) {  // 20ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î²ï¿½ï¿½ï¿½ï¿½ï¿½
 		Flame* flames[8];
 		for (int j = 0;j < 8;j++) {
 			SDL_Rect srect = { j * 20, i * 20, 20, 20 };
@@ -346,7 +397,7 @@ void load(SDL_Renderer* render) {
 	}
 	SDL_FreeSurface(picSurf);
 
-	// ¿ªÊ¼×°ÔØÒ»°ãÉßÌåÍ¼£¬Ò»°ãÉßÌå¶ÔÓ¦µÄÃ¶¾Ù´Ó0ºÅ£¨MU_SNAKE_FLAME_HEAD_UP£©¿ªÊ¼£¬13ºÅ½áÊø
+	// ï¿½ï¿½Ê¼×°ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½Ã¶ï¿½Ù´ï¿½0ï¿½Å£ï¿½MU_SNAKE_FLAME_HEAD_UPï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½13ï¿½Å½ï¿½ï¿½ï¿½
 	catPath(tmpPath, (char*)"image\\snake_0_body.png");
 	picSurf = IMG_Load(tmpPath);
 	for (int j = MU_SNAKE_FLAME_HEAD_UP;j <= MU_SNAKE_FLAME_TAIL_LEFT;j++) {
@@ -362,7 +413,7 @@ void load(SDL_Renderer* render) {
 		snakeFlame[j]->setGroupId(j);
 	}
 
-	// È»ºó¶Ô²»Í¬µÄÖ¡×é½øÐÐ¹ØÁª£¬Ü³ÁË
+	// È»ï¿½ï¿½Ô²ï¿½Í¬ï¿½ï¿½Ö¡ï¿½ï¿½ï¿½ï¿½Ð¹ï¿½ï¿½ï¿½ï¿½ï¿½Ü³ï¿½ï¿½
 	snakeFlame[MU_SNAKE_FLAME_HEAD_0toUP]->setNext(snakeFlame[MU_SNAKE_FLAME_HEAD_UP]);
 	snakeFlame[MU_SNAKE_FLAME_HEAD_0toRIGHT]->setNext(snakeFlame[MU_SNAKE_FLAME_HEAD_RIGHT]);
 	snakeFlame[MU_SNAKE_FLAME_HEAD_0toDOWN]->setNext(snakeFlame[MU_SNAKE_FLAME_HEAD_DOWN]);
@@ -397,7 +448,7 @@ void load(SDL_Renderer* render) {
 	snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHTtoLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFT]);
 	snakeFlame[MU_SNAKE_FLAME_TAIL_DOWNtoLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFT]);
 
-	// »æÖÆTitle½çÃæÒªÓÃµÄÎÄ×Ö
+	// ï¿½ï¿½ï¿½ï¿½Titleï¿½ï¿½ï¿½ï¿½Òªï¿½Ãµï¿½ï¿½ï¿½ï¿½ï¿½
 	tmpSurf = TTF_RenderText_Blended(titleMusnakeFont, "MUSNAKE", tmpColor);
 	titleMusnakeFlame = new Flame(tmpSurf, NULL, -1);
 	SDL_FreeSurface(tmpSurf);
@@ -405,18 +456,18 @@ void load(SDL_Renderer* render) {
 	titleAuthorFlame = new Flame(tmpSurf, NULL, -1);
 	SDL_FreeSurface(tmpSurf);
 
-	// ×°ÔØPause½çÃæµÄÕÚÕÖÍ¼
+	// ×°ï¿½ï¿½Pauseï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼
 	catPath(tmpPath, (char*)"image\\mask_gamepause.png");
 	picSurf = IMG_Load(tmpPath);
 	gamePauseBGMask = new Flame(picSurf, NULL, -1);
 	SDL_FreeSurface(picSurf);
 
-	// »æÖÆGamePause½çÃæÒªÓÃµ½µÄÎÄ×Ö
+	// ï¿½ï¿½ï¿½ï¿½GamePauseï¿½ï¿½ï¿½ï¿½Òªï¿½Ãµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	tmpSurf = TTF_RenderText_Blended(gamePauseTitleFont, "- PAUSED -", tmpColor);
 	gamePauseTitleFlame = new Flame(tmpSurf, NULL, -1);
 	SDL_FreeSurface(tmpSurf);
 
-	// ×°ÔØGameWin½çÃæµÄ±³¾°
+	// ×°ï¿½ï¿½GameWinï¿½ï¿½ï¿½ï¿½Ä±ï¿½ï¿½ï¿½
 	catPath(tmpPath, (char*)"image\\gamewin_bg.png");
 	picSurf = IMG_Load(tmpPath);
 	gamewinBGFlame = new Flame(picSurf, NULL, -1);
@@ -428,7 +479,7 @@ void unload() {
 	
 }
 
-void drawStart(SDL_Renderer* render) {  // »æÖÆÓÎÏ·¿ªÊ¼Ò³Ãæ
+void drawStart(SDL_Renderer* render) {  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï·ï¿½ï¿½Ê¼Ò³ï¿½ï¿½
 	static int dt = 0;
 	dt += getTimeDelta();
 	dt %= 3290;
@@ -448,22 +499,22 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 	dt %= 3290;
 	titleBGFlame->draw(render, 0, -dt / 10);
 	SDL_RenderFillRect(render, &prect);
-	if (!*turningClass) {  // Ã»ÓÐÇÐ»»Çú°ü
+	if (!*turningClass) {  // Ã»ï¿½ï¿½ï¿½Ð»ï¿½ï¿½ï¿½ï¿½ï¿½
 		menuBackButtonFlame->draw(render, 0, 0);
 		menuUpButtonFlame->draw(render, 0, 100);
 		menuDownButtonFlame->draw(render, 0, 170);
 		menuPlayButtonFlame->draw(render, 0, 520);
-		if (!*turningLevel) {  // ½ö»æÖÆµ±Ç°ÇúÄ¿
+		if (!*turningLevel) {  // ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½Ç°ï¿½ï¿½Ä¿
 			SDL_Rect rect = {200, 200, 200, 200};
 			panel->cover->draw(render, &rect);
 			panel->nameFlm->draw(render, 430, 200);
 			panel->timeFlm->draw(render, 430, 250);
 		}
-		else if (*turningLevel > 0) {  // ÏòÏÂ¹ö¶¯£¬Ãæ°åÒªÓÐÏòÉÏÒÆ¶¯µÄÐ§¹û
+		else if (*turningLevel > 0) {  // ï¿½ï¿½ï¿½Â¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
 			Level* lp = panel->next;
 			SDL_Rect re1 = { 200, 200 + *turningLevel * 3, 200, 200 }, re2 = { 200, -400 + *turningLevel * 3, 200, 200 };
-			if (turningFlag == 0) {  // ¹ö¶¯ºóµÄÊ×´Îµ÷ÓÃ
-				turningFlag = 1;  // 1´ú±íÔ­ÏÈµÄÒôÀÖÕý´¦½áÊø×´Ì¬
+			if (turningFlag == 0) {  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Îµï¿½ï¿½ï¿½
+				turningFlag = 1;  // 1ï¿½ï¿½ï¿½ï¿½Ô­ï¿½Èµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬
 				Mix_FadeOutMusic(190);
 			}
 			lp->cover->draw(render, &re1);
@@ -499,11 +550,11 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 				*nowPanel = lp;
 			}
 		}
-		else if (*turningLevel < 0) {  // ÏòÉÏ¹ö¶¯£¬Ãæ°åÒªÓÐÏòÏÂÒÆ¶¯µÄÐ§¹û
+		else if (*turningLevel < 0) {  // ï¿½ï¿½ï¿½Ï¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
 			Level* lp = panel->prev;
 			SDL_Rect re1 = { 200, 200 + *turningLevel * 3, 200, 200 }, re2 = { 200, 800 + *turningLevel * 3, 200, 200 };
-			if (turningFlag == 0) {  // ¹ö¶¯ºóµÄÊ×´Îµ÷ÓÃ
-				turningFlag = 1;  // 1´ú±íÔ­ÏÈµÄÒôÀÖÕý´¦½áÊø×´Ì¬
+			if (turningFlag == 0) {  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Îµï¿½ï¿½ï¿½
+				turningFlag = 1;  // 1ï¿½ï¿½ï¿½ï¿½Ô­ï¿½Èµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬
 				Mix_FadeOutMusic(190);
 			}
 			lp->cover->draw(render, &re1);
@@ -542,7 +593,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 		menuClassButtonFlame->draw(render, 275, 30);
 		levelClass->nameFlm->draw(render, 412, 37);
 	}
-	else if (*turningClass > 0) {  // Çú°ü×óÒÆ
+	else if (*turningClass > 0) {  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		LevelClass* clp = levelClass->next;
 		Level* lp = clp->levels;
 		SDL_Rect re1 = { 200 + *turningClass * 3, 200, 200, 200 }, re2 = { -400 + *turningClass * 3,200, 200, 200 };
@@ -597,7 +648,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 			*nowPanel = lp;
 		}
 	}
-	else if (*turningClass < 0) {  // Çú°üÓÒÒÆ
+	else if (*turningClass < 0) {  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		LevelClass* clp = levelClass->prev;
 		Level* lp = clp->levels;
 		SDL_Rect re1 = { 200 + *turningClass * 3, 200, 200, 200 }, re2 = { 800 + *turningClass * 3, 200, 200, 200 };

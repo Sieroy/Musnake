@@ -27,27 +27,27 @@ public:
 	void setSnakeHead(Snake* snake);
 	void setSnakeTail(Snake* snake);
 
-	// ÒÆÉßº¯Êý£¬Èç¹ûÕý³£ÒÆ¶¯£¬¾Í·µ»Ø0£¬·ñÔò·µ»Ø1²¢ÔÚº¯ÊýÄÚÊµÏÖ¿ÛÑªÖ®ÀàµÄ²Ù×÷
-	// Õý³£ÒÆ¶¯£º²È×Å½ÚÅÄÏò·ÇÎ²ÏòµÄ·½Ïò¡¢³É¹¦µØÒÆ¶¯£»
-	// ·ÇÕý³£ÒÆ¶¯£º´í½ÚÅÄÒÆ¶¯¡¢Î²ÏòÒÆ¶¯¡¢×²Ç½¡¢×²ÉßÉí
+	// ï¿½ï¿½ï¿½ßºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½ï¿½Í·ï¿½ï¿½ï¿½0ï¿½ï¿½ï¿½ï¿½ï¿½ò·µ»ï¿½1ï¿½ï¿½ï¿½Úºï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½Ö¿ï¿½ÑªÖ®ï¿½ï¿½Ä²ï¿½ï¿½ï¿½
+	// ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î²ï¿½ï¿½Ä·ï¿½ï¿½ò¡¢³É¹ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½Î²ï¿½ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½×²Ç½ï¿½ï¿½×²ï¿½ï¿½ï¿½ï¿½
 	int moveSnake(int dir);
 
-	// Éú³ÉÊ³Îï
+	// ï¿½ï¿½ï¿½ï¿½Ê³ï¿½ï¿½
 	void refreshFood();
 
-	// ÎªÐ¡Éß½âÒÆ¶¯Ëø
+	// ÎªÐ¡ï¿½ß½ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½
 	void unlockMoving();
 
-	// ¿ª²¥BGM
+	// ï¿½ï¿½ï¿½ï¿½BGM
 	void playBGM();
 	
-	// ÓÎÏ·ÔËÐÐµÄÐ¡Ö÷º¯Êý
+	// ï¿½ï¿½Ï·ï¿½ï¿½ï¿½Ðµï¿½Ð¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	void run();
 
-	// ÔÝÍ£Ê±º¯Êý
+	// ï¿½ï¿½Í£Ê±ï¿½ï¿½ï¿½ï¿½
 	void pause();
 
-	// Ë¢ÐÂÑÓÊ±º¯ÊýºÍNoteµÄÊ±ÑÓÖµ£¬ÔÚ¿ª¾ÖºÍ½áÊøÔÝÍ£Ê±µ÷ÓÃ
+	// Ë¢ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Noteï¿½ï¿½Ê±ï¿½ï¿½Öµï¿½ï¿½ï¿½Ú¿ï¿½ï¿½ÖºÍ½ï¿½ï¿½ï¿½ï¿½ï¿½Í£Ê±ï¿½ï¿½ï¿½ï¿½
 	void refreshTime(int delta);
 
 	void init(Level* lp);
@@ -56,25 +56,28 @@ public:
 
 	void loadMap();
 
+	void updateBase();
+
 private:
 	char levelPath[32] = "level\\";
-	unsigned short combo = 0;  // Á¬»÷Êý
-	unsigned short noteCount = 0;  // ×ÜµÄÒô·ûÊý
-	unsigned int score = 0;  // µÃ·Ö
-	short hp = 5;  // ÉßµÄÑªÁ¿£¬³õÊ¼Îª5
-	unsigned short hits = 0;  // »÷ÖÐµÄÒô·ûÊý
-	short fever = 0;  // FEVER×´Ì¬£¬2±¶µÃ·Ö
-	unsigned short length = 4;  // Ò»¾ÖÓÎÏ·³Ô65531¸öÆ»¹û£¿ÄÇ¾ÍÕæµÄNBÁË£¬°´ÕÕ0.1sµÄÒÆ¶¯Ëø£¬Õâ¼´Ê¹ÊÇÅ·»ÊÔÚÍæÒ²ÒªÍæÉÏ¸öÁ©Ð¡Ê±
+	unsigned short combo = 0;  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	unsigned short noteCount = 0;  // ï¿½Üµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	unsigned int score = 0;  // ï¿½Ã·ï¿½
+	short hp = 5;  // ï¿½ßµï¿½Ñªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼Îª5
+	unsigned short hits = 0;  // ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	short fever = 0;  // FEVER×´Ì¬ï¿½ï¿½2ï¿½ï¿½ï¿½Ã·ï¿½
+	unsigned short length = 4;  // Ò»ï¿½ï¿½ï¿½ï¿½Ï·ï¿½ï¿½65531ï¿½ï¿½Æ»ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ï¿½ï¿½ï¿½NBï¿½Ë£ï¿½ï¿½ï¿½ï¿½ï¿½0.1sï¿½ï¿½ï¿½Æ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½â¼´Ê¹ï¿½ï¿½Å·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò²Òªï¿½ï¿½ï¿½Ï¸ï¿½ï¿½ï¿½Ð¡Ê±
 
 	Level* levelinfo = nullptr;
-	Note* note = nullptr;  // ½ÚÅÄ
-	Food* food = nullptr;  // Ê³Îï
+	Note* note = nullptr;  // ï¿½ï¿½ï¿½ï¿½
+	Food* food = nullptr;  // Ê³ï¿½ï¿½
 	Mix_Music* bgm = nullptr;  // BGM
-	bool movingLock = false;  // ÎªÊµÏÖMoves per SecondÏÞÖÆ¶ø¼ÓµÄÒÆ¶¯Ëø
-	unsigned long long pausingTime = 0;  // ÔÝÍ£Ê±µÄÊ±¼äÖµ
-	SDL_Rect drawRect;  // µ±Ç°ÆÁÄ»»æÖÆÇøÓò¶ÔÓ¦µÄÍêÕûµØÍ¼µÄ¾ØÐÎ
-	Snake* snakeHead, * snakeTail;  // ÉßÍ·ºÍÉßÎ²
-	DelayFunc* timingFunc = nullptr;  // µ±¾ÖÓÎÏ·ÓÃµÄÑÓÊ±º¯Êý±í£¨×¢ÒâÊµÏÖÔÝÍ£Ð§¹ûÊ±·­ÐÂÊ±¼ä£©
+	bool movingLock = false;  // ÎªÊµï¿½ï¿½Moves per Secondï¿½ï¿½ï¿½Æ¶ï¿½ï¿½Óµï¿½ï¿½Æ¶ï¿½ï¿½ï¿½
+	unsigned long long pausingTime = 0;  // ï¿½ï¿½Í£Ê±ï¿½ï¿½Ê±ï¿½ï¿½Öµ
+	SDL_Rect drawRect;  // ï¿½ï¿½Ç°ï¿½ï¿½Ä»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½Ä¾ï¿½ï¿½ï¿½
+	Snake* snakeHead, * snakeTail;  // ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½Î²
+	DelayFunc* timingFunc = nullptr;  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï·ï¿½Ãµï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×¢ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½Í£Ð§ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ä£©
+	SDL_Point base = { 0, 0 };
 };
 
 musnake::Game::Game() {
@@ -82,14 +85,14 @@ musnake::Game::Game() {
 }
 
 musnake::Game::~Game() {
-	// ÏÈ±£Áô×Å£¬ÒòÎªÄ¿Ç°»¹ÊÇ²âÊÔ½×¶Î£¬Ò»´ÎÔËÐÐµÄ»°Ã»ÓÐÐ¶ÔØµØ¸ñÖ®ÀàµÄ±ØÒª£¨Èí¼þÎÊÌâ¹Øµô¾ÍºÃ~
-	// ÏÈ°ÑµØ¸ñµÄÊÍ·ÅÐ´ÁË°É
+	// ï¿½È±ï¿½ï¿½ï¿½ï¿½Å£ï¿½ï¿½ï¿½ÎªÄ¿Ç°ï¿½ï¿½ï¿½Ç²ï¿½ï¿½Ô½×¶Î£ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ÐµÄ»ï¿½Ã»ï¿½ï¿½Ð¶ï¿½ØµØ¸ï¿½Ö®ï¿½ï¿½Ä±ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Øµï¿½ï¿½Íºï¿½~
+	// ï¿½È°ÑµØ¸ï¿½ï¿½ï¿½Í·ï¿½Ð´ï¿½Ë°ï¿½
 	for (int i = 0;i < 20;i++) {
 		for (int j = 0;j < 15;j++) {
 			delete gameMap[i][j];
 		}
 	}
-	// ÔÙ°ÑÉßµÄÊÍ·Å¼ÓÉÏ°É£¬ÀûÓÃÉßµÄ°ëµÝ¹éÎö¹¹Ó¦¸Ã²»ÄÑ
+	// ï¿½Ù°ï¿½ï¿½ßµï¿½ï¿½Í·Å¼ï¿½ï¿½Ï°É£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµÄ°ï¿½Ý¹ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ã²ï¿½ï¿½ï¿½
 	delete snakeHead;
 	if (food) delete food;
 
@@ -101,7 +104,7 @@ musnake::Game::~Game() {
 }
 
 void musnake::Game::init(Level* lp){
-	// °´ËµÕâÀïÓ¦¸ÃÊÇ´ÓÅäÖÃÎÄ¼þÀï¶ÁÊý¾ÝÀ´³õÊ¼»¯µØ¸ñµÄ£¬ÏÖ½×¶Î¾ÍÏÈÐ´ËÀ°É
+	// ï¿½ï¿½Ëµï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½Ç´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½Ø¸ï¿½Ä£ï¿½ï¿½Ö½×¶Î¾ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½
 	SDL_Surface* picSurf, * tmpSurf;
 	SDL_Texture* tmpTex;
 
@@ -110,18 +113,18 @@ void musnake::Game::init(Level* lp){
 	levelinfo = lp;
 	SDL_strlcat(levelPath, lp->id, 25);
 
-	// ÕâÀï¶¨Î»ÎÄ¼þµÄÎ»ÖÃ
+	// ï¿½ï¿½ï¿½ï¶¨Î»ï¿½Ä¼ï¿½ï¿½ï¿½Î»ï¿½ï¿½
 	char tmpPath[256];
 
-	// ¹Ø¿¨Â·¾¶
+	// ï¿½Ø¿ï¿½Â·ï¿½ï¿½
 	char levelfile[64];
-	// ×°ÔØ¹Ø¿¨ÒôÀÖ
+	// ×°ï¿½Ø¹Ø¿ï¿½ï¿½ï¿½ï¿½ï¿½
 	SDL_strlcpy(levelfile, levelPath, 64);
 	SDL_strlcat(levelfile, "\\bgm.mp3", 64);
 	catPath(tmpPath, levelfile);
 	bgm = Mix_LoadMUS(tmpPath);
 
-	// ×°ÔØ¹Ø¿¨µÄ½ÚÅÄ
+	// ×°ï¿½Ø¹Ø¿ï¿½ï¿½Ä½ï¿½ï¿½ï¿½
 	SDL_strlcpy(levelfile, levelPath, 64);
 	SDL_strlcat(levelfile, "\\notes.mu", 64);
 	catPath(tmpPath, levelfile);
@@ -155,19 +158,19 @@ void musnake::Game::init(Level* lp){
 	}
 	SDL_RWclose(f);
 
-	// ³õÊ¼»¯µØ¿é
-	for (int i = 0;i < 20;i++) {
-		for (int j = 0;j < 15;j++) {
+	// ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½Ø¿ï¿½
+	for (int i = 0;i < 64;i++) {
+		for (int j = 0;j < 64;j++) {
 			Grid* map = gameMap[i][j] = new Grid(i, j);
 			map->setPosition(i * 40, j * 40, 40, 40);
-			if (i == 0 || i == 19 || j == 0 || j == 14)
+			if (i == 0 || i == 63 || j == 0 || j == 63)
 				map->objType = MU_GRID_OBJECT_TYPE_BLOCK;
 			else 
 				map->objType = MU_GRID_OBJECT_TYPE_EMPTY;
 		}
 	}
 
-	// ÌØ»¯Ò»ÏÂÎÒÃÇµÄÐ¡Éß
+	// ï¿½Ø»ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Çµï¿½Ð¡ï¿½ï¿½
 
 	// Snake* sp[4];
 	// gameMap[7][3]->setSnake(sp[0] = new Snake);
@@ -231,25 +234,25 @@ int musnake::Game::moveSnake(int dir) {
 	int returnVal = 0;
 	int x = gp->x, y = gp->y;
 
-	if (movingLock) {  // Èç¹û³¬³öÁË10MPSµÄÏÞÖÆ£¬ÔòÅÐ¶¨ÎªÊÖ¶¶
+	if (movingLock) {  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½10MPSï¿½ï¿½ï¿½ï¿½ï¿½Æ£ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½Îªï¿½Ö¶ï¿½
 		return 1;
 	}
 	else {
 		movingLock = true;
-		setDelayFunc(&unlockMoving_D, 0, 100);  // 0.1Ãëºó×Ô½â¿ª
+		setDelayFunc(&unlockMoving_D, 0, 100);  // 0.1ï¿½ï¿½ï¿½ï¿½Ô½â¿ª
 	}
 
-	if (dir == snakeHead->getTailDir()) {  // ·µÏò
+	if (dir == snakeHead->getTailDir()) {  // ï¿½ï¿½ï¿½ï¿½
 		combo = 0;
 		dir = (dir + 2) % 4;
 		returnVal = 1;
 	}
 
-	if (!note || note->time > (long long)getTimeVal()) {  // µ±Ç°Ã»ÓÐÒô·û
+	if (!note || note->time > (long long)getTimeVal()) {  // ï¿½ï¿½Ç°Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		combo = 0;
 		returnVal = 1;
 	}
-	else if (dir == MU_SNAKE_DIRECT_NONE) {  // Ò»¸öÒô·û³¬¹ý0.2ÃëÃ»ÓÐ°´¾ÍÊÓÎªmiss
+	else if (dir == MU_SNAKE_DIRECT_NONE) {  // Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0.2ï¿½ï¿½Ã»ï¿½Ð°ï¿½ï¿½ï¿½ï¿½ï¿½Îªmiss
 		combo = 0;
 		returnVal = 1;
 		dir = (snakeHead->getTailDir() + 2) % 4;
@@ -257,7 +260,7 @@ int musnake::Game::moveSnake(int dir) {
 		note = np->next;
 		delete np;
 	}
-	else {  // Õý³£»÷ÖÐÒô·û
+	else {  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		Note* np = note;
 		note = np->next;
 		delete np;
@@ -281,20 +284,20 @@ int musnake::Game::moveSnake(int dir) {
 
 	switch (gp->objType) {
 	case MU_GRID_OBJECT_TYPE_SNAKE:
-		if (gp->getSnake() != snakeTail) {  // Èç¹ûËùÖ¸ÎªÉßÉí£¬Ôò¿ªÊ¼ÉËº¦ÅÐ¶¨²¢È¡Ïû´Ë´ÎÒÆ¶¯
-	case MU_GRID_OBJECT_TYPE_BLOCK:  // Èç¹ûÇ°·½ÊÇÕÏ°­£¬ÔòÍ¬
-			hp -= 3;  // ËãÁË£¬¸Ä¼òµ¥Ò»Ð©£¬¾Í¿Û3Ñª
+		if (gp->getSnake() != snakeTail) {  // ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½Ëºï¿½ï¿½Ð¶ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½Ë´ï¿½ï¿½Æ¶ï¿½
+	case MU_GRID_OBJECT_TYPE_BLOCK:  // ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ï¿½ï¿½ï¿½ï¿½Í¬
+			hp -= 3;  // ï¿½ï¿½ï¿½Ë£ï¿½ï¿½Ä¼ï¿½Ò»Ð©ï¿½ï¿½ï¿½Í¿ï¿½3Ñª
 			if (hp < 0) hp = 0;
 			combo = 0;
 			return 1;
-		}  // Èç¹ûËùÖ¸ÎªÉßÎ²£¬½Ó×ÅÏÂÒ»¸öcase¿ªÊ¼ÉúÍ·²¢ËõÎ²
+		}  // ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸Îªï¿½ï¿½Î²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½caseï¿½ï¿½Ê¼ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½Î²
 	case MU_GRID_OBJECT_TYPE_EMPTY:
 	case MU_GRID_OBJECT_TYPE_FOOD:
-		// ÏÈ´¦ÀíÎ²°ÍµÄÎÊÌâ
+		// ï¿½È´ï¿½ï¿½ï¿½Î²ï¿½Íµï¿½ï¿½ï¿½ï¿½ï¿½
 		if (gp->objType == MU_GRID_OBJECT_TYPE_FOOD) {
 			length += 1;
 			if (hp < 10) hp += 1;
-			else fever = 4 + length / 10;  // Ö»ÒªÉß¹»³¤£¬Á¬»÷²»¶Ï£¬ÄÇÃ´Ã¿Ò»²½¶¼ÊÇFEVERÁË~
+			else fever = 4 + length / 10;  // Ö»Òªï¿½ß¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï£ï¿½ï¿½ï¿½Ã´Ã¿Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½FEVERï¿½ï¿½~
 			delete gp->getFood();
 			gp->setFood(nullptr);
 			food = nullptr;
@@ -306,8 +309,8 @@ int musnake::Game::moveSnake(int dir) {
 			snakeTail->endTail();
 			snakeTail->getGrid()->setSnake(nullptr);
 		}
-		// ÔÙ¸ãÍ·
-		sp = new Snake((dir + 2) % 4);  // ±ðÎÊ£¬ÎÊ¾ÍÊÇÊýÑ§
+		// ï¿½Ù¸ï¿½Í·
+		sp = new Snake((dir + 2) % 4);  // ï¿½ï¿½ï¿½Ê£ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½Ñ§
 		snakeHead->setPrev(sp);
 		snakeHead->turnBody(dir);
 		sp->setNext(snakeHead);
@@ -316,12 +319,23 @@ int musnake::Game::moveSnake(int dir) {
 
 		if (returnVal == 0) combo++;
 	}
+	updateBase();
 	return returnVal;
+}
+
+void musnake::Game::updateBase() {
+	int x, y;
+	x = snakeHead->getGrid()->x;
+	y = snakeHead->getGrid()->y;
+	if( x + (base.x/40) > 15 ) base.x -= 40;
+	if( x + (base.x/40) < 4 ) base.x += 40;
+	if( y + (base.y/40) > 10 ) base.y -= 40;
+	if( y + (base.y/40) < 3 ) base.y += 40;
 }
 
 void musnake::Game::refreshFood() {
 	while (true) {
-		int x = Rander() % 20, y = Rander() % 15;  // ÕâÖÖroll·½Ê½¿Ï¶¨Òª¸ÄµÄ£¬²»È»µ½ºóÆÚºÜÄÑrollµ½¿ÕµÄ¾ÍºÜ²»Ãî
+		int x = Rander() % 20, y = Rander() % 15;  // ï¿½ï¿½ï¿½ï¿½rollï¿½ï¿½Ê½ï¿½Ï¶ï¿½Òªï¿½ÄµÄ£ï¿½ï¿½ï¿½È»ï¿½ï¿½ï¿½ï¿½ï¿½Úºï¿½ï¿½ï¿½rollï¿½ï¿½ï¿½ÕµÄ¾ÍºÜ²ï¿½ï¿½ï¿½
 		if (gameMap[x][y]->objType == MU_GRID_OBJECT_TYPE_EMPTY) {
 			food = new Food;
 			food->setFlame(foodFlame[0]);
@@ -336,12 +350,12 @@ void musnake::Game::refreshTime(int delta) {
 	DelayFunc* dfp = timingFunc;
 	Note* np = note;
 
-	while (dfp) {  // ¿ª¾ÖÊ±Ó¦¸Ã²»»áÓÐÓÎÏ·µ±¾ÖÑÓÊ±º¯Êý°É
+	while (dfp) {  // ï¿½ï¿½ï¿½ï¿½Ê±Ó¦ï¿½Ã²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		dfp->time += dt;
 		dfp = dfp->next;
 	}
 
-	if (!pausingTime) dt += noteDelta;  // ¶ÔÓÚrun¿ªÊ¼µÄÄÇ´ÎË¢ÐÂ£¬¼ÓÉÏÆ«ÒÆ
+	if (!pausingTime) dt += noteDelta;  // ï¿½ï¿½ï¿½ï¿½runï¿½ï¿½Ê¼ï¿½ï¿½ï¿½Ç´ï¿½Ë¢ï¿½Â£ï¿½ï¿½ï¿½ï¿½ï¿½Æ«ï¿½ï¿½
 	while (np) {
 		np->time += dt;
 		np = np->next;
@@ -370,28 +384,28 @@ void passLevel(unsigned long arg) {
 void musnake::Game::run() {
 	SDL_Event evt;
 	long long timing = 0;
-	// ÏÈÏëÏë´óÖÂµÄÁ÷³Ì°É
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Âµï¿½ï¿½ï¿½ï¿½Ì°ï¿½
 	state = MU_GAME_STATE_RUNNING;
 	updateTime();
 	refreshTime(2000);
 	movingLock = true;
-	setDelayFunc(&passLevel, 0, levelinfo->timev + 3000);  // ½áÊøºó£¬Èç¹ûÉß»¹Ã»ËÀ£¬¾Í¹ý¹Ø
+	setDelayFunc(&passLevel, 0, levelinfo->timev + 3000);  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß»ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½Í¹ï¿½ï¿½ï¿½
 	setDelayFunc(&unlockMoving_D, 0, 1500);
 	setDelayFunc(&playBGM_D, 0, 2000);
 
 	while (state == MU_GAME_STATE_RUNNING) {
 		updateTime();
-		SDL_RenderClear(gameRender);  // ¾ÍÓ²Çå£¡
+		SDL_RenderClear(gameRender);  // ï¿½ï¿½Ó²ï¿½å£¡
 
 		while (SDL_PollEvent(&evt)) {
-			// ÕâÀïÒªÓÃÀ´´¦Àí¸÷ÖÖÊÂ¼þÁË
-			// ¶Ô´ËÎÒÏëµ½ÁËÒ»ÖÖ¾øÃîµÄ½â¾ö·½·¨
-			// ¿ÉÏ§ÕâÀïÎ»ÖÃÌ«ÉÙ£¬Ð´²»ÏÂ [doge]
+			// ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½
+			// ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ëµ½ï¿½ï¿½Ò»ï¿½Ö¾ï¿½ï¿½ï¿½Ä½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			// ï¿½ï¿½Ï§ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½Ì«ï¿½Ù£ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ [doge]
 			switch (evt.type) {
 			case SDL_KEYDOWN:
 				switch (evt.key.keysym.sym) {
 				case SDLK_UP:
-				case SDLK_w:  // Õâ¸öËÀ¼üÎ»ÏÈ±£Áô×Å°É£¬ÒÔºó¿ª·Å×ÔÐÐÉèÖÃ¼üÎ»Ê±ÔÙËµ±ðµÄÊµÏÖ·½·¨
+				case SDLK_w:  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½È±ï¿½ï¿½ï¿½ï¿½Å°É£ï¿½ï¿½Ôºó¿ª·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¼ï¿½Î»Ê±ï¿½ï¿½Ëµï¿½ï¿½ï¿½Êµï¿½Ö·ï¿½ï¿½ï¿½
 					if (!moveSnake(MU_SNAKE_DIRECT_UP)) {
 						hits++;
 						if (fever > 0) {
@@ -455,7 +469,7 @@ void musnake::Game::run() {
 			case SDL_WINDOWEVENT:
 				switch (evt.window.event) {
 				case SDL_WINDOWEVENT_MOVED:
-				case SDL_WINDOWEVENT_FOCUS_LOST:  // 2345µ¯³ö¹ã¸æ~Å¶ºôÍêµ°~
+				case SDL_WINDOWEVENT_FOCUS_LOST:  // 2345ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½~Å¶ï¿½ï¿½ï¿½êµ°~
 				case SDL_WINDOWEVENT_HIDDEN:
 					state = MU_GAME_STATE_PAUSED;
 					pause();
@@ -465,12 +479,12 @@ void musnake::Game::run() {
 			case SDL_QUIT:
 				state = MU_GAME_STATE_END;
 				musnakeState = MU_STATE_OVER;
-				break;  // ÕýÔÚ¿¼ÂÇÒª²»ÒªgotoÖ±½Ó³öÀ´»òreturn£¬²»È»»¹»á±éÀúÊ£ÏÂµÄÊÂ¼þ¡£emmm...
+				break;  // ï¿½ï¿½ï¿½Ú¿ï¿½ï¿½ï¿½Òªï¿½ï¿½ÒªgotoÖ±ï¿½Ó³ï¿½ï¿½ï¿½ï¿½ï¿½returnï¿½ï¿½ï¿½ï¿½È»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê£ï¿½Âµï¿½ï¿½Â¼ï¿½ï¿½ï¿½emmm...
 			}
 		}
 
 		if (note && ((long long)getTimeVal() - note->time > 300)) moveSnake(MU_SNAKE_DIRECT_NONE);
-		// ÊÂÊµÖ¤Ã÷£¬¸Ã×ªlong longµÄµØ·½±£³Öunsigned£¬»á³öÏÖÔô¼¦¶ùÆæÝâµÄBUG
+		// ï¿½ï¿½ÊµÖ¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªlong longï¿½ÄµØ·ï¿½ï¿½ï¿½ï¿½ï¿½unsignedï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½BUG
 
 		triggerDelayFunc(&timingFunc);
 
@@ -513,10 +527,32 @@ void musnake::Game::run() {
 					break;
 				}
 				break;
+			case SDL_MOUSEBUTTONDOWN:
+				if( evt.button.button == SDL_BUTTON_LEFT && hp > 0 && timing > 1400 ){
+					SDL_Point point{evt.button.x, evt.button.y};
+					SDL_Rect BackButton, RetryButton, OKButton;
+					BackButton = { 0,0,150,60 };
+					RetryButton = { 0,450,150,60 };
+					OKButton = { 0,520,150,60 };
+					if( SDL_PointInRect( &point, &BackButton ) ) {
+						state = MU_GAME_STATE_END;
+						musnakeState = MU_STATE_RUNNING;
+					}
+					else if( SDL_PointInRect( &point, &RetryButton ) ) {
+						state = MU_GAME_STATE_END;
+						musnakeState = MU_STATE_GAMING;
+					}
+					else if( SDL_PointInRect( &point, &OKButton ) ) {
+						state = MU_GAME_STATE_END;
+						musnakeState = MU_STATE_GAMING;
+					}
+				}
+				break;
+				
 			}
 		}
 
-		if (hp > 0) {  // Ë³Àû½áÊø
+		if (hp > 0) {  // Ë³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			if (timing < 1000) {
 				draw();
 				gamewinBGFlame->draw(gameRender, 0, 600 - timing);
@@ -553,7 +589,7 @@ void musnake::Game::run() {
 					drawText(gameRender, (char*)"D", 1000 - 2 * l, 100, 80);
 				}
 
-				// »æÖÆµÃ·Ö
+				// ï¿½ï¿½ï¿½ÆµÃ·ï¿½
 				levelinfo->nameFlm->draw(gameRender, 1300 - 2 * l, 140);
 				drawText(gameRender, (char*)"score", 1000 - 2 * l, 300, 20);
 				drawText(gameRender, (char*)"length", 1000 - 2 * l, 450, 20);
@@ -564,14 +600,14 @@ void musnake::Game::run() {
 			}
 			timing += getTimeDelta();
 		}
-		else {  // ËÀÍö
+		else {  // ï¿½ï¿½ï¿½ï¿½
 			draw();
 			SDL_RenderFillRect(gameRender, NULL);
 			drawText(gameRender, (char*)"you", 340, 150, 40);
 			drawText(gameRender, (char*)"are", 340, 250, 40);
 			drawText(gameRender, (char*)"dead", 280, 350, 60);
 		}
-		// »æÖÆFPS
+		// ï¿½ï¿½ï¿½ï¿½FPS
 		int2str(ss, fps);
 		drawText(gameRender, ss, 740 - 10 * SDL_strlen(ss), 570, 10);
 		drawText(gameRender, (char*)"FPS", 750, 570, 10);
@@ -585,7 +621,7 @@ void musnake::Game::run() {
 void musnake::Game::pause() {
 	static int dt = 0;
 	int choosing = 0;
-	char fpss[10];  // ËûÒªÊÇÄÜ³¬9Î»Êý£¬ÄÇÕâµçÄÔ¾Í¿ÉÒÔÆð·ÉÁË
+	char fpss[10];  // ï¿½ï¿½Òªï¿½ï¿½ï¿½Ü³ï¿½9Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¾Í¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	SDL_Event evt;
 
 	Mix_PauseMusic();
@@ -628,17 +664,38 @@ void musnake::Game::pause() {
 						musnakeState = MU_STATE_RUNNING;
 					}
 				}
+			case SDL_MOUSEBUTTONDOWN:
+				if( evt.button.button == SDL_BUTTON_LEFT){
+					SDL_Point point{evt.button.x, evt.button.y};
+					SDL_Rect ResumeButton, RetryButton, BackButton;
+					ResumeButton = {280,250,240,60};
+					RetryButton = {280,330,240,60};
+					BackButton = {280,410,240,60};
+					if( SDL_PointInRect( &point, &ResumeButton ) ){
+						state = MU_GAME_STATE_RUNNING;
+						draw();
+						SDL_Delay(300);
+					}
+					else if( SDL_PointInRect( &point, &RetryButton ) ){
+						state = MU_GAME_STATE_END;
+					}
+					else if( SDL_PointInRect( &point, &BackButton ) ){
+						state = MU_GAME_STATE_END;
+						musnakeState = MU_STATE_RUNNING;
+					}
+				}
+				break;
 			}
 		}
 		dt += getTimeDelta();
 		dt %= 3290;
 
-		// »æÖÆFPS
+		// ï¿½ï¿½ï¿½ï¿½FPS
 		int2str(fpss, fps);
 		drawText(gameRender, fpss, 740 - 10 * SDL_strlen(fpss), 570, 10);
 		drawText(gameRender, (char*)"FPS", 750, 570, 10);
 
-		// »æÖÆÔÝÍ£²Ëµ¥
+		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í£ï¿½Ëµï¿½
 		long long nt = (getTimeVal() / 500) & 1 ? 4 - (getTimeVal() % 1000 / 200) : getTimeVal() % 1000 / 100;
 		titleBGFlame->draw(gameRender, 0, -dt / 10);
 		gamePauseBGMask->draw(gameRender, 0, 0);
@@ -658,29 +715,29 @@ void musnake::Game::pause() {
 }
 
 void musnake::Game::draw() {
-	// ÏÈ»æÖÆµØÍ¼ÉÏµÄÄÚÈÝ
-	if (food) food->draw(gameRender);
+	// ï¿½È»ï¿½ï¿½Æµï¿½Í¼ï¿½Ïµï¿½ï¿½ï¿½ï¿½ï¿½
+	//if (food) food->draw(gameRender);
 
-	for (int i = 0;i < 20;i++) {
-		for (int j = 0;j < 15;j++) {
+	for (int i = 0;i < 64;i++) {
+		for (int j = 0;j < 64;j++) {
 			gameMap[i][j]->update();
-			gameMap[i][j]->draw(gameRender, NULL);
+			gameMap[i][j]->draw(gameRender, &base);
 		}
 	}
 	snakeTail->update();
-	snakeTail->draw(gameRender);  // ÎªÁË±£Ö¤ÉßÎ²¼´Ê¹´¦ÓÚÏûÊ§½×¶ÎÒ²ÄÜÕýÈ·»æÖÆ£¬ÔÚÕâÀïµ÷Ò»ÏÂËü
+	snakeTail->draw(gameRender, &base);  // Îªï¿½Ë±ï¿½Ö¤ï¿½ï¿½Î²ï¿½ï¿½Ê¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½×¶ï¿½Ò²ï¿½ï¿½ï¿½ï¿½È·ï¿½ï¿½ï¿½Æ£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½
 
-	// ÔÙ»æÖÆGUIÄÚÈÝ
-	// ¼á¶¨ÁËÎÒÖØ¹¹Ê±ÒªÐ´»ùÀàµÄ¾öÐÄ
+	// ï¿½Ù»ï¿½ï¿½ï¿½GUIï¿½ï¿½ï¿½ï¿½
+	// ï¿½á¶¨ï¿½ï¿½ï¿½ï¿½ï¿½Ø¹ï¿½Ê±ÒªÐ´ï¿½ï¿½ï¿½ï¿½Ä¾ï¿½ï¿½ï¿½
 	
-	// ÏÂÃæ»æÖÆÑªÌõ
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñªï¿½ï¿½
 	SDL_Rect hpRect[5] = {
 		{800 - 210, 10, 40, 40},
 		{800 - 170, 10, 40, 40},
 		{800 - 130, 10, 40, 40},
 		{800 -  90, 10, 40, 40},
 		{800 -  50, 10, 40, 40},
-	};  // hpÏÔÊ¾
+	};  // hpï¿½ï¿½Ê¾
 	int fg = movingLock ? 1 : 0;
 	for (int i = 0;i < 5;i++) {
 		if (i < hp / 2) {
@@ -694,7 +751,7 @@ void musnake::Game::draw() {
 		}
 	}
 
-	// ÏÂÃæ»æÖÆNote
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Note
 	Note* np = note;
 	int fn = fever;
 	notesignFlame[2]->draw(gameRender, 80, 520);
@@ -713,20 +770,20 @@ void musnake::Game::draw() {
 		np = np->next;
 	}
 	
-	// »æÖÆµÃ·Ö
-	char ss[16] = { 0 };  // ÎÒ¾Í²»ÐÅÓÐÈËÄÜ´ò³¬15Î»ÊýµÄ·ÖÁË£¡
+	// ï¿½ï¿½ï¿½ÆµÃ·ï¿½
+	char ss[16] = { 0 };  // ï¿½Ò¾Í²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü´ï¿½15Î»ï¿½ï¿½ï¿½Ä·ï¿½ï¿½Ë£ï¿½
 	drawText(gameRender, (char*)"score:", 10, 10, 10);
 	int2str(ss, score);
 	drawText(gameRender, ss, 10, 23, 20);
 
-	// »æÖÆÁ¬»÷Êý
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if (combo >= 2) {
 		int2str(ss, combo);
 		SDL_strlcat(ss, " hits!", 16);
 		drawText(gameRender, ss, 10, 440, 20);
 	}
 
-	// »æÖÆFPS
+	// ï¿½ï¿½ï¿½ï¿½FPS
 	int2str(ss, fps);
 	drawText(gameRender, ss, 740 - 10 * SDL_strlen(ss), 570, 10);
 	drawText(gameRender, (char*)"FPS", 750, 570, 10);
@@ -767,5 +824,5 @@ inline void musnake::Snake::endTail() {
 	}
 	setHeadDir(MU_SNAKE_DIRECT_NONE);
 
-	musnake::thisGame->setDelayFunc(&discardTail, (unsigned long)this, 90);  // Õ¹Ê¾ÍêÐ§¹û¾Í¸Ï½ôGG
+	musnake::thisGame->setDelayFunc(&discardTail, (unsigned long)this, 90);  // Õ¹Ê¾ï¿½ï¿½Ð§ï¿½ï¿½ï¿½Í¸Ï½ï¿½GG
 }

@@ -184,6 +184,8 @@ void musnake::Game::loadMap() {
 		else
 		{
 			setSnakeHead(newSnake);
+			base.x = -( x - 10 )*40;
+			base.y = -( y - 7)*40;
 		}
 		
 		oldSnake = newSnake;

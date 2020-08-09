@@ -5,20 +5,20 @@
 #include "MU_food.h"
 
 
-// µØÍ¼¸ñ
+// ï¿½ï¿½Í¼ï¿½ï¿½
 class musnake::Grid :public Element {
 public:
 	Grid();
-	// ³õÊ¼»¯£¬²¢¸æÖª¸ÃµØ¸ñËüËù´¦µÄµØ¸ñ×ø±ê
+	// ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öªï¿½ÃµØ¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÄµØ¸ï¿½ï¿½ï¿½ï¿½ï¿½
 	Grid(int x, int y);
 	~Grid();
 
 	int x, y;
 	int objType;
 
-	// ÉèÖÃµØ¿éÎïÌåÎªÒ»¶ÎÉß£¬»áµ÷ÓÃÉßµÄsetGrid¡£Ê¹ÓÃÇ°Çë×¢ÒâµØ¸ñÉÏÔ­±¾µÄÎïÌå
+	// ï¿½ï¿½ï¿½ÃµØ¿ï¿½ï¿½ï¿½ï¿½ï¿½ÎªÒ»ï¿½ï¿½ï¿½ß£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµï¿½setGridï¿½ï¿½Ê¹ï¿½ï¿½Ç°ï¿½ï¿½×¢ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	void setSnake(Snake* snake);
-	// ÉèÖÃµØ¿éÎïÌåÎªÊ³Îï£¬»áµ÷ÓÃÊ³ÎïµÄsetGrid¡£Ê¹ÓÃÇ°Çë×¢ÒâµØ¸ñÉÏÔ­±¾µÄÎïÌå
+	// ï¿½ï¿½ï¿½ÃµØ¿ï¿½ï¿½ï¿½ï¿½ï¿½ÎªÊ³ï¿½ï£¬ï¿½ï¿½ï¿½ï¿½ï¿½Ê³ï¿½ï¿½ï¿½setGridï¿½ï¿½Ê¹ï¿½ï¿½Ç°ï¿½ï¿½×¢ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½Ô­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	void setFood(Food* food);
 
 	Snake* getSnake();
@@ -48,7 +48,7 @@ musnake::Grid::Grid(int x, int y) {
 }
 
 musnake::Grid::~Grid() {
-	// Ïë²»³öÀ´ÒªÐ´Ê²Ã´£¬¾ÍÏÈÕâÑù°É¡¢¡¢
+	// ï¿½ë²»ï¿½ï¿½ï¿½ï¿½ÒªÐ´Ê²Ã´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É¡ï¿½ï¿½ï¿½
 }
 
 inline void musnake::Grid::setSnake(Snake* snake) {
@@ -97,6 +97,14 @@ inline void musnake::Grid::update() {
 }
 
 inline void musnake::Grid::draw(SDL_Renderer* render, SDL_Point* base) {
+	if( objType == MU_GRID_OBJECT_TYPE_BLOCK ) {
+		SDL_SetRenderDrawColor( render, 255, 0, 0, 255 );
+		SDL_Rect r = rect;
+		r.x += base->x;
+		r.y += base->y;
+		SDL_RenderFillRect( render, &r );
+		SDL_SetRenderDrawColor( render, 0, 0, 0, 150 );
+	}
 	Element::draw(render, base);
 	if (objType == MU_GRID_OBJECT_TYPE_SNAKE) obj.snake->draw(render, base);
 	if (objType == MU_GRID_OBJECT_TYPE_FOOD) obj.food->draw(render, base);
@@ -114,11 +122,11 @@ inline void musnake::Food::setGrid(Grid* grid) {
 inline void musnake::Food::update() {
 	Element::update();
 
-	//if (duration > 0) {  // Èç¹ûÊÇÏÞÊ±Ê³Îï
+	//if (duration > 0) {  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±Ê³ï¿½ï¿½
 	//	duration -= getTimeDelta();
 	//	if (duration <= 0) {
 	//		grid->setFood(nullptr);
-	//		// ÔÝÊ±ÏÈ²»¿¼ÂÇÏÔÊ¾Ê³Îï°È£¬ÏÂÃæ»¹ÒªÓÐ¸÷ÖÖ³·³ý
+	//		// ï¿½ï¿½Ê±ï¿½È²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾Ê³ï¿½ï¿½È£ï¿½ï¿½ï¿½ï¿½æ»¹Òªï¿½Ð¸ï¿½ï¿½Ö³ï¿½ï¿½ï¿½
 	//	}
 	//}
 }

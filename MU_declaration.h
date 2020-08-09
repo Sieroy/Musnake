@@ -6,13 +6,13 @@
 #include "SDL_ttf.h"
 
 namespace musnake {
-	// ³ÌÐò×´Ì¬Ã¶¾Ù
+	// ï¿½ï¿½ï¿½ï¿½×´Ì¬Ã¶ï¿½ï¿½
 	enum MusnakeState {
 		MU_STATE_OVER,
 		MU_STATE_RUNNING,
 		MU_STATE_GAMING,
 	};
-	// ³ÌÐòµ±Ç°×´Ì¬
+	// ï¿½ï¿½ï¿½ï¿½Ç°×´Ì¬
 	int musnakeState;
 
 	
@@ -24,12 +24,12 @@ namespace musnake {
 
 	// == MU_path.h
 
-	// ³ÌÐòËùÔÚÂ·¾¶
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½
 	char PATH[256];
 
-	// ³õÊ¼»¯Â·¾¶
+	// ï¿½ï¿½Ê¼ï¿½ï¿½Â·ï¿½ï¿½
 	void initPath(char* path);
-	// ÓÉÏà¶ÔÂ·¾¶»ñÈ¡¾ø¶ÔÂ·¾¶
+	// ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½
 	void catPath(char* dest, char* relative);
 
 
@@ -37,16 +37,16 @@ namespace musnake {
 
 	typedef struct _DelayFunc {
 		void (*func)(unsigned long);
-		unsigned long arg;  // º¯ÊýÒªÓÃµÄ²ÎÊý¡£Èç¹ûÒ»¸ö²»¹»£¬¾ÍÓÃÖ¸Õë´úÌæ£¬¼ÇµÃÇ¿×ª+ÊÍ·Å
+		unsigned long arg;  // ï¿½ï¿½ï¿½ï¿½Òªï¿½ÃµÄ²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½æ£¬ï¿½Çµï¿½Ç¿×ª+ï¿½Í·ï¿½
 		unsigned long long time;
 		struct _DelayFunc* next;
 	}DelayFunc;
 
-	/* ½«º¯Êý²åÈëµ½Ö¸¶¨µÄÑÓÊ±º¯Êý±íÖÐ */
+	/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ëµ½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 	void addDelayFunc(DelayFunc** list, void (*func)(unsigned long), unsigned long arg, long long delay);
-	/* ÂÖÁ÷´¥·¢µ½´ïÊ±¼äµÄÑÓÊ±º¯Êý */
+	/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ */
 	void triggerDelayFunc(DelayFunc** list);
-	/* Çå¿ÕÄ¿±ê±íÄÚµÄÑÓÊ±º¯Êý */
+	/* ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ */
 	void clearDelayFunc(DelayFunc** list);
 
 	unsigned long long timeVal = 0;
@@ -55,13 +55,13 @@ namespace musnake {
 
 	DelayFunc* publicTimingFunc = nullptr;
 
-	/* ¸üÐÂÊ±¼äÖµ */
+	/* ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ */
 	inline unsigned long long updateTime();
 
-	/* »ñÈ¡µ±Ç°µÄÊ±¼äÖµ */
+	/* ï¿½ï¿½È¡ï¿½ï¿½Ç°ï¿½ï¿½Ê±ï¿½ï¿½Öµ */
 	inline unsigned long long getTimeVal();
 
-	/* »ñÈ¡µ±Ç°Ê±¼äÖµÓëÉÏÒ»´Î¸üÐÂ¼äµÄÊ±¼ä²î */
+	/* ï¿½ï¿½È¡ï¿½ï¿½Ç°Ê±ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½Ò»ï¿½Î¸ï¿½ï¿½Â¼ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ */
 	inline unsigned long long getTimeDelta();
 
 
@@ -84,13 +84,13 @@ namespace musnake {
 	// ================================ MU_grid.h ================================
 
 	class Grid;
-	// ¸ñ×ÓÄÚÎïÆ·ÖÖÀà
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ·ï¿½ï¿½ï¿½ï¿½
 	enum GridObjectType {
-		MU_GRID_OBJECT_TYPE_DARK = -1,  // ÀàËÆ¿ÕÆøÇ½µÄ¶«Î÷
-		MU_GRID_OBJECT_TYPE_EMPTY = 0,  // ¿Õ¸ñ
-		MU_GRID_OBJECT_TYPE_SNAKE,  // ÉßÌå
-		MU_GRID_OBJECT_TYPE_BLOCK,  // ÕÏ°­Îï
-		MU_GRID_OBJECT_TYPE_FOOD,  // Ê³Îï
+		MU_GRID_OBJECT_TYPE_DARK = -1,  // ï¿½ï¿½ï¿½Æ¿ï¿½ï¿½ï¿½Ç½ï¿½Ä¶ï¿½ï¿½ï¿½
+		MU_GRID_OBJECT_TYPE_EMPTY = 0,  // ï¿½Õ¸ï¿½
+		MU_GRID_OBJECT_TYPE_SNAKE,  // ï¿½ï¿½ï¿½ï¿½
+		MU_GRID_OBJECT_TYPE_BLOCK,  // ï¿½Ï°ï¿½ï¿½ï¿½
+		MU_GRID_OBJECT_TYPE_FOOD,  // Ê³ï¿½ï¿½
 	};
 
 
@@ -101,7 +101,7 @@ namespace musnake {
 
 	// ================================ MU_game.h ================================
 
-	// ÓÎÏ·×´Ì¬Ã¶¾Ù
+	// ï¿½ï¿½Ï·×´Ì¬Ã¶ï¿½ï¿½
 	enum GameState {
 		MU_GAME_STATE_RUNNING,
 		MU_GAME_STATE_LOADING,
@@ -110,7 +110,7 @@ namespace musnake {
 		MU_GAME_STATE_END
 	};
 
-	// ÉßÌåÖ¡×éÖú¼Ç·û
+	// ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½
 	enum SnakeFlameIndex {
 		MU_SNAKE_FLAME_HEAD_UP,
 		MU_SNAKE_FLAME_HEAD_RIGHT,
@@ -129,7 +129,7 @@ namespace musnake {
 		MU_SNAKE_FLAME_BODY_DOWNLEFT,
 		MU_SNAKE_FLAME_BODY_UPLEFT,
 
-		// ÏÂÃæÊÇ¶¯Ì¬µÄÍ¼
+		// ï¿½ï¿½ï¿½ï¿½ï¿½Ç¶ï¿½Ì¬ï¿½ï¿½Í¼
 
 		MU_SNAKE_FLAME_HEAD_0toUP,
 		MU_SNAKE_FLAME_HEAD_UPtoRIGHT,
@@ -173,15 +173,15 @@ namespace musnake {
 	class Game;
 
 	SDL_Renderer* render = nullptr;
-	Grid* gameMap[20][15] = { nullptr };  // µ¥¾ÖÓÎÏ·ÓÃµ½µÄµØ¸ñÃÇ£¬µÚÒ»Î¬ÎªX×ø±ê£¬µÚ¶þÎ¬ÎªY×ø±ê
+	Grid* gameMap[64][64] = { nullptr };  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï·ï¿½Ãµï¿½ï¿½ÄµØ¸ï¿½ï¿½Ç£ï¿½ï¿½ï¿½Ò»Î¬ÎªXï¿½ï¿½ï¿½ê£¬ï¿½Ú¶ï¿½Î¬ÎªYï¿½ï¿½ï¿½ï¿½
 
 	Mix_Music* titleBGM = nullptr;
 
-	Flame* snakeFlame[50] = { nullptr };  // »æÖÆÉßÒªÓÃµ½µÄÖ¡ÃÇ
-	Flame* foodFlame[1] = { nullptr };  // »æÖÆÊ³ÎïÒªÓÃµÄÖ¡×éÃÇ£¬²âÊÔ½×¶ÎÒ»¸ö¾Í¹»
-	Flame* hpFlame[3][2] = { nullptr };  // »æÖÆÑªÌõÒªÓÃµ½µÄÖ¡×éÃÇ
+	Flame* snakeFlame[50] = { nullptr };  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½Ãµï¿½ï¿½ï¿½Ö¡ï¿½ï¿½
+	Flame* foodFlame[1] = { nullptr };  // ï¿½ï¿½ï¿½ï¿½Ê³ï¿½ï¿½Òªï¿½Ãµï¿½Ö¡ï¿½ï¿½ï¿½Ç£ï¿½ï¿½ï¿½ï¿½Ô½×¶ï¿½Ò»ï¿½ï¿½ï¿½Í¹ï¿½
+	Flame* hpFlame[3][2] = { nullptr };  // ï¿½ï¿½ï¿½ï¿½Ñªï¿½ï¿½Òªï¿½Ãµï¿½ï¿½ï¿½Ö¡ï¿½ï¿½ï¿½ï¿½
 	Flame* notesignFlame[3] = { nullptr };
-	Flame* charFlame[96] = { nullptr };  // »æÖÆÎÄ×ÖÒªÓÃµÄÖ¡£¬´ÓASCII-32¿ªÊ¼
+	Flame* charFlame[96] = { nullptr };  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½Ãµï¿½Ö¡ï¿½ï¿½ï¿½ï¿½ASCII-32ï¿½ï¿½Ê¼
 
 	Flame* titleBGFlame = nullptr;
 	Flame* titleLBGFlame = nullptr;
@@ -208,43 +208,43 @@ namespace musnake {
 	Flame* gameOverOKButtonFlame = nullptr;
 	Flame* gameOverRetryButtonFlame = nullptr;
 
-	TTF_Font* titleMusnakeFont = nullptr;  // ±êÌâ£¬ÓÎÏ·ÃûµÄ×ÖÌå
-	TTF_Font* titleAuthorFont = nullptr;  // ±êÌâÏÂ½ÇµÄ×÷ÕßÃû×ÖÌå
-	TTF_Font* menuClassNameFont = nullptr;  // ²Ëµ¥´¦·ÖÇøÃû×ÖÌå
-	TTF_Font* menuSongnameFont = nullptr;  // ²Ëµ¥´¦¸èÃû×ÖÌå
-	TTF_Font* menuSongtimeFont = nullptr;  // ²Ëµ¥´¦¸èÇúÊ±³¤×ÖÌå
-	TTF_Font* gameScorelabelFont = nullptr;  // ÓÎÏ·Ê±·ÖÊýÌáÊ¾ÎÄ×Ö×ÖÌå
-	TTF_Font* gameScorenumFont = nullptr;  // ÓÎÏ·Ê±·ÖÊýÊý×Ö×ÖÌå
-	TTF_Font* gameCombolabelFont = nullptr;  // ÓÎÏ·Ê±Á¬»÷ÌáÊ¾ÎÄ×Ö×ÖÌå
-	TTF_Font* gameCombonumFont = nullptr;  // ÓÎÏ·Ê±Á¬»÷Êý×Ö×ÖÌå
-	TTF_Font* gamePauseTitleFont = nullptr;  // ÓÎÏ·ÔÝÍ£±êÌâ×ÖÌå
-	TTF_Font* gamePauseSongnameFont = nullptr;  // ÓÎÏ·ÔÝÍ£¸èÃû×ÖÌå
-	TTF_Font* gameWinSongnameFont = nullptr;  // ÓÎÏ·Í¨¹ØÒ³µÄ¸èÇúÃû×ÖÌå
-	TTF_Font* gameWinScorelabelFont = nullptr;  // ÓÎÏ·Í¨¹ØµÃ·ÖÌáÊ¾ÎÄ×Ö×ÖÌå
-	TTF_Font* gameWinScorenumFont = nullptr;  // ÓÎÏ·Í¨¹ØµÃ·ÖÊý×Ö×ÖÌå
-	TTF_Font* gameWinLengthlabelFont = nullptr;  // ÓÎÏ·Í¨¹ØÉß³¤ÌáÊ¾×ÖÌå
-	TTF_Font* gameWinLengthnumFont = nullptr;  // ÓÎÏ·Í¨¹ØÉß³¤Êý×Ö×ÖÌå
-	TTF_Font* gameLoseTitleFont = nullptr;  // ÓÎÏ·Ê§°Ü±êÌâ×ÖÌå
-	TTF_Font* gameLoseSongnameFont = nullptr;  // ÓÎÏ·Ê§°Ü¸èÃû×ÖÌå
+	TTF_Font* titleMusnakeFont = nullptr;  // ï¿½ï¿½ï¿½â£¬ï¿½ï¿½Ï·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	TTF_Font* titleAuthorFont = nullptr;  // ï¿½ï¿½ï¿½ï¿½ï¿½Â½Çµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	TTF_Font* menuClassNameFont = nullptr;  // ï¿½Ëµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	TTF_Font* menuSongnameFont = nullptr;  // ï¿½Ëµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	TTF_Font* menuSongtimeFont = nullptr;  // ï¿½Ëµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	TTF_Font* gameScorelabelFont = nullptr;  // ï¿½ï¿½Ï·Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	TTF_Font* gameScorenumFont = nullptr;  // ï¿½ï¿½Ï·Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	TTF_Font* gameCombolabelFont = nullptr;  // ï¿½ï¿½Ï·Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	TTF_Font* gameCombonumFont = nullptr;  // ï¿½ï¿½Ï·Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	TTF_Font* gamePauseTitleFont = nullptr;  // ï¿½ï¿½Ï·ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	TTF_Font* gamePauseSongnameFont = nullptr;  // ï¿½ï¿½Ï·ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	TTF_Font* gameWinSongnameFont = nullptr;  // ï¿½ï¿½Ï·Í¨ï¿½ï¿½Ò³ï¿½Ä¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	TTF_Font* gameWinScorelabelFont = nullptr;  // ï¿½ï¿½Ï·Í¨ï¿½ØµÃ·ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	TTF_Font* gameWinScorenumFont = nullptr;  // ï¿½ï¿½Ï·Í¨ï¿½ØµÃ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	TTF_Font* gameWinLengthlabelFont = nullptr;  // ï¿½ï¿½Ï·Í¨ï¿½ï¿½ï¿½ß³ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
+	TTF_Font* gameWinLengthnumFont = nullptr;  // ï¿½ï¿½Ï·Í¨ï¿½ï¿½ï¿½ß³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	TTF_Font* gameLoseTitleFont = nullptr;  // ï¿½ï¿½Ï·Ê§ï¿½Ü±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	TTF_Font* gameLoseSongnameFont = nullptr;  // ï¿½ï¿½Ï·Ê§ï¿½Ü¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-	Game* thisGame = nullptr;  // µ±Ç°½øÐÐÖÐµÄÓÎÏ·¶ÔÏó£¨Óã£¬ºÃ´óµÄÓã£¬»¢ÎÆöèÓã¡­¡­£©
-	int noteDelta = 60;  // ½Ú×àÆ«ÒÆ
+	Game* thisGame = nullptr;  // ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½Ï·ï¿½ï¿½ï¿½ï¿½ï¿½ã£¬ï¿½Ã´ï¿½ï¿½ï¿½ã£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ã¡­ï¿½ï¿½ï¿½ï¿½
+	int noteDelta = 60;  // ï¿½ï¿½ï¿½ï¿½Æ«ï¿½ï¿½
 
-	std::default_random_engine Rander(time(NULL));  // Ëæ»úÊýÉú³ÉÆ÷
+	std::default_random_engine Rander(time(NULL));  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 	void drawText(SDL_Renderer* render, char* text, int x, int y, int size);
 
 
 	// ================================ MU_menu.h ================================
-	// ÏÖ½×¶Î»¹Ã»½¨Õâ¸ö±êÍ·
+	// ï¿½Ö½×¶Î»ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í·
 
 	typedef struct _Level {
-		char id[4];  // ×î¶à3Î»IDºÅ£¬ÓÃÀ´È·¶¨Â·¾¶
-		char name[32];  // 10¸öºº×Ö£¬ÃãÃãÇ¿Ç¿°É
-		char time[8];  // h:mm:ss£¬²»»áÓÐ±ÈÕâ»¹³¤µÄÇú×ÓÁË°É£¿¼´Ê¹ÓÐÎÒÒ²²»»áÍùÓÎÏ·Àï¼Ó~
-		int timev;  // ×ÜÊ±¼äms
-		Mix_Music* sample;  // Ô¤ÀÀ¸è
-		Flame* cover;  // ·âÃæ
+		char id[4];  // ï¿½ï¿½ï¿½3Î»IDï¿½Å£ï¿½ï¿½ï¿½ï¿½ï¿½È·ï¿½ï¿½Â·ï¿½ï¿½
+		char name[32];  // 10ï¿½ï¿½ï¿½ï¿½ï¿½Ö£ï¿½ï¿½ï¿½ï¿½ï¿½Ç¿Ç¿ï¿½ï¿½
+		char time[8];  // h:mm:ssï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð±ï¿½ï¿½â»¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë°É£ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½ï¿½ï¿½Ò²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï·ï¿½ï¿½ï¿½~
+		int timev;  // ï¿½ï¿½Ê±ï¿½ï¿½ms
+		Mix_Music* sample;  // Ô¤ï¿½ï¿½ï¿½ï¿½
+		Flame* cover;  // ï¿½ï¿½ï¿½ï¿½
 		Flame* nameFlm;
 		Flame* timeFlm;
 		struct _Level* prev;
