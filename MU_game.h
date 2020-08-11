@@ -60,6 +60,8 @@ public:
 
 private:
 	char levelPath[32] = "level\\";
+	char rankVal;
+	char rankStr[4];
 	unsigned short combo = 0;  // ������
 	unsigned short noteCount = 0;  // �ܵ�������
 	unsigned short badCount = 0;  // 对于只会冲冲冲不会踩节奏的人的评级惩罚
@@ -86,6 +88,14 @@ musnake::Game::Game() {
 }
 
 musnake::Game::~Game() {
+	if (hp > 0) {  // 如果胜利，那么存个档
+		int rv = rankVal > userData["record"][levelinfo->id]["rank"].asInt() ? rankVal : -1;
+		int sv = score > userData["record"][levelinfo->id]["score"].asInt() ? score : -1;
+		int lv = length > userData["record"][levelinfo->id]["length"].asInt() ? length : 0;
+		updateUserScore(levelinfo->id, rv, sv, lv);
+		flushUserData();
+	}
+
 	// �ȱ����ţ���ΪĿǰ���ǲ��Խ׶Σ�һ�����еĻ�û��ж�صظ�֮��ı�Ҫ����������ص��ͺ�~
 	// �Ȱѵظ���ͷ�д�˰�
 	for (int i = 0;i < 20;i++) {
@@ -539,7 +549,30 @@ void musnake::Game::run() {
 	}
 
 	timing = 0;
-	int rank = hits * 10 / (noteCount + badCount);
+	rankVal = hits * 100 / (noteCount + badCount);
+	char rankStr[4];
+	switch (rankVal / 10) {
+	case 10:
+		SDL_strlcpy(rankStr, "SSS", 4);
+		break;
+	case 9:
+		if (rankVal >= 95)
+			SDL_strlcpy(rankStr, "SS", 3);
+		else
+			SDL_strlcpy(rankStr, "S", 3);
+		break;
+	case 8:
+		SDL_strlcpy(rankStr, "A", 3);
+		break;
+	case 7:
+		SDL_strlcpy(rankStr, "B", 3);
+		break;
+	case 6:
+		SDL_strlcpy(rankStr, "C", 3);
+		break;
+	default:
+		SDL_strlcpy(rankStr, "D", 3);
+	}
 	while (state == MU_GAME_STATE_OVER) {
 		char ss[32];
 		updateTime();
@@ -604,28 +637,7 @@ void musnake::Game::run() {
 				gameOverRetryButtonFlame->draw(gameRender, l - 400, 450);
 				gameOverOKButtonFlame->draw(gameRender, l - 400, 520);
 
-				switch (rank) {
-				case 10:
-					drawText(gameRender, (char*)"SSS", 1000 - 2 * l, 100, 80);
-					break;
-				case 9:
-					if (rank >= 95)
-						drawText(gameRender, (char*)"SS", 1000 - 2 * l, 100, 80);
-					else
-						drawText(gameRender, (char*)"S", 1000 - 2 * l, 100, 80);
-					break;
-				case 8:
-					drawText(gameRender, (char*)"A", 1000 - 2 * l, 100, 80);
-					break;
-				case 7:
-					drawText(gameRender, (char*)"B", 1000 - 2 * l, 100, 80);
-					break;
-				case 6:
-					drawText(gameRender, (char*)"C", 1000 - 2 * l, 100, 80);
-					break;
-				default:
-					drawText(gameRender, (char*)"D", 1000 - 2 * l, 100, 80);
-				}
+				drawText(gameRender, rankStr, 1000 - 2 * l, 100, 80);
 
 				// ���Ƶ÷�
 				levelinfo->nameFlm->draw(gameRender, 1300 - 2 * l, 140);

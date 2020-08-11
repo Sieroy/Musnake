@@ -224,6 +224,7 @@ void load(SDL_Renderer* render) {
 	menuClassNameFont = TTF_OpenFont(tmpPath, 30);
 
 	// װ����Ŀ��Ϣ
+	loadUserData();
 	loadLevels();
 
 	// װ�ر������BGM

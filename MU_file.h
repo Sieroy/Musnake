@@ -14,6 +14,43 @@
 #include "MU_Flame.h"
 #include "MU_game.h"
 
+void musnake::loadUserData() {
+	Json::Reader reader;
+	char tmpStr[256];
+	catPath(tmpStr, (char*)"data\\save.mu");
+	std::ifstream ifs(tmpStr, std::ios::binary);
+	reader.parse(ifs, userData);
+}
+
+void musnake::updateUserScore(char* levelId, int rank, int score, int length) {
+	if (rank >= 0) userData["record"][levelId]["rank"] = rank;
+	if (score >= 0) userData["record"][levelId]["score"] = score;
+	if (length) userData["record"][levelId]["length"] = length;
+	if (userData["record"][levelId]["times"].empty())
+		userData["record"][levelId]["times"] = 1;
+	else
+		userData["record"][levelId]["times"] = userData["record"][levelId]["times"].asInt() + 1;
+}
+
+void musnake::updateUserKeySetting(char* keyType, char* keyName, char* keyCode){
+	char keys[16];
+	SDL_strlcpy(keys, keyType, 15);
+	SDL_strlcat(keys, "KeyCode", 15);
+	userData["settings"]["key"][keys] = keyCode;
+	SDL_strlcpy(keys, keyType, 15);
+	SDL_strlcat(keys, "KeyName", 15);
+	userData["settings"]["key"][keys] = keyName;
+}
+
+void musnake::flushUserData() {
+	Json::FastWriter writer;
+	char tmpStr[256];
+	catPath(tmpStr, (char*)"data\\save.mu");
+	std::ofstream ofs(tmpStr, std::ios::out);
+	ofs << writer.write(userData);
+	ofs.close();
+}
+
 void musnake::loadLevels() {
 	SDL_Surface* tmpSurf;
 	SDL_Color tmpColor = { 255, 255, 255, 255 };
@@ -52,6 +89,16 @@ void musnake::loadLevels() {
 				lp = lp->next;
 			}
 			*(lp->id + levelRoot["classes"][i]["items"][j]["id"].asString().copy(lp->id, 3, 0)) = 0;
+			if (!userData["record"][lp->id].empty()) {
+				*(lp->bestRank + userData["record"][lp->id]["rank"].asString().copy(lp->bestRank, 3, 0)) = 0;
+				lp->bestScore = userData["record"][lp->id]["score"].asInt();
+				lp->bestLength = userData["record"][lp->id]["length"].asInt();
+			}
+			else {
+				*(lp->bestRank) = 0;
+				lp->bestScore = -1;
+				lp->bestLength = 0;
+			}
 
 			*(tmpStr + levelRoot["classes"][i]["items"][j]["name"].asString().copy(tmpStr, 31, 0)) = 0;
 			tmpSurf = TTF_RenderUTF8_Blended(menuSongnameFont, tmpStr, tmpColor);
@@ -88,17 +135,19 @@ void musnake::loadLevels() {
 	}
 	clp->next = levelClasses;
 	levelClasses->prev = clp;
+	ifs.close();
 }
 
 void musnake::Game::loadMap() {
 	Json::Reader reader;
 	Json::Value levelRoot;
 	char tmpStr[256];
-	catPath(tmpStr, (char*)"map\\maps.mu");
+	catPath(tmpStr, (char*)"data\\maps.mu");
 	std::ifstream ifs(tmpStr, std::ios::binary);
 
 	reader.parse(ifs, levelRoot);
 	int tailNum = levelRoot[levelinfo->id]["tailNum"].asInt();
+	length = tailNum;
 	Snake *oldSnake, *newSnake;
 	int oldx, oldy;
 	oldx = oldy = -1;
@@ -219,5 +268,5 @@ void musnake::Game::loadMap() {
 	food->setFlame(foodFlame[0]);
 	gameMap[foodx][foody]->setFood(food);
 
-
+	ifs.close();
 }

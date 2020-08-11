@@ -4,6 +4,7 @@
 #include <time.h>
 #include "SDL.h"
 #include "SDL_ttf.h"
+#include "json/json.h"
 
 namespace musnake {
 	// 锟斤拷锟斤拷状态枚锟斤拷
@@ -243,6 +244,9 @@ namespace musnake {
 		char id[4];  // 最多3位ID号，用来确定路径
 		int timev;  // 总时间ms
 		Mix_Music* sample;  // 预览歌
+		char bestRank[4];
+		unsigned bestScore;
+		unsigned bestLength;
 		Flame* cover;  // 封面
 		Flame* nameFlm;
 		Flame* timeFlm;
@@ -262,6 +266,16 @@ namespace musnake {
 
 
 	// ================================ MU_file.h ================================
-	void loadLevels();
 
+	SDL_Keycode MUK_UP = SDLK_UP;
+	SDL_Keycode MUK_RIGHT = SDLK_RIGHT;
+	SDL_Keycode MUK_DOWN = SDLK_DOWN;
+	SDL_Keycode MUK_LEFT = SDLK_LEFT;
+
+	void loadUserData();
+	void updateUserScore(char* levelId, int rank, int score, int length);
+	void updateUserKeySetting(char* keyType, char* keyName, char* keyCode);
+	void flushUserData();
+	void loadLevels();
+	Json::Value userData;
 }

@@ -50,6 +50,12 @@
     <None Include="level\list.mu">
       <Filter>配置文件</Filter>
     </None>
+    <None Include="data\maps.mu">
+      <Filter>配置文件</Filter>
+    </None>
+    <None Include="data\save.mu">
+      <Filter>配置文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MU_time.h">

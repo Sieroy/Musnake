@@ -151,6 +151,8 @@
     <Library Include="SDL2_ttf.lib" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="data\maps.mu" />
+    <None Include="data\save.mu" />
     <None Include="level\list.mu" />
     <None Include="README.md" />
   </ItemGroup>
