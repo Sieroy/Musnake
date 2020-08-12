@@ -208,12 +208,14 @@ void load(SDL_Renderer* render) {
 	gameWinScorelabelFont = TTF_OpenFont(tmpPath, 50);
 	gameScorenumFont =
 	gameCombonumFont = TTF_OpenFont(tmpPath, 40);
-	gameCombolabelFont = TTF_OpenFont(tmpPath, 20);
+	gameCombolabelFont = 
+	menuSongBestNumFont = TTF_OpenFont(tmpPath, 20);
 
 	catPath(tmpPath, (char*)"font\\msyhbd.ttc");
 	titleAuthorFont = TTF_OpenFont(tmpPath, 16);
 	menuSongtimeFont = 
 	menuSongbyFont = 
+	menuSongBestTextFont = 
 	gameScorelabelFont = 
 	gameLoseSongnameFont = TTF_OpenFont(tmpPath, 20);
 	menuSongnameFont = 
@@ -221,6 +223,7 @@ void load(SDL_Renderer* render) {
 	gameWinSongnameFont =
 	gameWinScorelabelFont = 
 	gameWinLengthlabelFont = 
+	gameWinNewBestFont = 
 	menuClassNameFont = TTF_OpenFont(tmpPath, 30);
 
 	// װ����Ŀ��Ϣ
@@ -356,6 +359,27 @@ void load(SDL_Renderer* render) {
 	SDL_FreeSurface(picSurf);
 	foodFlame[0]->setNext(nullptr);
 
+	// 读取地格图像
+	catPath(tmpPath, (char*)"image\\grid_earth.png");
+	picSurf = IMG_Load(tmpPath);
+	gridFlame = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
+	catPath(tmpPath, (char*)"image\\grid_water.png");
+	picSurf = IMG_Load(tmpPath);
+	gridWaterFlame = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
+	catPath(tmpPath, (char*)"image\\grid_none.png");
+	picSurf = IMG_Load(tmpPath);
+	gridDarkFlame = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
+	catPath(tmpPath, (char*)"image\\grid_block.png");
+	picSurf = IMG_Load(tmpPath);
+	gridBlockFlame = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+
 	// ��ʼװ���ַ�ͼ
 	catPath(tmpPath, (char*)"image\\char.png");
 	picSurf = IMG_Load(tmpPath);
@@ -469,6 +493,10 @@ void load(SDL_Renderer* render) {
 	gamePauseTitleFlame = new Flame(tmpSurf, NULL, -1);
 	SDL_FreeSurface(tmpSurf);
 
+	tmpSurf = TTF_RenderUTF8_Blended(gameWinNewBestFont, "\xe6\x96\xb0\xe7\xba\xaa\xe5\xbd\x95\xef\xbc\x81\xef\xbc\x81", tmpColor);;
+	gamewinNewBestFlame = new Flame(tmpSurf, NULL, -1);
+	SDL_FreeSurface(tmpSurf);
+
 	// װ��GameWin����ı���
 	catPath(tmpPath, (char*)"image\\gamewin_bg.png");
 	picSurf = IMG_Load(tmpPath);
@@ -512,6 +540,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 			panel->nameFlm->draw(render, 430, 200);
 			panel->byFlm->draw(render, 430, 244);
 			panel->timeFlm->draw(render, 430, 280);
+			if (panel->bestFlm) panel->bestFlm->draw(render, 430, 320);
 		}
 		else if (*turningLevel > 0) {  // ���¹��������Ҫ�������ƶ���Ч��
 			Level* lp = panel->next;
@@ -524,11 +553,13 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 			lp->nameFlm->draw(render, 430, 200 + *turningLevel * 3);
 			lp->byFlm->draw(render, 430, 244 + *turningLevel * 3);
 			lp->timeFlm->draw(render, 430, 280 + *turningLevel * 3);
+			if (lp->bestFlm) lp->bestFlm->draw(render, 430, 320 + *turningLevel * 3);
 
 			panel->cover->draw(render, &re2);
 			panel->nameFlm->draw(render, 430, -400 + *turningLevel * 3);
 			panel->byFlm->draw(render, 430, -350 + *turningLevel * 3);
 			panel->timeFlm->draw(render, 430, -320 + *turningLevel * 3);
+			if (panel->bestFlm) panel->bestFlm->draw(render, 430, -280 + *turningLevel * 3);
 
 			*turningLevel -= getTimeDelta();
 			if (*turningLevel <= 0) {
@@ -544,6 +575,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 				lp->nameFlm->draw(render, 430, 200);
 				lp->byFlm->draw(render, 430, 244);
 				lp->timeFlm->draw(render, 430, 280);
+				if (lp->bestFlm) lp->bestFlm->draw(render, 430, 320);
 
 				menuClassButtonFlame->draw(render, 275, 30);
 				(*nowClass)->nameFlm->draw(render, 412, 37);
@@ -567,11 +599,13 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 			lp->nameFlm->draw(render, 430, 200 + *turningLevel * 3);
 			lp->byFlm->draw(render, 430, 244 + *turningLevel * 3);
 			lp->timeFlm->draw(render, 430, 280 + *turningLevel * 3);
+			if (lp->bestFlm) lp->bestFlm->draw(render, 430, 320 + *turningLevel * 3);
 
 			panel->cover->draw(render, &re2);
 			panel->nameFlm->draw(render, 430, 800 + *turningLevel * 3);
 			panel->byFlm->draw(render, 430, 850 + *turningLevel * 3);
 			panel->timeFlm->draw(render, 430, 880 + *turningLevel * 3);
+			if (panel->bestFlm) panel->bestFlm->draw(render, 430, 920 + *turningLevel * 3);
 
 			*turningLevel += getTimeDelta();
 			if (*turningLevel >= 0) {
@@ -587,6 +621,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 				lp->nameFlm->draw(render, 430, 200);
 				lp->byFlm->draw(render, 430, 244);
 				lp->timeFlm->draw(render, 430, 280);
+				if (lp->bestFlm) lp->bestFlm->draw(render, 430, 320);
 
 				menuClassButtonFlame->draw(render, 275, 30);
 				(*nowClass)->nameFlm->draw(render, 412, 37);
@@ -619,11 +654,13 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 		lp->nameFlm->draw(render, 430 + *turningClass * 3, 200);
 		lp->byFlm->draw(render, 430 + *turningClass * 3, 244);
 		lp->timeFlm->draw(render, 430 + *turningClass * 3, 280);
+		if (lp->bestFlm) lp->bestFlm->draw(render, 430 + *turningClass * 3, 320);
 
 		panel->cover->draw(render, &re2);
 		panel->nameFlm->draw(render, -170 + *turningClass * 3, 200);
 		panel->byFlm->draw(render, -170 + *turningClass * 3, 244);
 		panel->timeFlm->draw(render, -170 + *turningClass * 3, 280);
+		if (panel->bestFlm) panel->bestFlm->draw(render, -170 + *turningClass * 3, 320);
 
 		titleLBGFlame->draw(render, 0, -dt / 10);
 		titleRBGFlame->draw(render, 780, -dt / 10);
@@ -650,6 +687,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 			lp->nameFlm->draw(render, 430, 200);
 			lp->byFlm->draw(render, 430, 244);
 			lp->timeFlm->draw(render, 430, 280);
+			if (lp->bestFlm) lp->bestFlm->draw(render, 430, 320);
 
 			SDL_RenderPresent(render);
 
@@ -677,11 +715,13 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 		lp->nameFlm->draw(render, 430 + *turningClass * 3, 200);
 		lp->byFlm->draw(render, 430 + *turningClass * 3, 244);
 		lp->timeFlm->draw(render, 430 + *turningClass * 3, 280);
+		if (lp->bestFlm) lp->bestFlm->draw(render, 430 + +*turningClass * 3, 320);
 
 		panel->cover->draw(render, &re2);
 		panel->nameFlm->draw(render, 1030 + *turningClass * 3, 200);
 		panel->byFlm->draw(render, 1030 + *turningClass * 3, 244);
 		panel->timeFlm->draw(render, 1030 + *turningClass * 3, 280);
+		if (panel->bestFlm) panel->bestFlm->draw(render, 1030 + *turningClass * 3, 320);
 
 		titleLBGFlame->draw(render, 0, -dt / 10);
 		titleRBGFlame->draw(render, 780, -dt / 10);
@@ -708,6 +748,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 			lp->nameFlm->draw(render, 430, 200);
 			lp->byFlm->draw(render, 430, 244);
 			lp->timeFlm->draw(render, 430, 280);
+			if (lp->bestFlm) lp->bestFlm->draw(render, 430, 320);
 
 			SDL_RenderPresent(render);
 

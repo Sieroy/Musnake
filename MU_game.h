@@ -88,13 +88,6 @@ musnake::Game::Game() {
 }
 
 musnake::Game::~Game() {
-	if (hp > 0) {  // 如果胜利，那么存个档
-		int rv = rankVal > userData["record"][levelinfo->id]["rank"].asInt() ? rankVal : -1;
-		int sv = score > userData["record"][levelinfo->id]["score"].asInt() ? score : -1;
-		int lv = length > userData["record"][levelinfo->id]["length"].asInt() ? length : 0;
-		updateUserScore(levelinfo->id, rv, sv, lv);
-		flushUserData();
-	}
 
 	// �ȱ����ţ���ΪĿǰ���ǲ��Խ׶Σ�һ�����еĻ�û��ж�صظ�֮��ı�Ҫ����������ص��ͺ�~
 	// �Ȱѵظ���ͷ�д�˰�
@@ -174,8 +167,9 @@ void musnake::Game::init(Level* lp){
 		for (int j = 0;j < 64;j++) {
 			Grid* map = gameMap[i][j] = new Grid(i, j);
 			map->setPosition(i * 40, j * 40, 40, 40);
+			map->setFlame(gridFlame);
 			if (i == 0 || i == 63 || j == 0 || j == 63)
-				map->objType = MU_GRID_OBJECT_TYPE_BLOCK;
+				map->objType = MU_GRID_OBJECT_TYPE_DARK;
 			else 
 				map->objType = MU_GRID_OBJECT_TYPE_EMPTY;
 		}
@@ -297,6 +291,7 @@ int musnake::Game::moveSnake(int dir) {
 	case MU_GRID_OBJECT_TYPE_SNAKE:
 		if (gp->getSnake() != snakeTail) {  // �����ָΪ��������ʼ�˺��ж���ȡ���˴��ƶ�
 	case MU_GRID_OBJECT_TYPE_BLOCK:  // ���ǰ�����ϰ�����ͬ
+	case MU_GRID_OBJECT_TYPE_DARK:
 			hp -= 3;  // ���ˣ��ļ�һЩ���Ϳ�3Ѫ
 			if (hp < 0) hp = 0;
 			combo = 0;
@@ -549,6 +544,7 @@ void musnake::Game::run() {
 	}
 
 	timing = 0;
+
 	rankVal = hits * 100 / (noteCount + badCount);
 	char rankStr[4];
 	switch (rankVal / 10) {
@@ -573,6 +569,17 @@ void musnake::Game::run() {
 	default:
 		SDL_strlcpy(rankStr, "D", 3);
 	}
+	int rv, sv, lv;
+	if (hp > 0) {  // 如果胜利，那么存个档
+		rv = rankVal > userData["record"][levelinfo->id]["rank"].asInt() ? rankVal : -1;
+		sv = score > userData["record"][levelinfo->id]["score"].asInt() ? score : -1;
+		lv = length > userData["record"][levelinfo->id]["length"].asInt() ? length : 0;
+
+		updateUserScore(levelinfo->id, rv, sv, lv);
+		updateLevelBestFlame(levelinfo);
+		flushUserData();
+	}
+
 	while (state == MU_GAME_STATE_OVER) {
 		char ss[32];
 		updateTime();
@@ -647,6 +654,9 @@ void musnake::Game::run() {
 				drawText(gameRender, ss, 1060 - 2 * l, 355, 40);
 				int2str(ss, length);
 				drawText(gameRender, ss, 1060 - 2 * l, 505, 40);
+				if (rv >= 0) gamewinNewBestFlame->draw(gameRender, 1300 - 2 * l, 200);
+				if (sv >= 0) gamewinNewBestFlame->draw(gameRender, 1140 - 2 * l, 300);
+				if (lv >= 0) gamewinNewBestFlame->draw(gameRender, 1140 - 2 * l, 450);
 			}
 			timing += getTimeDelta();
 		}
@@ -767,6 +777,12 @@ void musnake::Game::pause() {
 void musnake::Game::draw() {
 	// �Ȼ��Ƶ�ͼ�ϵ�����
 	//if (food) food->draw(gameRender);
+
+	for (int i = 0;i < 20;i++) {
+		for (int j = 0;j < 15;j++) {
+			gridWaterFlame->draw(gameRender, i * 40, j * 40);
+		}
+	}
 
 	for (int i = 0;i < 64;i++) {
 		for (int j = 0;j < 64;j++) {

@@ -98,12 +98,20 @@ inline void musnake::Grid::update() {
 
 inline void musnake::Grid::draw(SDL_Renderer* render, SDL_Point* base) {
 	if( objType == MU_GRID_OBJECT_TYPE_BLOCK ) {
-		SDL_SetRenderDrawColor( render, 255, 0, 0, 255 );
 		SDL_Rect r = rect;
 		r.x += base->x;
-		r.y += base->y;
-		SDL_RenderFillRect( render, &r );
-		SDL_SetRenderDrawColor( render, 0, 0, 0, 150 );
+		r.y += base->y - 20;
+		r.h = 60;
+		gridBlockFlame->draw(render, &r);
+		return;
+	}
+	if (objType == MU_GRID_OBJECT_TYPE_DARK) {
+		SDL_Rect r = rect;
+		r.x += base->x;
+		r.y += base->y - 20;
+		r.h = 60;
+		gridDarkFlame->draw(render, &r);
+		return;
 	}
 	Element::draw(render, base);
 	if (objType == MU_GRID_OBJECT_TYPE_SNAKE) obj.snake->draw(render, base);

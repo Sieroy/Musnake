@@ -51,6 +51,75 @@ void musnake::flushUserData() {
 	ofs.close();
 }
 
+inline void musnake::parseRankStr(char* str, int rankv) {
+	switch (rankv / 10) {
+	case 10:
+		SDL_strlcpy(str, "SSS", 4);
+		break;
+	case 9:
+		if (rankv >= 95)
+			SDL_strlcpy(str, "SS", 3);
+		else
+			SDL_strlcpy(str, "S", 3);
+		break;
+	case 8:
+		SDL_strlcpy(str, "A", 3);
+		break;
+	case 7:
+		SDL_strlcpy(str, "B", 3);
+		break;
+	case 6:
+		SDL_strlcpy(str, "C", 3);
+		break;
+	default:
+		SDL_strlcpy(str, "D", 3);
+	}
+}
+
+void musnake::updateLevelBestFlame(Level* lp) {
+	SDL_Texture* texture;
+	SDL_Surface* textSurf;
+	SDL_Surface* tmpSurf;
+	SDL_Color tmpColor = { 255, 255, 255, 255 };
+	SDL_Rect rect;
+
+	char tmpStr[32];
+
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+	tmpSurf = SDL_CreateRGBSurface(0, 300, 60, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+#else
+	tmpSurf = SDL_CreateRGBSurface(0, 300, 60, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+#endif
+
+	textSurf = TTF_RenderUTF8_Blended(menuSongBestTextFont, "\xe6\x9c\x80\xe4\xbd\xb3\xe8\xae\xb0\xe5\xbd\x95\xef\xbc\x9a", tmpColor);
+	rect.x = 0;  rect.y = 0;  rect.w = textSurf->w; rect.h = textSurf->h;
+	SDL_BlitSurface(textSurf, NULL, tmpSurf, &rect);
+	SDL_FreeSurface(textSurf);
+
+	parseRankStr(tmpStr, userData["record"][lp->id]["rank"].asInt());
+	textSurf = TTF_RenderText_Blended(menuSongBestNumFont, tmpStr, tmpColor);
+	rect.x = 20;  rect.y = 30;  rect.w = textSurf->w; rect.h = textSurf->h;
+	SDL_BlitSurface(textSurf, NULL, tmpSurf, &rect);
+	SDL_FreeSurface(textSurf);
+
+	int2str(tmpStr, userData["record"][lp->id]["score"].asInt());
+	SDL_strlcat(tmpStr, " pt", 32);
+	textSurf = TTF_RenderText_Blended(menuSongBestNumFont, tmpStr, tmpColor);
+	rect.x = 84;  rect.y = 30;  rect.w = textSurf->w; rect.h = textSurf->h;
+	SDL_BlitSurface(textSurf, NULL, tmpSurf, &rect);
+	SDL_FreeSurface(textSurf);
+	
+	int2str(tmpStr, userData["record"][lp->id]["length"].asInt());
+	SDL_strlcat(tmpStr, " m", 32);
+	textSurf = TTF_RenderText_Blended(menuSongBestNumFont, tmpStr, tmpColor);
+	rect.x = 200;  rect.y = 30;  rect.w = textSurf->w; rect.h = textSurf->h;
+	SDL_BlitSurface(textSurf, NULL, tmpSurf, &rect);
+	SDL_FreeSurface(textSurf);
+
+	if (lp->bestFlm) delete lp->bestFlm;
+	lp->bestFlm = new Flame(tmpSurf, NULL, -1);
+}
+
 void musnake::loadLevels() {
 	SDL_Surface* tmpSurf;
 	SDL_Color tmpColor = { 255, 255, 255, 255 };
@@ -88,16 +157,10 @@ void musnake::loadLevels() {
 				lp->next->prev = lp;
 				lp = lp->next;
 			}
+			lp->bestFlm = nullptr;
 			*(lp->id + levelRoot["classes"][i]["items"][j]["id"].asString().copy(lp->id, 3, 0)) = 0;
 			if (!userData["record"][lp->id].empty()) {
-				*(lp->bestRank + userData["record"][lp->id]["rank"].asString().copy(lp->bestRank, 3, 0)) = 0;
-				lp->bestScore = userData["record"][lp->id]["score"].asInt();
-				lp->bestLength = userData["record"][lp->id]["length"].asInt();
-			}
-			else {
-				*(lp->bestRank) = 0;
-				lp->bestScore = -1;
-				lp->bestLength = 0;
+				updateLevelBestFlame(lp);
 			}
 
 			*(tmpStr + levelRoot["classes"][i]["items"][j]["name"].asString().copy(tmpStr, 31, 0)) = 0;

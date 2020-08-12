@@ -179,6 +179,10 @@ namespace musnake {
 	Mix_Music* titleBGM = nullptr;
 
 	Flame* snakeFlame[50] = { nullptr };  // 锟斤拷锟斤拷锟斤拷要锟矫碉拷锟斤拷帧锟斤拷
+	Flame* gridFlame = nullptr;
+	Flame* gridDarkFlame = nullptr;
+	Flame* gridBlockFlame = nullptr;
+	Flame* gridWaterFlame = nullptr;
 	Flame* foodFlame[1] = { nullptr };  // 锟斤拷锟斤拷食锟斤拷要锟矫碉拷帧锟斤拷锟角ｏ拷锟斤拷锟皆阶讹拷一锟斤拷锟酵癸拷
 	Flame* hpFlame[3][2] = { nullptr };  // 锟斤拷锟斤拷血锟斤拷要锟矫碉拷锟斤拷帧锟斤拷锟斤拷
 	Flame* notesignFlame[3] = { nullptr };
@@ -192,6 +196,7 @@ namespace musnake {
 	Flame* gamePauseBGMask = nullptr;
 	Flame* gamePauseTitleFlame = nullptr;
 	Flame* gamewinBGFlame = nullptr;
+	Flame* gamewinNewBestFlame = nullptr;
 
 	Flame* titleEnterButtonFlame = nullptr;
 	Flame* menuBackButtonFlame = nullptr;
@@ -209,12 +214,16 @@ namespace musnake {
 	Flame* gameOverOKButtonFlame = nullptr;
 	Flame* gameOverRetryButtonFlame = nullptr;
 
+	Flame* text_Best_Flame = nullptr;
+
 	TTF_Font* titleMusnakeFont = nullptr;  // 标题，游戏名的字体
 	TTF_Font* titleAuthorFont = nullptr;  // 标题下角的作者名字体
 	TTF_Font* menuClassNameFont = nullptr;  // 菜单处分区名字体
 	TTF_Font* menuSongnameFont = nullptr;  // 菜单处歌名字体
 	TTF_Font* menuSongbyFont = nullptr;  // 菜单处的作者字体
 	TTF_Font* menuSongtimeFont = nullptr;  // 菜单处歌曲时长字体
+	TTF_Font* menuSongBestTextFont = nullptr;  // 菜单处最高纪录文字
+	TTF_Font* menuSongBestNumFont = nullptr;  // 菜单处最高记录数字
 	TTF_Font* gameScorelabelFont = nullptr;  // 游戏时分数提示文字字体
 	TTF_Font* gameScorenumFont = nullptr;  // 游戏时分数数字字体
 	TTF_Font* gameCombolabelFont = nullptr;  // 游戏时连击提示文字字体
@@ -226,6 +235,7 @@ namespace musnake {
 	TTF_Font* gameWinScorenumFont = nullptr;  // 游戏通关得分数字字体
 	TTF_Font* gameWinLengthlabelFont = nullptr;  // 游戏通关蛇长提示字体
 	TTF_Font* gameWinLengthnumFont = nullptr;  // 游戏通关蛇长数字字体
+	TTF_Font* gameWinNewBestFont = nullptr;  // 游戏通关后新纪录字体
 	TTF_Font* gameLoseTitleFont = nullptr;  // 游戏失败标题字体
 	TTF_Font* gameLoseSongnameFont = nullptr;  // 游戏失败歌名字体
 
@@ -244,13 +254,11 @@ namespace musnake {
 		char id[4];  // 最多3位ID号，用来确定路径
 		int timev;  // 总时间ms
 		Mix_Music* sample;  // 预览歌
-		char bestRank[4];
-		unsigned bestScore;
-		unsigned bestLength;
 		Flame* cover;  // 封面
 		Flame* nameFlm;
 		Flame* timeFlm;
 		Flame* byFlm;
+		Flame* bestFlm;
 		struct _Level* prev;
 		struct _Level* next;
 	}Level;
@@ -272,10 +280,15 @@ namespace musnake {
 	SDL_Keycode MUK_DOWN = SDLK_DOWN;
 	SDL_Keycode MUK_LEFT = SDLK_LEFT;
 
+	inline void parseRankStr(char* str, int rankv);
+	inline void updateLevelBestFlame(Level* lp);
+
 	void loadUserData();
 	void updateUserScore(char* levelId, int rank, int score, int length);
 	void updateUserKeySetting(char* keyType, char* keyName, char* keyCode);
 	void flushUserData();
 	void loadLevels();
 	Json::Value userData;
+
+
 }

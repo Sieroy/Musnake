@@ -36,4 +36,5 @@ build
 *.app
 .vs/*
 env/*
+tools/*
 Debug/*

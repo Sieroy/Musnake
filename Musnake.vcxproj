@@ -168,6 +168,7 @@
     <ClInclude Include="MU_path.h" />
     <ClInclude Include="MU_time.h" />
     <ClInclude Include="MU_snake.h" />
+    <ClInclude Include="MU_toaster.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
