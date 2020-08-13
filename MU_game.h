@@ -21,6 +21,8 @@ public:
 
 	int state;
 	SDL_Renderer* gameRender;
+	DelayFunc* timingFunc = nullptr;  // ������Ϸ�õ���ʱ��������ע��ʵ����ͣЧ��ʱ����ʱ�䣩
+	DelayFunc* toastQueue = nullptr;
 
 	void setRenderer(SDL_Renderer* render);
 	void setDelayFunc(void (*func)(unsigned long), unsigned long arg, int delay);
@@ -48,6 +50,7 @@ public:
 	void pause();
 
 	// ˢ����ʱ������Note��ʱ��ֵ���ڿ��ֺͽ�����ͣʱ����
+	void initTime(int delta);
 	void refreshTime(int delta);
 
 	void init(Level* lp);
@@ -55,6 +58,10 @@ public:
 	void draw();
 
 	void loadMap();
+
+	void loadToast();
+
+	void unloadToast();
 
 	void updateBase();
 
@@ -79,7 +86,6 @@ private:
 	unsigned long long pausingTime = 0;  // ��ͣʱ��ʱ��ֵ
 	SDL_Rect drawRect;  // ��ǰ��Ļ���������Ӧ��������ͼ�ľ���
 	Snake* snakeHead, * snakeTail;  // ��ͷ����β
-	DelayFunc* timingFunc = nullptr;  // ������Ϸ�õ���ʱ��������ע��ʵ����ͣЧ��ʱ����ʱ�䣩
 	SDL_Point base = { 0, 0 };
 };
 
@@ -101,6 +107,7 @@ musnake::Game::~Game() {
 	if (food) delete food;
 
 	clearDelayFunc(&timingFunc);
+	unloadToast();
 	clearNotes(&note);
 
 	Mix_HaltMusic();
@@ -203,6 +210,7 @@ void musnake::Game::init(Level* lp){
 	// sp[2]->setFlame(snakeFlame[MU_SNAKE_FLAME_BODY_RIGHTLEFT]);
 	// sp[3]->setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHT]);
 	loadMap();
+	loadToast();
 }
 
 inline void musnake::Game::setRenderer(SDL_Renderer* render) {
@@ -377,6 +385,39 @@ void musnake::Game::refreshFood() {
 	}
 }
 
+void musnake::Game::initTime(int delta) {
+	long long dt = getTimeVal() + delta + noteDelta;
+	DelayFunc* dfp = timingFunc;
+	Note* np = note;
+
+	while (dfp) {  // ����ʱӦ�ò�������Ϸ������ʱ������
+		dfp->time += delta;
+		dfp = dfp->next;
+	}
+
+	dfp = toastQueue;
+	while (dfp) {  // ����ʱӦ�ò�������Ϸ������ʱ������
+		dfp->time += delta;
+		dfp = dfp->next;
+	}
+
+	while (np) {
+		np->time += dt;
+		np = np->next;
+	}
+
+	if (pausingTime) {
+		Snake* sp = snakeHead;
+		dt = getTimeVal() - pausingTime;
+
+		sp->delayFlameTime(dt);
+		do {
+			sp = sp->getNext();
+			sp->delayFlameTime(dt);
+		} while (sp != snakeTail);
+	}
+}
+
 void musnake::Game::refreshTime(int delta) {
 	long long dt = getTimeVal() - pausingTime + delta;
 	DelayFunc* dfp = timingFunc;
@@ -386,6 +427,13 @@ void musnake::Game::refreshTime(int delta) {
 		dfp->time += dt;
 		dfp = dfp->next;
 	}
+
+	dfp = toastQueue;
+	while (dfp) {  // ����ʱӦ�ò�������Ϸ������ʱ������
+		dfp->time += dt;
+		dfp = dfp->next;
+	}
+	
 
 	if (!pausingTime) dt += noteDelta;  // ����run��ʼ���Ǵ�ˢ�£�����ƫ��
 	while (np) {
@@ -419,7 +467,7 @@ void musnake::Game::run() {
 	// ��������µ����̰�
 	state = MU_GAME_STATE_RUNNING;
 	updateTime();
-	refreshTime(2000);
+	initTime(2000);
 	movingLock = true;
 	setDelayFunc(&passLevel, 0, levelinfo->timev + 3000);  // ����������߻�û�����͹���
 	setDelayFunc(&unlockMoving_D, 0, 1500);
@@ -540,8 +588,12 @@ void musnake::Game::run() {
 
 		draw();
 
+		triggerDelayFunc(&toastQueue);
+
 		SDL_RenderPresent(gameRender);
 	}
+
+	if (state == MU_GAME_STATE_END) return;
 
 	timing = 0;
 
@@ -656,7 +708,7 @@ void musnake::Game::run() {
 				drawText(gameRender, ss, 1060 - 2 * l, 505, 40);
 				if (rv >= 0) gamewinNewBestFlame->draw(gameRender, 1300 - 2 * l, 200);
 				if (sv >= 0) gamewinNewBestFlame->draw(gameRender, 1140 - 2 * l, 300);
-				if (lv >= 0) gamewinNewBestFlame->draw(gameRender, 1140 - 2 * l, 450);
+				if (lv > 0) gamewinNewBestFlame->draw(gameRender, 1140 - 2 * l, 450);
 			}
 			timing += getTimeDelta();
 		}
@@ -775,12 +827,14 @@ void musnake::Game::pause() {
 }
 
 void musnake::Game::draw() {
-	// �Ȼ��Ƶ�ͼ�ϵ�����
-	//if (food) food->draw(gameRender);
+	static int v = 0;
+	v += getTimeDelta();
+	int vp = v / 50;
+	vp %= 80;
 
-	for (int i = 0;i < 20;i++) {
-		for (int j = 0;j < 15;j++) {
-			gridWaterFlame->draw(gameRender, i * 40, j * 40);
+	for (int i = -2;i < 20;i++) {
+		for (int j = -1;j < 15;j++) {
+			gridWaterFlame->draw(gameRender, i * 40 + vp, j * 40 + vp / 2);
 		}
 	}
 

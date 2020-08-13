@@ -219,6 +219,7 @@ void load(SDL_Renderer* render) {
 	gameScorelabelFont = 
 	gameLoseSongnameFont = TTF_OpenFont(tmpPath, 20);
 	menuSongnameFont = 
+	gameToastFont = 
 	gamePauseSongnameFont = 
 	gameWinSongnameFont =
 	gameWinScorelabelFont = 

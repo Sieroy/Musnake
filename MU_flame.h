@@ -11,6 +11,7 @@ public:
 	Flame(SDL_Surface* surf, SDL_Rect* blitrect, int duration);
 	~Flame();
 
+	void setAlpha(Uint8 alpha);  // 设置纹理的alpha值
 	void setTexture(SDL_Texture* texture);  // 设置帧的纹理
 	void setDuration(int duration);  // 设置帧的持续时间
 	void setNext(Flame* next);  // 设置下一帧，如果next非空，则转为对next进行setNext
@@ -68,6 +69,10 @@ musnake::Flame::Flame(SDL_Surface* surf, SDL_Rect* blitrect, int duration) {
 musnake::Flame::~Flame() {
 	if (next != nullptr && next->groupId == groupId) delete next;  // 递归把同组的帧全毙掉
 	if (tex) SDL_DestroyTexture(tex);
+}
+
+inline void musnake::Flame::setAlpha(Uint8 alpha) {
+	if (tex) SDL_SetTextureAlphaMod(tex, alpha);
 }
 
 inline void musnake::Flame::setTexture(SDL_Texture* texture){

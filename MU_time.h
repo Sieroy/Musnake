@@ -39,14 +39,14 @@ inline void musnake::addDelayFunc(DelayFunc** list, void (*func)(unsigned long),
 		ndf->next = nullptr;
 	}
 	else {
-		if (ndf->time < (*list)->time) {  // 如果新延时值比其他的都要小
+		if (ndf->time <= (*list)->time) {  // 如果新延时值比其他的都要小
 			ndf->next = *list;
 			*list = ndf;
 		}
 		else {
 			DelayFunc* np = *list;
 			while (np->next) {
-				if (ndf->time < (*list)->next->time) {  // 如果新延时值大小介于某两个之间
+				if (ndf->time <= np->next->time) {  // 如果新延时值大小介于某两个之间
 					ndf->next = np->next;
 					np->next = ndf;
 					return;

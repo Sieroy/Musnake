@@ -39,7 +39,7 @@ namespace musnake {
 	typedef struct _DelayFunc {
 		void (*func)(unsigned long);
 		unsigned long arg;  // 锟斤拷锟斤拷要锟矫的诧拷锟斤拷锟斤拷锟斤拷锟揭伙拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟街革拷锟斤拷锟芥，锟角碉拷强转+锟酵凤拷
-		unsigned long long time;
+		long long time;
 		struct _DelayFunc* next;
 	}DelayFunc;
 
@@ -228,6 +228,7 @@ namespace musnake {
 	TTF_Font* gameScorenumFont = nullptr;  // 游戏时分数数字字体
 	TTF_Font* gameCombolabelFont = nullptr;  // 游戏时连击提示文字字体
 	TTF_Font* gameCombonumFont = nullptr;  // 游戏时连击数字字体
+	TTF_Font* gameToastFont = nullptr;  // 游戏中Toast文字字体
 	TTF_Font* gamePauseTitleFont = nullptr;  // 游戏暂停标题字体
 	TTF_Font* gamePauseSongnameFont = nullptr;  // 游戏暂停歌名字体
 	TTF_Font* gameWinSongnameFont = nullptr;  // 游戏通关页的歌曲名字体
@@ -274,6 +275,13 @@ namespace musnake {
 
 
 	// ================================ MU_file.h ================================
+
+	typedef struct _Toast {
+		musnake::Flame* flame;
+		int duration;
+		int x;
+		int y;
+	}Toast;
 
 	SDL_Keycode MUK_UP = SDLK_UP;
 	SDL_Keycode MUK_RIGHT = SDLK_RIGHT;

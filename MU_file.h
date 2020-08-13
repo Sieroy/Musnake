@@ -13,6 +13,7 @@
 #include "MU_path.h"
 #include "MU_Flame.h"
 #include "MU_game.h"
+#include "MU_time.h"
 
 void musnake::loadUserData() {
 	Json::Reader reader;
@@ -332,4 +333,72 @@ void musnake::Game::loadMap() {
 	gameMap[foodx][foody]->setFood(food);
 
 	ifs.close();
+}
+
+
+void preSetToast(unsigned long arg) {
+	void showToast(unsigned long arg);
+
+	musnake::addDelayFunc(&(musnake::thisGame->toastQueue), &showToast, arg, 0);
+}
+
+void showToast(unsigned long arg) {
+	using namespace musnake;
+	Toast* tp = (Toast*)arg;
+	if (tp->duration < 510) tp->flame->setAlpha(tp->duration / 2);
+	tp->flame->draw(render, tp->x, tp->y);
+	tp->duration -= getTimeDelta();
+	if (tp->duration <= 0) {
+		delete tp->flame;
+		delete tp;
+	}
+	else {
+		addDelayFunc(&(thisGame->timingFunc), &preSetToast, arg, 0);
+	}
+}
+
+void musnake::Game::loadToast() {
+	char tmpStr[256];
+	char levelFile[64];
+
+	SDL_strlcpy(levelFile, levelPath, 64);
+	SDL_strlcat(levelFile, "\\toast.mu", 64);
+	catPath(tmpStr, levelFile);
+
+	std::ifstream ifs(tmpStr, std::ios::binary);
+	if (ifs.is_open()) {
+		Json::Reader reader;
+		Json::Value root;
+		SDL_Color tmpColor = { 255, 255, 255, 255 };
+
+		reader.parse(ifs, root);
+
+		for (int i = 0;i < root.size();i++) {
+			Toast* tp = new Toast;
+			SDL_Surface* tmpSurf;
+			*(tmpStr + root[i]["str"].asString().copy(tmpStr, 256)) = 0;
+			tmpSurf = TTF_RenderUTF8_Blended(gameToastFont, tmpStr, tmpColor);
+			tp->flame = new Flame(tmpSurf, NULL, -1);
+			SDL_FreeSurface(tmpSurf);
+			tp->duration = root[i]["duration"].asInt();
+			tp->x = root[i]["x"].asInt();
+			tp->y = root[i]["y"].asInt();
+
+			addDelayFunc(&toastQueue, &showToast, (unsigned long)tp, root[i]["time"].asInt());
+		}
+		ifs.close();
+	}
+	else {
+
+	}
+}
+
+void musnake::Game::unloadToast() {
+	DelayFunc* np;
+
+	while (np = toastQueue) {
+		toastQueue = np->next;
+		delete ((Toast*)np->arg)->flame;
+		delete np;
+	}
 }
