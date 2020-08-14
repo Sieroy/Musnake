@@ -127,7 +127,7 @@ void musnake::loadLevels() {
 	Json::Reader reader;
 	Json::Value levelRoot;
 	char tmpStr[256];
-	catPath(tmpStr, (char*)"level\\list.mu");
+	catPath(tmpStr, (char*)"data\\list.mu");
 	std::ifstream ifs(tmpStr, std::ios::binary);
 
 	reader.parse(ifs, levelRoot);
@@ -181,6 +181,7 @@ void musnake::loadLevels() {
 			SDL_FreeSurface(tmpSurf);
 
 			lp->timev = levelRoot["classes"][i]["items"][j]["timeVal"].asInt();
+
 			SDL_strlcpy(ss, "level\\", 48);
 			SDL_strlcat(ss, lp->id, 48);
 			SDL_strlcat(ss, "\\sample.mp3", 48);
@@ -199,6 +200,23 @@ void musnake::loadLevels() {
 	}
 	clp->next = levelClasses;
 	levelClasses->prev = clp;
+
+	Level* lp = bonusTutorialLevel = new Level;
+	lp->bestFlm = nullptr;
+	lp->byFlm = nullptr;
+	lp->timeFlm = nullptr;
+	*(lp->id + levelRoot["bonus"]["tutorial"]["id"].asString().copy(lp->id, 3, 0)) = 0;
+	if (!userData["record"][lp->id].empty()) {
+		updateLevelBestFlame(lp);
+	}
+
+	*(tmpStr + levelRoot["bonus"]["tutorial"]["name"].asString().copy(tmpStr, 31, 0)) = 0;
+	tmpSurf = TTF_RenderUTF8_Blended(menuSongnameFont, tmpStr, tmpColor);
+	lp->nameFlm = new Flame(tmpSurf, NULL, -1);
+	SDL_FreeSurface(tmpSurf);
+
+	lp->timev = levelRoot["bonus"]["tutorial"]["timeVal"].asInt();
+
 	ifs.close();
 }
 
@@ -345,7 +363,13 @@ void preSetToast(unsigned long arg) {
 void showToast(unsigned long arg) {
 	using namespace musnake;
 	Toast* tp = (Toast*)arg;
-	if (tp->duration < 510) tp->flame->setAlpha(tp->duration / 2);
+	if (tp->pre < 255) {
+		tp->pre += getTimeDelta();
+		if (tp->pre > 255) tp->pre = 255;
+		tp->flame->setAlpha(tp->pre);
+	}
+	else if (tp->duration < 255) tp->flame->setAlpha(tp->duration);
+
 	tp->flame->draw(render, tp->x, tp->y);
 	tp->duration -= getTimeDelta();
 	if (tp->duration <= 0) {
@@ -383,6 +407,7 @@ void musnake::Game::loadToast() {
 			tp->duration = root[i]["duration"].asInt();
 			tp->x = root[i]["x"].asInt();
 			tp->y = root[i]["y"].asInt();
+			tp->pre = 0;
 
 			addDelayFunc(&toastQueue, &showToast, (unsigned long)tp, root[i]["time"].asInt());
 		}

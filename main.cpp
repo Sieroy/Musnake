@@ -19,6 +19,7 @@ using namespace musnake;
 SDL_Window* window;
 
 void load(SDL_Renderer* render);
+void unload();
 void drawStart(SDL_Renderer* render);
 void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, int* turningLevel, int* turningClass);
 
@@ -86,6 +87,18 @@ __start:
 	}
 
 __menu:
+	if (userData["hasTutorial"].empty()) {
+		musnakeState = MU_STATE_GAMING;
+		while (musnakeState == MU_STATE_GAMING) {
+			Mix_HaltMusic();
+			thisGame = new Game();
+			thisGame->setRenderer(render);
+			thisGame->init(bonusTutorialLevel);
+			thisGame->run();
+			delete thisGame;
+		}
+		userData["hasTutorial"] = 1;
+	}
 	Mix_PlayMusic(nowLevel->sample, -1);
 	while (musnakeState) {
 		updateTime();
@@ -179,6 +192,10 @@ __menu:
 		SDL_RenderPresent(render);
 	}
 	
+	if (Mix_PlayingMusic()) Mix_HaltMusic();
+
+	unload();
+
 	TTF_Quit();
 	IMG_Quit();
 	Mix_Quit();
@@ -507,7 +524,7 @@ void load(SDL_Renderer* render) {
 }
 
 void unload() {
-	
+	flushUserData();
 }
 
 void drawStart(SDL_Renderer* render) {  // ������Ϸ��ʼҳ��

@@ -674,7 +674,7 @@ void musnake::Game::run() {
 					}
 					else if( SDL_PointInRect( &point, &OKButton ) ) {
 						state = MU_GAME_STATE_END;
-						musnakeState = MU_STATE_GAMING;
+						musnakeState = MU_STATE_RUNNING;
 					}
 				}
 				break;

@@ -272,12 +272,14 @@ namespace musnake {
 	}LevelClass;
 
 	LevelClass* levelClasses = nullptr;
+	Level* bonusTutorialLevel = nullptr;
 
 
 	// ================================ MU_file.h ================================
 
 	typedef struct _Toast {
 		musnake::Flame* flame;
+		int pre;
 		int duration;
 		int x;
 		int y;

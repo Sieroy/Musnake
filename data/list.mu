@@ -28,6 +28,13 @@
 					"by": "Ken Arai",
 					"time": "2:10",
 					"timeVal": 128500
+				},
+				{
+					"id": "b02",
+					"name": "Bad Apple",
+					"by": "のみこ",
+					"time": "5:20",
+					"timeVal": 319503
 				}
 			]
 		},
@@ -44,7 +51,14 @@
 			]
 		}
 	],
-	"bonus": [
+	"bonus": {
+		"tutorial": {
+			"id": "001",
+			"name": "TETO",
+			"by": "江口孝宏",
+			"time": "2:32",
+			"timeVal": 151000
+		}
 
-	]
+	}
 }
