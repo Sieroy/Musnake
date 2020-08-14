@@ -252,7 +252,7 @@ int musnake::Game::moveSnake(int dir) {
 	}
 	else {
 		movingLock = true;
-		setDelayFunc(&unlockMoving_D, 0, 100);  // 0.1����Խ⿪
+		setDelayFunc(&unlockMoving_D, 0, 86);  // 0.085����Խ⿪
 	}
 
 	if (dir == snakeHead->getTailDir()) {  // ����
@@ -944,5 +944,5 @@ inline void musnake::Snake::endTail() {
 	}
 	setHeadDir(MU_SNAKE_DIRECT_NONE);
 
-	musnake::thisGame->setDelayFunc(&discardTail, (unsigned long)this, 90);  // չʾ��Ч���͸Ͻ�GG
+	musnake::thisGame->setDelayFunc(&discardTail, (unsigned long)this, 83);  // չʾ��Ч���͸Ͻ�GG
 }
