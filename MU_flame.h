@@ -24,6 +24,8 @@ public:
 	void draw(SDL_Renderer* render, SDL_Rect* rect);  // 在指定地点绘制
 	void draw(SDL_Renderer* render, int x, int y);  // 指定基点绘制
 
+	void draw_centered(SDL_Renderer* render, int x, int y, double angle=0);  // 指定中心点旋转绘制
+
 private:
 	int w = 0;
 	int h = 0;
@@ -111,4 +113,14 @@ inline void musnake::Flame::draw(SDL_Renderer* render, SDL_Rect* rect){
 inline void musnake::Flame::draw(SDL_Renderer* render, int x, int y) {
 	SDL_Rect r = { x, y, w, h };
 	SDL_RenderCopy(render, tex, NULL, &r);
+}
+
+inline void musnake::Flame::draw_centered(SDL_Renderer* render, int x, int y, double angle) {
+	if (!angle) {
+		draw(render, x - w / 2, y - h / 2);
+	}
+	else {
+		SDL_Rect r = { x - w / 2, y - h / 2, w, h };
+		SDL_RenderCopyEx(render, tex, NULL, &r, angle, NULL, SDL_FLIP_NONE);
+	}
 }

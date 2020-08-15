@@ -1,6 +1,7 @@
 #pragma once
 
 #include <random>
+#include <math.h>
 
 #include "SDL.h"
 #include "SDL_image.h"
@@ -21,6 +22,7 @@ public:
 
 	int state;
 	SDL_Renderer* gameRender;
+	Snake* snakeTail = nullptr;
 	DelayFunc* timingFunc = nullptr;  // ������Ϸ�õ���ʱ��������ע��ʵ����ͣЧ��ʱ����ʱ�䣩
 	DelayFunc* toastQueue = nullptr;
 
@@ -29,41 +31,20 @@ public:
 	void setSnakeHead(Snake* snake);
 	void setSnakeTail(Snake* snake);
 
-	// ���ߺ�������������ƶ����ͷ���0�����򷵻�1���ں�����ʵ�ֿ�Ѫ֮��Ĳ���
-	// �����ƶ������Ž������β��ķ��򡢳ɹ����ƶ���
-	// �������ƶ����������ƶ���β���ƶ���ײǽ��ײ����
-	int moveSnake(int dir);
-
-	// ����ʳ��
-	void refreshFood();
-
 	// ΪС�߽��ƶ���
 	void unlockMoving();
 
 	// ����BGM
 	void playBGM();
-	
+
+	void init(Level* lp);
+
 	// ��Ϸ���е�С������
 	void run();
 
 	// ��ͣʱ����
 	void pause();
 
-	// ˢ����ʱ������Note��ʱ��ֵ���ڿ��ֺͽ�����ͣʱ����
-	void initTime(int delta);
-	void refreshTime(int delta);
-
-	void init(Level* lp);
-
-	void draw();
-
-	void loadMap();
-
-	void loadToast();
-
-	void unloadToast();
-
-	void updateBase();
 
 private:
 	char levelPath[32] = "level\\";
@@ -80,13 +61,41 @@ private:
 
 	Level* levelinfo = nullptr;
 	Note* note = nullptr;  // ����
-	Food* food = nullptr;  // ʳ��
+	Food* food[3] = { nullptr };  // ʳ��
 	Mix_Music* bgm = nullptr;  // BGM
 	bool movingLock = false;  // Ϊʵ��Moves per Second���ƶ��ӵ��ƶ���
 	unsigned long long pausingTime = 0;  // ��ͣʱ��ʱ��ֵ
 	SDL_Rect drawRect;  // ��ǰ��Ļ���������Ӧ��������ͼ�ľ���
-	Snake* snakeHead, * snakeTail;  // ��ͷ����β
+	Snake* snakeHead = nullptr;  // ��ͷ����β
 	SDL_Point base = { 0, 0 };
+
+	bool pointInWindow(SDL_Point* p);
+
+	// ���ߺ�������������ƶ����ͷ���0�����򷵻�1���ں�����ʵ�ֿ�Ѫ֮��Ĳ���
+	// �����ƶ������Ž������β��ķ��򡢳ɹ����ƶ���
+	// �������ƶ����������ƶ���β���ƶ���ײǽ��ײ����
+	int moveSnake(int dir);
+
+	// ����ʳ��
+	void refreshFood(int index);
+
+	// ˢ����ʱ������Note��ʱ��ֵ���ڿ��ֺͽ�����ͣʱ����
+	void initTime(int delta);
+	void refreshTime(int delta);
+
+	void draw();
+
+	void drawUI();
+
+	void drawFoodPointer(int index);
+
+	void loadMap();
+
+	void loadToast();
+
+	void unloadToast();
+
+	void updateBase();
 };
 
 musnake::Game::Game() {
@@ -104,7 +113,10 @@ musnake::Game::~Game() {
 	}
 	// �ٰ��ߵ��ͷż��ϰɣ������ߵİ�ݹ�����Ӧ�ò���
 	delete snakeHead;
-	if (food) delete food;
+	delete snakeTail;
+	if (food[0]) delete food[0];
+	if (food[1]) delete food[1];
+	if (food[2]) delete food[2];
 
 	clearDelayFunc(&timingFunc);
 	unloadToast();
@@ -173,7 +185,6 @@ void musnake::Game::init(Level* lp){
 	for (int i = 0;i < 64;i++) {
 		for (int j = 0;j < 64;j++) {
 			Grid* map = gameMap[i][j] = new Grid(i, j);
-			map->setPosition(i * 40, j * 40, 40, 40);
 			map->setFlame(gridFlame);
 			if (i == 0 || i == 63 || j == 0 || j == 63)
 				map->objType = MU_GRID_OBJECT_TYPE_DARK;
@@ -229,6 +240,11 @@ inline void musnake::Game::setSnakeTail(Snake* snake) {
 	snakeTail = snake;
 }
 
+inline bool musnake::Game::pointInWindow(SDL_Point* p) {
+	SDL_Point bp = { p->x + base.x,p->y + base.y };
+	return SDL_PointInRect(&bp, &musnakeRect);
+}
+
 inline void musnake::Game::unlockMoving() {
 	movingLock = false;
 }
@@ -241,6 +257,14 @@ void unlockMoving_D(unsigned long arg) {
 	musnake::thisGame->unlockMoving();
 }
 
+void discardTail(unsigned long arg) {
+	using namespace musnake;
+	Snake* snake = (Snake*)arg;
+	thisGame->setSnakeTail(snake->getPrev());
+	snake->getPrev()->setNext(nullptr);
+	delete snake;
+}
+
 int musnake::Game::moveSnake(int dir) {
 	Grid* gp = snakeHead->getGrid();
 	Snake* sp;
@@ -248,11 +272,17 @@ int musnake::Game::moveSnake(int dir) {
 	int x = gp->x, y = gp->y;
 
 	if (movingLock) {  // ���������10MPS�����ƣ����ж�Ϊ�ֶ�
-		return 1;
+		removeDelayFuncByFuncArg(&timingFunc, &unlockMoving_D, 0);
+		if (!removeDelayFuncByFuncArg(&timingFunc, &discardTail, (unsigned long)snakeTail)) {
+			Snake* sp = snakeTail->getPrev();
+			delete snakeTail;
+			snakeTail = sp;
+		}
+		setDelayFunc(&unlockMoving_D, 0, 78);  // 0.085����Խ⿪
 	}
 	else {
 		movingLock = true;
-		setDelayFunc(&unlockMoving_D, 0, 86);  // 0.085����Խ⿪
+		setDelayFunc(&unlockMoving_D, 0, 78);  // 0.085����Խ⿪
 	}
 
 	if (dir == snakeHead->getTailDir()) {  // ����
@@ -305,20 +335,22 @@ int musnake::Game::moveSnake(int dir) {
 			combo = 0;
 			return 1;
 		}  // �����ָΪ��β��������һ��case��ʼ��ͷ����β
-	case MU_GRID_OBJECT_TYPE_EMPTY:
-	case MU_GRID_OBJECT_TYPE_FOOD:
-		// �ȴ���β�͵�����
 		if (gp->objType == MU_GRID_OBJECT_TYPE_FOOD) {
+	case MU_GRID_OBJECT_TYPE_FOOD:
 			length += 1;
 			if (hp < 10) hp += 1;
 			else fever = 4 + length / 10;  // ֻҪ�߹������������ϣ���ôÿһ������FEVER��~
-			delete gp->getFood();
+			Food* fp = gp->getFood();
 			gp->setFood(nullptr);
-			food = nullptr;
+			if (fp == food[0]) food[0] = nullptr;
+			else if (fp == food[1]) food[1] = nullptr;
+			else if (fp == food[2]) food[2] = nullptr;
+			delete fp;
 			score += fever > 0 ? 200 : 100;
 			snakeTail->shakeTail();
 		}
 		else {
+	case MU_GRID_OBJECT_TYPE_EMPTY:
 			snakeTail->getPrev()->turnTail();
 			snakeTail->endTail();
 			snakeTail->getGrid()->setSnake(nullptr);
@@ -336,7 +368,7 @@ int musnake::Game::moveSnake(int dir) {
 	return returnVal;
 }
 
-void musnake::Game::updateBase() {
+inline void musnake::Game::updateBase() {
 	static int dc = 0;
 	int x, y;
 	x = snakeHead->getGrid()->x;
@@ -373,13 +405,12 @@ void musnake::Game::updateBase() {
 		dc = 0;
 }
 
-void musnake::Game::refreshFood() {
+inline void musnake::Game::refreshFood(int index) {
 	while (true) {
-		int x = Rander() % 20, y = Rander() % 15;  // ����roll��ʽ�϶�Ҫ�ĵģ���Ȼ�����ں���roll���յľͺܲ���
+		int x = Rander() % 62 + 1, y = Rander() % 62 + 1;  // ����roll��ʽ�϶�Ҫ�ĵģ���Ȼ�����ں���roll���յľͺܲ���
 		if (gameMap[x][y]->objType == MU_GRID_OBJECT_TYPE_EMPTY) {
-			food = new Food;
-			food->setFlame(foodFlame[0]);
-			gameMap[x][y]->setFood(food);
+			food[index] = new Food(index);
+			gameMap[x][y]->setFood(food[index]);
 			break;
 		}
 	}
@@ -418,7 +449,7 @@ void musnake::Game::initTime(int delta) {
 	}
 }
 
-void musnake::Game::refreshTime(int delta) {
+inline void musnake::Game::refreshTime(int delta) {
 	long long dt = getTimeVal() - pausingTime + delta;
 	DelayFunc* dfp = timingFunc;
 	Note* np = note;
@@ -583,8 +614,12 @@ void musnake::Game::run() {
 			Mix_FadeOutMusic(1000);
 		}
 
-		if (!food)
-			refreshFood();
+		if (!food[0])
+			refreshFood(0);
+		if (!food[1])
+			refreshFood(1);
+		if (!food[2])
+			refreshFood(2);
 
 		draw();
 
@@ -826,7 +861,7 @@ void musnake::Game::pause() {
 	refreshTime(0);
 }
 
-void musnake::Game::draw() {
+inline void musnake::Game::draw() {
 	static int v = 0;
 	v += getTimeDelta();
 	int vp = v / 50;
@@ -847,16 +882,22 @@ void musnake::Game::draw() {
 	snakeTail->update();
 	snakeTail->draw(gameRender, &base);  // Ϊ�˱�֤��β��ʹ������ʧ�׶�Ҳ����ȷ���ƣ��������һ����
 
-	// �ٻ���GUI����
-	// �ᶨ�����ع�ʱҪд����ľ���
-	
+	drawUI();
+}
+
+inline void musnake::Game::drawUI() {
+	// 食物指示标
+	if (!pointInWindow(food[0]->getGrid()->getCenterPoint())) drawFoodPointer(0);
+	if (!pointInWindow(food[1]->getGrid()->getCenterPoint())) drawFoodPointer(1);
+	if (!pointInWindow(food[2]->getGrid()->getCenterPoint())) drawFoodPointer(2);
+
 	// �������Ѫ��
 	SDL_Rect hpRect[5] = {
 		{800 - 210, 10, 40, 40},
 		{800 - 170, 10, 40, 40},
 		{800 - 130, 10, 40, 40},
-		{800 -  90, 10, 40, 40},
-		{800 -  50, 10, 40, 40},
+		{800 - 90, 10, 40, 40},
+		{800 - 50, 10, 40, 40},
 	};  // hp��ʾ
 	int fg = movingLock ? 1 : 0;
 	for (int i = 0;i < 5;i++) {
@@ -889,7 +930,7 @@ void musnake::Game::draw() {
 		}
 		np = np->next;
 	}
-	
+
 	// ���Ƶ÷�
 	char ss[16] = { 0 };  // �ҾͲ��������ܴ�15λ���ķ��ˣ�
 	drawText(gameRender, (char*)"score:", 10, 10, 10);
@@ -909,6 +950,87 @@ void musnake::Game::draw() {
 	drawText(gameRender, (char*)"FPS", 750, 570, 10);
 }
 
+void musnake::Game::drawFoodPointer(int index) {
+	SDL_Point pp = *(food[index]->getGrid()->getCenterPoint());
+	int dx = pp.x + base.x - musnakeCenterPoint.x;
+	int dy = pp.y + base.y - musnakeCenterPoint.y;
+	if (dx > 0) {
+		if (dy > 0) {
+			double k;
+			if ((k = 1. * dx / dy) > 360. / 180) {
+				int y;
+				foodPointerFlame[index][0]->draw_centered(gameRender, 760, (y = int(300 + 360 / k)));
+				foodPointerFlame[index][1]->draw_centered(gameRender, 760, y, 180 - 180 * atan(k) / M_PI);
+			}
+			else {
+				int x;
+				foodPointerFlame[index][0]->draw_centered(gameRender, (x = int(400 + 180 * k)), 480);
+				foodPointerFlame[index][1]->draw_centered(gameRender, x, 480, 180 - 180 * atan(k) / M_PI);
+			}
+		}
+		else if (dy < 0) {
+			double k;
+			if ((k = 1. * dx / -dy) > 360. / 260) {
+				int y;
+				foodPointerFlame[index][0]->draw_centered(gameRender, 760, (y = int(300 - 360 / k)));
+				foodPointerFlame[index][1]->draw_centered(gameRender, 760, y, 180 * atan(k) / M_PI);
+			}
+			else {
+				int x;
+				foodPointerFlame[index][0]->draw_centered(gameRender, (x = int(400 + 260 * k)), 40);
+				foodPointerFlame[index][1]->draw_centered(gameRender, x, 40, 180 * atan(k) / M_PI);
+			}
+		}
+		else {  // dy == 0
+			foodPointerFlame[index][0]->draw_centered(gameRender, 760, 300);
+			foodPointerFlame[index][1]->draw_centered(gameRender, 760, 300, 90);
+		}
+	}
+	else if (dx < 0) {
+		if (dy > 0) {
+			double k;
+			if ((k = 1. * -dx / dy) > 360. / 180) {
+				int y;
+				foodPointerFlame[index][0]->draw_centered(gameRender, 40, (y = int(300 + 360 / k)));
+				foodPointerFlame[index][1]->draw_centered(gameRender, 40, y, 180 + 180 * atan(k) / M_PI);
+			}
+			else {
+				int x;
+				foodPointerFlame[index][0]->draw_centered(gameRender, (x = int(400 - 180 * k)), 480);
+				foodPointerFlame[index][1]->draw_centered(gameRender, x, 480, 180 + 180 * atan(k) / M_PI);
+			}
+		}
+		else if (dy < 0) {
+			double k;
+			if ((k = 1. * -dx / -dy) > 360. / 260) {
+				int y;
+				foodPointerFlame[index][0]->draw_centered(gameRender, 40, (y = int(300 - 360 / k)));
+				foodPointerFlame[index][1]->draw_centered(gameRender, 40, y, -180 * atan(k) / M_PI);
+			}
+			else {
+				int x;
+				foodPointerFlame[index][0]->draw_centered(gameRender, (x = int(400 - 260 * k)), 40);
+				foodPointerFlame[index][1]->draw_centered(gameRender, x, 40, -180 * atan(k) / M_PI);
+			}
+		}
+		else {  // dy == 0
+			foodPointerFlame[index][0]->draw_centered(gameRender, 40, 300);
+			foodPointerFlame[index][1]->draw_centered(gameRender, 40, 300, -90);
+				
+		}
+	}
+	else {  // dx == 0
+		if (dy > 0) {
+			foodPointerFlame[index][0]->draw_centered(gameRender, 400, 480);
+			foodPointerFlame[index][1]->draw_centered(gameRender, 400, 480, 180);
+		}
+		if (dy < 0) {
+			foodPointerFlame[index][0]->draw_centered(gameRender, 400, 40);
+			foodPointerFlame[index][1]->draw_centered(gameRender, 400, 40);
+		}
+	}
+}
+
 void musnake::drawText(SDL_Renderer* render, char* text, int x, int y, int size) {
 	char* cp = text;
 	while (*cp) {
@@ -919,15 +1041,16 @@ void musnake::drawText(SDL_Renderer* render, char* text, int x, int y, int size)
 	}
 }
 
-void discardTail(unsigned long arg) {
-	using namespace musnake;
-	Snake* snake = (Snake*)arg;
-	thisGame->setSnakeTail(snake->getPrev());
-	snake->getPrev()->setNext(nullptr);
-	delete snake;
+inline musnake::Snake::~Snake() {
+	if (next) {
+		delete next;
+	}
+	else if (this == thisGame->snakeTail) thisGame->setSnakeTail(nullptr);
+	/* 因为一般而言，只有蛇尾才会在游戏过程中自动被释放，所以如果不是蛇尾，也就是有next，
+	 * 那么只会是游戏结束时的大释放，这时候应该递归地把这些蛇体全释放掉 */
 }
 
-inline void musnake::Snake::endTail() {
+inline void musnake::Snake::endTail(bool delay) {
 	switch (headDir) {
 	case MU_SNAKE_DIRECT_UP:
 		setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_UPto0]);
@@ -943,6 +1066,10 @@ inline void musnake::Snake::endTail() {
 		break;
 	}
 	setHeadDir(MU_SNAKE_DIRECT_NONE);
-
-	musnake::thisGame->setDelayFunc(&discardTail, (unsigned long)this, 83);  // չʾ��Ч���͸Ͻ�GG
+	if (delay) {
+		musnake::thisGame->setDelayFunc(&discardTail, (unsigned long)this, 75);  // չʾ��Ч���͸Ͻ�GG
+	}
+	else {
+		delete this;
+	}
 }

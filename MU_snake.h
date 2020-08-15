@@ -56,7 +56,7 @@ public:
 	void shakeTail();  // 实验性的函数，试试有没有简化效果
 
 	// 尾巴因前进而消失于一个地图块
-	void endTail();  // 实验性的函数，试试有没有简化效果
+	void endTail(bool delay=true);  // 实验性的函数，试试有没有简化效果
 
 private:
 	int headDir = MU_SNAKE_DIRECT_NONE;  // 蛇头向的朝向
@@ -89,14 +89,6 @@ inline musnake::Snake::Snake(int tailDir) {
 		setFlame(snakeFlame[MU_SNAKE_FLAME_HEAD_0toLEFT]);
 		break;
 	}
-}
-
-inline musnake::Snake::~Snake() {
-	if (next) {
-		delete next;
-	}
-	/* 因为一般而言，只有蛇尾才会在游戏过程中自动被释放，所以如果不是蛇尾，也就是有next，
-	 * 那么只会是游戏结束时的大释放，这时候应该递归地把这些蛇体全释放掉 */
 }
 
 inline void musnake::Snake::setHeadDir(int dir) {
@@ -260,6 +252,7 @@ inline void musnake::Snake::turnTail() {
 	}
 
 	setTailDir(MU_SNAKE_DIRECT_NONE);
+	setNext(nullptr);
 }
 
 inline void musnake::Snake::shakeTail() {

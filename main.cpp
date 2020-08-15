@@ -377,6 +377,55 @@ void load(SDL_Renderer* render) {
 	SDL_FreeSurface(picSurf);
 	foodFlame[0]->setNext(nullptr);
 
+	catPath(tmpPath, (char*)"image\\food_1.png");
+	picSurf = IMG_Load(tmpPath);
+	foodFlame[1] = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+	foodFlame[1]->setNext(nullptr);
+
+	catPath(tmpPath, (char*)"image\\food_2.png");
+	picSurf = IMG_Load(tmpPath);
+	foodFlame[2] = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+	foodFlame[2]->setNext(nullptr);
+
+	// 读取食物指示图
+	catPath(tmpPath, (char*)"image\\foodpointer_0.png");
+	picSurf = IMG_Load(tmpPath);
+	foodPointerFlame[0][0] = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+	foodPointerFlame[0][0]->setNext(nullptr);
+
+	catPath(tmpPath, (char*)"image\\foodpointer_1.png");
+	picSurf = IMG_Load(tmpPath);
+	foodPointerFlame[1][0] = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+	foodPointerFlame[1][0]->setNext(nullptr);
+
+	catPath(tmpPath, (char*)"image\\foodpointer_2.png");
+	picSurf = IMG_Load(tmpPath);
+	foodPointerFlame[2][0] = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+	foodPointerFlame[2][0]->setNext(nullptr);
+
+	catPath(tmpPath, (char*)"image\\foodpointer_0L.png");
+	picSurf = IMG_Load(tmpPath);
+	foodPointerFlame[0][1] = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+	foodPointerFlame[0][1]->setNext(nullptr);
+
+	catPath(tmpPath, (char*)"image\\foodpointer_1L.png");
+	picSurf = IMG_Load(tmpPath);
+	foodPointerFlame[1][1] = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+	foodPointerFlame[1][1]->setNext(nullptr);
+
+	catPath(tmpPath, (char*)"image\\foodpointer_2L.png");
+	picSurf = IMG_Load(tmpPath);
+	foodPointerFlame[2][1] = new Flame(picSurf, NULL, -1);
+	SDL_FreeSurface(picSurf);
+	foodPointerFlame[2][1]->setNext(nullptr);
+
 	// 读取地格图像
 	catPath(tmpPath, (char*)"image\\grid_earth.png");
 	picSurf = IMG_Load(tmpPath);
@@ -417,7 +466,7 @@ void load(SDL_Renderer* render) {
 		for (int j = 0;j < 8;j++) {  // ÿ���˶������8֡
 			SDL_Rect srect = { j * 20, i * 20, 20, 20 };
 
-			flames[j] = new Flame(picSurf, &srect, 10);
+			flames[j] = new Flame(picSurf, &srect, 9);
 			flames[j]->setGroupId(MU_SNAKE_FLAME_HEAD_0toUP + i);
 			if (j)flames[j - 1]->setNext(flames[j]);
 		}

@@ -24,10 +24,14 @@ public:
 	Snake* getSnake();
 	Food* getFood();
 
+	SDL_Rect* getRect();
+	SDL_Point* getCenterPoint();
+
 	void update();
 	void draw(SDL_Renderer* render, SDL_Point* base);
 
 private:
+	SDL_Point center;
 	union {
 		Snake* snake;
 		Food* food;
@@ -38,6 +42,7 @@ musnake::Grid::Grid() {
 	objType = MU_GRID_OBJECT_TYPE_EMPTY;
 	obj.snake = nullptr;
 	x = y = -1;
+	setFlame(gridFlame);
 }
 
 musnake::Grid::Grid(int x, int y) {
@@ -45,6 +50,10 @@ musnake::Grid::Grid(int x, int y) {
 	obj.snake = nullptr;
 	this->x = x;
 	this->y = y;
+	setPosition(x * 40, y * 40, 40, 40);
+	center.x = x * 40 + 20;
+	center.y = y * 40 + 20;
+	setFlame(gridFlame);
 }
 
 musnake::Grid::~Grid() {
@@ -91,6 +100,14 @@ inline musnake::Food* musnake::Grid::getFood() {
 		return nullptr;
 }
 
+inline SDL_Rect* musnake::Grid::getRect() {
+	return &rect;
+}
+
+inline SDL_Point* musnake::Grid::getCenterPoint() {
+	return &center;
+}
+
 inline void musnake::Grid::update() {
 	Element::update();
 	if (objType == GridObjectType::MU_GRID_OBJECT_TYPE_SNAKE) obj.snake->update();
@@ -125,6 +142,10 @@ inline void musnake::Snake::setGrid(Grid* grid) {
 
 inline void musnake::Food::setGrid(Grid* grid) {
 	this->grid = grid;
+}
+
+inline musnake::Grid* musnake::Food::getGrid() {
+	return grid;
 }
 
 inline void musnake::Food::update() {

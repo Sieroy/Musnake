@@ -6,6 +6,9 @@
 #include "SDL_ttf.h"
 #include "json/json.h"
 
+#define MU_WINDOW_WIDTH 800
+#define MU_WINDOW_HEIGHT 600
+
 namespace musnake {
 	// 锟斤拷锟斤拷状态枚锟斤拷
 	enum MusnakeState {
@@ -16,6 +19,8 @@ namespace musnake {
 	// 锟斤拷锟斤拷前状态
 	int musnakeState;
 
+	SDL_Rect musnakeRect = { 0,0,MU_WINDOW_WIDTH,MU_WINDOW_HEIGHT };
+	SDL_Point musnakeCenterPoint = { MU_WINDOW_WIDTH / 2, MU_WINDOW_HEIGHT / 2 };
 	
 
 	// ================================ MU_flame.h =================================
@@ -45,6 +50,8 @@ namespace musnake {
 
 	/* 锟斤拷锟斤拷锟斤拷锟斤拷锟诫到指锟斤拷锟斤拷锟斤拷时锟斤拷锟斤拷锟斤拷锟斤拷 */
 	void addDelayFunc(DelayFunc** list, void (*func)(unsigned long), unsigned long arg, long long delay);
+
+	int removeDelayFuncByFuncArg(DelayFunc** list, void(*func)(unsigned long), unsigned long arg);
 	/* 锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷时锟斤拷锟斤拷锟绞憋拷锟斤拷锟� */
 	void triggerDelayFunc(DelayFunc** list);
 	/* 锟斤拷锟侥匡拷锟斤拷锟节碉拷锟斤拷时锟斤拷锟斤拷 */
@@ -183,7 +190,8 @@ namespace musnake {
 	Flame* gridDarkFlame = nullptr;
 	Flame* gridBlockFlame = nullptr;
 	Flame* gridWaterFlame = nullptr;
-	Flame* foodFlame[1] = { nullptr };  // 锟斤拷锟斤拷食锟斤拷要锟矫碉拷帧锟斤拷锟角ｏ拷锟斤拷锟皆阶讹拷一锟斤拷锟酵癸拷
+	Flame* foodFlame[3] = { nullptr };  // 锟斤拷锟斤拷食锟斤拷要锟矫碉拷帧锟斤拷锟角ｏ拷锟斤拷锟皆阶讹拷一锟斤拷锟酵癸拷
+	Flame* foodPointerFlame[3][2] = { nullptr };
 	Flame* hpFlame[3][2] = { nullptr };  // 锟斤拷锟斤拷血锟斤拷要锟矫碉拷锟斤拷帧锟斤拷锟斤拷
 	Flame* notesignFlame[3] = { nullptr };
 	Flame* charFlame[96] = { nullptr };  // 锟斤拷锟斤拷锟斤拷锟斤拷要锟矫碉拷帧锟斤拷锟斤拷ASCII-32锟斤拷始

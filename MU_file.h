@@ -342,13 +342,13 @@ void musnake::Game::loadMap() {
 	else if( lastDir == MU_SNAKE_DIRECT_RIGHT )
 		newSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHT]);
 	setSnakeTail(newSnake);
-	int foodx, foody;
-	foodx = levelRoot[levelinfo->id]["foodPos"]["x"].asInt();
-	foody = levelRoot[levelinfo->id]["foodPos"]["y"].asInt();
-	if( foodx == -1 && foody == -1 ) return;
-	food = new Food;
-	food->setFlame(foodFlame[0]);
-	gameMap[foodx][foody]->setFood(food);
+	//int foodx, foody;
+	//foodx = levelRoot[levelinfo->id]["foodPos"]["x"].asInt();
+	//foody = levelRoot[levelinfo->id]["foodPos"]["y"].asInt();
+	//if( foodx == -1 && foody == -1 ) return;
+	//food = new Food;
+	//food->setFlame(foodFlame[0]);
+	//gameMap[foodx][foody]->setFood(food);
 
 	ifs.close();
 }

@@ -60,6 +60,28 @@ inline void musnake::addDelayFunc(DelayFunc** list, void (*func)(unsigned long),
 	}
 }
 
+inline int musnake::removeDelayFuncByFuncArg(DelayFunc** list, void(*func)(unsigned long), unsigned long arg) {
+	DelayFunc* dp = *list;
+
+	if (!dp) return 1;  // 空表
+	if (dp->func == func && dp->arg == arg) {  // 首项中标
+		*list = dp->next;
+		delete dp;
+		return 0;
+	}
+	else {
+		while (DelayFunc* tp = dp->next) {
+			if (tp->func == func && tp->arg == arg) {
+				dp->next = dp->next->next;
+				delete tp;
+				return 0;
+			}
+			dp = dp->next;
+		}
+		return 1;
+	}
+}
+
 inline void musnake::triggerDelayFunc(DelayFunc** list) {
 	DelayFunc* np;
 	
