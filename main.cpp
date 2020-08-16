@@ -644,7 +644,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 				if (lp->bestFlm) lp->bestFlm->draw(render, 430, 320);
 
 				menuClassButtonFlame->draw(render, 275, 30);
-				(*nowClass)->nameFlm->draw(render, 412, 37);
+				(*nowClass)->nameFlm->draw_centered(render, 475, 60);
 
 				SDL_RenderPresent(render);
 
@@ -690,7 +690,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 				if (lp->bestFlm) lp->bestFlm->draw(render, 430, 320);
 
 				menuClassButtonFlame->draw(render, 275, 30);
-				(*nowClass)->nameFlm->draw(render, 412, 37);
+				(*nowClass)->nameFlm->draw_centered(render, 475, 60);
 
 				SDL_RenderPresent(render);
 
@@ -701,7 +701,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 			}
 		}
 		menuClassButtonFlame->draw(render, 275, 30);
-		levelClass->nameFlm->draw(render, 412, 37);
+		levelClass->nameFlm->draw_centered(render, 475, 60);
 	}
 	else if (*turningClass > 0) {  // ��������
 		LevelClass* clp = levelClass->next;
@@ -713,8 +713,8 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 		}
 		menuClassButtonFlame->draw(render, 275 + *turningClass * 3, 30);
 		menuClassButtonFlame->draw(render, -325 + *turningClass * 3, 30);
-		levelClass->nameFlm->draw(render, -188 + *turningClass * 3, 37);
-		clp->nameFlm->draw(render, 412 + *turningClass * 3, 37);
+		levelClass->nameFlm->draw_centered(render, -125 + *turningClass * 3, 60);
+		clp->nameFlm->draw_centered(render, 475 + *turningClass * 3, 60);
 
 		lp->cover->draw(render, &re1);
 		lp->nameFlm->draw(render, 430 + *turningClass * 3, 200);
@@ -746,7 +746,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 			SDL_RenderFillRect(render, &prect);
 
 			menuClassButtonFlame->draw(render, 275, 30);
-			clp->nameFlm->draw(render, 412, 37);
+			clp->nameFlm->draw_centered(render, 475, 60);
 
 			re1.x = 200;
 			lp->cover->draw(render, &re1);
@@ -774,8 +774,8 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 		}
 		menuClassButtonFlame->draw(render, 275 + *turningClass * 3, 30);
 		menuClassButtonFlame->draw(render, 875 + *turningClass * 3, 30);
-		levelClass->nameFlm->draw(render, 1012 + *turningClass * 3, 37);
-		clp->nameFlm->draw(render, 412 + *turningClass * 3, 37);
+		levelClass->nameFlm->draw_centered(render, 1075 + *turningClass * 3, 60);
+		clp->nameFlm->draw_centered(render, 475 + *turningClass * 3, 60);
 
 		lp->cover->draw(render, &re1);
 		lp->nameFlm->draw(render, 430 + *turningClass * 3, 200);
@@ -807,7 +807,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 			SDL_RenderFillRect(render, &prect);
 
 			menuClassButtonFlame->draw(render, 275, 30);
-			clp->nameFlm->draw(render, 412, 37);
+			clp->nameFlm->draw_centered(render, 475, 60);
 
 			re1.x = 200;
 			lp->cover->draw(render, &re1);
