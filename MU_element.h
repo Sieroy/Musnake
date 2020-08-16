@@ -11,7 +11,7 @@ public:
 	void setPosition(SDL_Rect* rect);
 	void setFlame(Flame* flame);
 
-	void delayFlameTime(int delta);  // 由于暂停等而导致的延迟处理
+	void delayFlameTime(long long delta);  // 由于暂停等而导致的延迟处理
 
 	void update();
 	void draw(SDL_Renderer* render);
@@ -39,7 +39,7 @@ inline void musnake::Element::setPosition(SDL_Rect* rect) {
 	this->rect = *rect;
 }
 
-inline void musnake::Element::delayFlameTime(int delta) {
+inline void musnake::Element::delayFlameTime(long long delta) {
 	flameTime += delta;
 }
 

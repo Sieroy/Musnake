@@ -58,7 +58,7 @@ namespace musnake {
 	void clearDelayFunc(DelayFunc** list);
 
 	unsigned long long timeVal = 0;
-	unsigned long long timeDelta = 0;
+	unsigned long timeDelta = 0;
 	unsigned long fps = 0;
 
 	DelayFunc* publicTimingFunc = nullptr;
@@ -70,7 +70,7 @@ namespace musnake {
 	inline unsigned long long getTimeVal();
 
 	/* 锟斤拷取锟斤拷前时锟斤拷值锟斤拷锟斤拷一锟轿革拷锟铰硷拷锟绞憋拷锟斤拷 */
-	inline unsigned long long getTimeDelta();
+	inline unsigned long getTimeDelta();
 
 
 	// ================================ MU_snake.h ================================
@@ -251,7 +251,7 @@ namespace musnake {
 	Game* thisGame = nullptr;  // 当前进行中的游戏对象（鱼，好大的鱼，虎纹鲨鱼……）
 	int noteDelta = 60;  // 节奏偏移
 
-	std::default_random_engine Rander(time(NULL));  // 随机数生成器
+	std::default_random_engine Rander((unsigned int)time(NULL));  // 随机数生成器
 
 	void drawText(SDL_Renderer* render, char* text, int x, int y, int size);
 

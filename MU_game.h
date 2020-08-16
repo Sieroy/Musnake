@@ -106,8 +106,8 @@ musnake::Game::~Game() {
 
 	// �ȱ����ţ���ΪĿǰ���ǲ��Խ׶Σ�һ�����еĻ�û��ж�صظ�֮��ı�Ҫ����������ص��ͺ�~
 	// �Ȱѵظ���ͷ�д�˰�
-	for (int i = 0;i < 20;i++) {
-		for (int j = 0;j < 15;j++) {
+	for (int i = 0;i < 64;i++) {
+		for (int j = 0;j < 64;j++) {
 			delete gameMap[i][j];
 		}
 	}
@@ -127,10 +127,6 @@ musnake::Game::~Game() {
 }
 
 void musnake::Game::init(Level* lp){
-	// ��˵����Ӧ���Ǵ������ļ������������ʼ���ظ�ģ��ֽ׶ξ���д����
-	SDL_Surface* picSurf, * tmpSurf;
-	SDL_Texture* tmpTex;
-
 	state = MU_GAME_STATE_LOADING;
 
 	levelinfo = lp;
@@ -436,21 +432,10 @@ void musnake::Game::initTime(int delta) {
 		np->time += dt;
 		np = np->next;
 	}
-
-	if (pausingTime) {
-		Snake* sp = snakeHead;
-		dt = getTimeVal() - pausingTime;
-
-		sp->delayFlameTime(dt);
-		do {
-			sp = sp->getNext();
-			sp->delayFlameTime(dt);
-		} while (sp != snakeTail);
-	}
 }
 
 inline void musnake::Game::refreshTime(int delta) {
-	long long dt = getTimeVal() - pausingTime + delta;
+	long long dt = (long long)(getTimeVal() - pausingTime) + delta;
 	DelayFunc* dfp = timingFunc;
 	Note* np = note;
 
@@ -659,7 +644,7 @@ void musnake::Game::run() {
 	int rv, sv, lv;
 	if (hp > 0) {  // 如果胜利，那么存个档
 		rv = rankVal > userData["record"][levelinfo->id]["rank"].asInt() ? rankVal : -1;
-		sv = score > userData["record"][levelinfo->id]["score"].asInt() ? score : -1;
+		sv = score > userData["record"][levelinfo->id]["score"].asUInt() ? score : -1;
 		lv = length > userData["record"][levelinfo->id]["length"].asInt() ? length : 0;
 
 		updateUserScore(levelinfo->id, rv, sv, lv);
@@ -720,10 +705,10 @@ void musnake::Game::run() {
 		if (hp > 0) {  // ˳������
 			if (timing < 1000) {
 				draw();
-				gamewinBGFlame->draw(gameRender, 0, 600 - timing);
+				gamewinBGFlame->draw(gameRender, 0, (int)(600 - timing));
 			}
 			else {
-				int l = timing > 1400 ? 400 : timing - 1000;
+				int l = timing > 1400 ? 400 : (int)(timing - 1000);
 				SDL_Rect prect = { 970 - 2 * l, 0, 610, 600 };
 				gamewinBGFlame->draw(gameRender, 0, -400 - (timing / 10 - 100) % 130);
 				SDL_RenderFillRect(gameRender, &prect);
@@ -918,7 +903,7 @@ inline void musnake::Game::drawUI() {
 	notesignFlame[2]->draw(gameRender, 80, 520);
 	while (np) {
 		int dt;
-		if ((dt = np->time - getTimeVal()) > 1500) break;
+		if ((dt = (int)(np->time - getTimeVal())) > 1500) break;
 		dt = (dt + 500) * 800 / 2000;
 		SDL_Rect r = { dt, 520, 5, 60 };
 		if (fn > 0) {

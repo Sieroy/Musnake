@@ -209,7 +209,6 @@ __menu:
 void load(SDL_Renderer* render) {
 	// ��˵����Ӧ���Ǵ������ļ������������ʼ���ظ�ģ��ֽ׶ξ���д����
 	SDL_Surface* picSurf, * tmpSurf;
-	SDL_Texture* tmpTex;
 	SDL_Color tmpColor = { 255, 255, 255, 255 };
 	SDL_Rect tmpRect = { 0,0,170,1000 };
 

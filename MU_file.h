@@ -2,7 +2,7 @@
 #pragma warning(disable : 4996)
 
 #include <fstream>
-#include <iostream>
+
 #include "json/json.h"
 #include "SDL.h"
 #include "SDL_ttf.h"
@@ -78,7 +78,6 @@ inline void musnake::parseRankStr(char* str, int rankv) {
 }
 
 void musnake::updateLevelBestFlame(Level* lp) {
-	SDL_Texture* texture;
 	SDL_Surface* textSurf;
 	SDL_Surface* tmpSurf;
 	SDL_Color tmpColor = { 255, 255, 255, 255 };
@@ -397,7 +396,8 @@ void musnake::Game::loadToast() {
 
 		reader.parse(ifs, root);
 
-		for (int i = 0;i < root.size();i++) {
+		int rs = root.size();
+		for (int i = 0;i < rs;i++) {
 			Toast* tp = new Toast;
 			SDL_Surface* tmpSurf;
 			*(tmpStr + root[i]["str"].asString().copy(tmpStr, 256)) = 0;
