@@ -25,6 +25,7 @@ public:
 	Snake* snakeTail = nullptr;
 	DelayFunc* timingFunc = nullptr;  // ������Ϸ�õ���ʱ��������ע��ʵ����ͣЧ��ʱ����ʱ�䣩
 	DelayFunc* toastQueue = nullptr;
+	bool playing = false;
 
 	void setRenderer(SDL_Renderer* render);
 	void setDelayFunc(void (*func)(unsigned long), unsigned long arg, int delay);
@@ -44,6 +45,10 @@ public:
 
 	// ��ͣʱ����
 	void pause();
+
+	// ˢ����ʱ������Note��ʱ��ֵ���ڿ��ֺͽ�����ͣʱ����
+	void initTime(int delta);
+	void refreshTime(int delta);
 
 
 private:
@@ -78,10 +83,6 @@ private:
 
 	// ����ʳ��
 	void refreshFood(int index);
-
-	// ˢ����ʱ������Note��ʱ��ֵ���ڿ��ֺͽ�����ͣʱ����
-	void initTime(int delta);
-	void refreshTime(int delta);
 
 	void draw();
 
@@ -287,7 +288,7 @@ int musnake::Game::moveSnake(int dir) {
 		returnVal = 1;
 	}
 
-	if (!note || note->time > (long long)getTimeVal()) {  // ��ǰû������
+	if (!playing || !note || note->time > (long long)getTimeVal()) {  // ��ǰû������
 		combo = 0;
 		returnVal = 1;
 	}
@@ -423,7 +424,7 @@ void musnake::Game::initTime(int delta) {
 	}
 
 	dfp = toastQueue;
-	while (dfp) {  // ����ʱӦ�ò�������Ϸ������ʱ������
+	while (dfp) {
 		dfp->time += delta;
 		dfp = dfp->next;
 	}
@@ -470,7 +471,11 @@ inline void musnake::Game::refreshTime(int delta) {
 }
 
 void playBGM_D(unsigned long arg) {
-	musnake::thisGame->playBGM();
+	using namespace musnake;
+	thisGame->playBGM();
+	thisGame->playing = true;
+	updateTime();
+	thisGame->initTime(0);
 }
 
 void passLevel(unsigned long arg) {
@@ -482,12 +487,8 @@ void musnake::Game::run() {
 	long long timing = 0;
 	// ��������µ����̰�
 	state = MU_GAME_STATE_RUNNING;
-	updateTime();
-	initTime(2000);
-	movingLock = true;
-	setDelayFunc(&passLevel, 0, levelinfo->timev + 3000);  // ����������߻�û�����͹���
-	setDelayFunc(&unlockMoving_D, 0, 1500);
-	setDelayFunc(&playBGM_D, 0, 2000);
+	setDelayFunc(&passLevel, 0, levelinfo->timev + 2000);  // ����������߻�û�����͹���
+	setDelayFunc(&playBGM_D, 0, 500);
 
 	while (state == MU_GAME_STATE_RUNNING) {
 		updateTime();
@@ -587,7 +588,7 @@ void musnake::Game::run() {
 			}
 		}
 
-		if (note && ((long long)getTimeVal() - note->time > 300)) moveSnake(MU_SNAKE_DIRECT_NONE);
+		if (playing && note && ((long long)getTimeVal() - note->time > 300)) moveSnake(MU_SNAKE_DIRECT_NONE);
 		// ��ʵ֤������תlong long�ĵط�����unsigned������������������BUG
 
 		triggerDelayFunc(&timingFunc);
@@ -901,19 +902,21 @@ inline void musnake::Game::drawUI() {
 	Note* np = note;
 	int fn = fever;
 	notesignFlame[2]->draw(gameRender, 80, 520);
-	while (np) {
-		int dt;
-		if ((dt = (int)(np->time - getTimeVal())) > 1500) break;
-		dt = (dt + 500) * 800 / 2000;
-		SDL_Rect r = { dt, 520, 5, 60 };
-		if (fn > 0) {
-			notesignFlame[1]->draw(gameRender, &r);
-			fn--;
+	if (playing) {
+		while (np) {
+			int dt;
+			if ((dt = (int)(np->time - getTimeVal())) > 1500) break;
+			dt = (dt + 500) * 2 / 5;
+			SDL_Rect r = { dt, 520, 5, 60 };
+			if (fn > 0) {
+				notesignFlame[1]->draw(gameRender, &r);
+				fn--;
+			}
+			else {
+				notesignFlame[0]->draw(gameRender, &r);
+			}
+			np = np->next;
 		}
-		else {
-			notesignFlame[0]->draw(gameRender, &r);
-		}
-		np = np->next;
 	}
 
 	// ���Ƶ÷�

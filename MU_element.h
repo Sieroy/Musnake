@@ -40,7 +40,8 @@ inline void musnake::Element::setPosition(SDL_Rect* rect) {
 }
 
 inline void musnake::Element::delayFlameTime(long long delta) {
-	flameTime += delta;
+	if(this)
+		flameTime += delta;
 }
 
 inline void musnake::Element::update() {

@@ -205,16 +205,24 @@ void musnake::loadLevels() {
 	lp->byFlm = nullptr;
 	lp->timeFlm = nullptr;
 	*(lp->id + levelRoot["bonus"]["tutorial"]["id"].asString().copy(lp->id, 3, 0)) = 0;
-	if (!userData["record"][lp->id].empty()) {
-		updateLevelBestFlame(lp);
-	}
-
+	if (!userData["record"][lp->id].empty()) updateLevelBestFlame(lp);
 	*(tmpStr + levelRoot["bonus"]["tutorial"]["name"].asString().copy(tmpStr, 31, 0)) = 0;
 	tmpSurf = TTF_RenderUTF8_Blended(menuSongnameFont, tmpStr, tmpColor);
 	lp->nameFlm = new Flame(tmpSurf, NULL, -1);
 	SDL_FreeSurface(tmpSurf);
-
 	lp->timev = levelRoot["bonus"]["tutorial"]["timeVal"].asInt();
+
+	lp = bonusInfoLevel = new Level;
+	lp->bestFlm = nullptr;
+	lp->byFlm = nullptr;
+	lp->timeFlm = nullptr;
+	*(lp->id + levelRoot["bonus"]["info"]["id"].asString().copy(lp->id, 3, 0)) = 0;
+	if (!userData["record"][lp->id].empty()) updateLevelBestFlame(lp);
+	*(tmpStr + levelRoot["bonus"]["info"]["name"].asString().copy(tmpStr, 31, 0)) = 0;
+	tmpSurf = TTF_RenderUTF8_Blended(menuSongnameFont, tmpStr, tmpColor);
+	lp->nameFlm = new Flame(tmpSurf, NULL, -1);
+	SDL_FreeSurface(tmpSurf);
+	lp->timev = levelRoot["bonus"]["info"]["timeVal"].asInt();
 
 	ifs.close();
 }
@@ -407,6 +415,7 @@ void musnake::Game::loadToast() {
 			tp->duration = root[i]["duration"].asInt();
 			tp->x = root[i]["x"].asInt();
 			tp->y = root[i]["y"].asInt();
+			if (!root[i]["centered"].empty()) tp->flame->anchorCenter(&tp->x, &tp->y);
 			tp->pre = 0;
 
 			addDelayFunc(&toastQueue, &showToast, (unsigned long)tp, root[i]["time"].asInt());

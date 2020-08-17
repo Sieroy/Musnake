@@ -17,6 +17,7 @@ using namespace musnake;
 
 
 SDL_Window* window;
+int bonusM = 0;
 
 void load(SDL_Renderer* render);
 void unload();
@@ -30,6 +31,7 @@ int main(int argc, char* argv[]) {
 	LevelClass* nowClass = nullptr;
 	int panelTurning = 0;
 	int classTurning = 0;
+	int bonus = 0;
 
 	initPath(argv[0]);
 	SDL_Init(SDL_INIT_EVERYTHING);
@@ -61,14 +63,84 @@ __start:
 				break;
 			case SDL_KEYDOWN:
 				switch (evt.key.keysym.sym) {
+				case SDLK_UP:
+					if (bonus == 0 || bonus == 1) {
+						bonus++;
+						bonusM = 199;
+					}
+					else 
+						bonus = 1;
+						bonusM = 199;
+					break;
+				case SDLK_DOWN:
+					if (bonus == 2 || bonus == 3) {
+						bonus++;
+						bonusM = 399;
+					}
+					else
+						bonus = 0;
+					break;
+				case SDLK_LEFT:
+					if (bonus == 4 || bonus == 6) {
+						bonus++;
+						bonusM = 599;
+					}
+					else
+						bonus = 0;
+					break;
+				case SDLK_RIGHT:
+					if (bonus == 5 || bonus == 7) {
+						bonus++;
+						bonusM = 799;
+					}
+					else
+						bonus = 0;
+					break;
+				case SDLK_a:
+					if (bonus == 9) {
+						bonus++;
+						bonusM = 999;
+					}
+					else
+						bonus = 0;
+					break;
+				case SDLK_b:
+					if (bonus == 8) {
+						bonus++;
+						bonusM = 1199;
+					}
+					else
+						bonus = 0;
+					break;
 				case SDLK_RETURN:
 				case SDLK_RETURN2:
 					Mix_HaltMusic();
-					goto __menu;
+					if (bonus == 10) {
+						musnakeState = MU_STATE_GAMING;
+						while (musnakeState == MU_STATE_GAMING) {
+							Mix_HaltMusic();
+							thisGame = new Game();
+							thisGame->setRenderer(render);
+							thisGame->init(bonusInfoLevel);
+							thisGame->run();
+							delete thisGame;
+						}
+						Mix_FadeInMusic(titleBGM, -1, 1000);
+						bonusM = 0;
+						bonus = 0;
+					}
+					else {
+						bonus = 0;
+						bonusM = 0;
+						goto __menu;
+					}
 					break;
 				case SDLK_ESCAPE:
 					musnakeState = MU_STATE_OVER;
 					break;
+				default:
+					bonusM = 0;
+					bonus = 0;
 				}
 			case SDL_MOUSEBUTTONDOWN:
 				if( evt.button.button == SDL_BUTTON_LEFT){
@@ -581,8 +653,43 @@ void drawStart(SDL_Renderer* render) {  // ������Ϸ��ʼҳ��
 	dt %= 3290;
 	titleBGFlame->draw(render, 0, -dt / 10);
 	titleMusnakeFlame->draw(render, 75, 120);
-	titleEnterButtonFlame->draw(render, 300, 440);
 	titleAuthorFlame->draw(render, 5, 570);
+	if(!bonusM)
+		titleEnterButtonFlame->draw_centered(render, 400, 440);
+	else {
+		switch (bonusM / 200) {
+		case 0:  // 0 - 199 上键的动效触发
+			titleEnterButtonFlame->draw_centered(render, 400, 440 - bonusM / 4);
+			bonusM -= getTimeDelta();
+			if (bonusM < 0) bonusM = 0;
+			break;
+		case 1:  // 200 - 399 下键的动效触发
+			titleEnterButtonFlame->draw_centered(render, 400, 390 + bonusM / 4);
+			bonusM -= getTimeDelta();
+			if (bonusM < 200) bonusM = 0;
+			break;
+		case 2:  // 400 - 599 左键的动效触发
+			titleEnterButtonFlame->draw_centered(render, 500 - bonusM / 4, 440);
+			bonusM -= getTimeDelta();
+			if (bonusM < 400) bonusM = 0;
+			break;
+		case 3:  // 600 - 799 右键的动效触发
+			titleEnterButtonFlame->draw_centered(render, bonusM / 4 + 250, 440);
+			bonusM -= getTimeDelta();
+			if (bonusM < 600) bonusM = 0;
+			break;
+		case 4:  // 800 - 999 A键的动效触发
+			titleEnterButtonFlame->draw_centered(render, 400, 440, 1800 - 9 * bonusM / 5.);
+			bonusM -= getTimeDelta();
+			if (bonusM < 800) bonusM = 0;
+			break;
+		case 5:  // 1000 - 1199 B键的动效触发
+			titleEnterButtonFlame->draw_centered(render, 400, 440, 9 * bonusM / 5. - 1800);
+			bonusM -= getTimeDelta();
+			if (bonusM < 1000) bonusM = 0;
+			break;
+		}
+	}
 }
 
 void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, int* turningLevel, int* turningClass) {

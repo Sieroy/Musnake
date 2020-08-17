@@ -249,7 +249,7 @@ namespace musnake {
 	TTF_Font* gameLoseSongnameFont = nullptr;  // 游戏失败歌名字体
 
 	Game* thisGame = nullptr;  // 当前进行中的游戏对象（鱼，好大的鱼，虎纹鲨鱼……）
-	int noteDelta = 60;  // 节奏偏移
+	int noteDelta = 0;  // 节奏偏移
 
 	std::default_random_engine Rander((unsigned int)time(NULL));  // 随机数生成器
 
@@ -281,6 +281,7 @@ namespace musnake {
 
 	LevelClass* levelClasses = nullptr;
 	Level* bonusTutorialLevel = nullptr;
+	Level* bonusInfoLevel = nullptr;
 
 
 	// ================================ MU_file.h ================================

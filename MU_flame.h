@@ -17,6 +17,7 @@ public:
 	void setNext(Flame* next);  // 设置下一帧，如果next非空，则转为对next进行setNext
 	void setNext(Flame* next, int forced);  // 强制设置this的下一帧，注意内存泄漏问题
 	void setGroupId(int id);  // 标记帧组号，帧组号用来在terminate时能稳定地释放这些帧
+	void anchorCenter(int* x, int* y);  // 将给定的中心坐标偏移至Flame顶点位置
 
 	Flame* getNext();  // 获取下一帧
 	long long getDuration();  // 获取当前帧应持续的时间
@@ -96,6 +97,11 @@ inline void musnake::Flame::setNext(Flame* next, int forced) {
 
 inline void musnake::Flame::setGroupId(int id) {
 	groupId = id;
+}
+
+inline void musnake::Flame::anchorCenter(int* x, int* y) {
+	*x -= w / 2;
+	*y -= h / 2;
 }
 
 inline musnake::Flame* musnake::Flame::getNext(){
