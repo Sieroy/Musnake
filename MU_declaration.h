@@ -21,7 +21,10 @@ namespace musnake {
 
 	SDL_Rect musnakeRect = { 0,0,MU_WINDOW_WIDTH,MU_WINDOW_HEIGHT };
 	SDL_Point musnakeCenterPoint = { MU_WINDOW_WIDTH / 2, MU_WINDOW_HEIGHT / 2 };
-	
+	SDL_Keycode musnakeKey[4] = { 0 };
+
+	const char* keyName[4] = { "up", "down", "left", "right" };
+
 
 	// ================================ MU_flame.h =================================
 
@@ -37,6 +40,12 @@ namespace musnake {
 	void initPath(char* path);
 	// 锟斤拷锟斤拷锟铰凤拷锟斤拷锟饺★拷锟斤拷锟铰凤拷锟�
 	void catPath(char* dest, char* relative);
+
+	Flame* loadFlameFromFile(char* relapath);
+
+	Flame* loadFlameForText(TTF_Font* font, char* text, SDL_Color* color);
+
+	Flame* loadFlameForUTF8(TTF_Font* font, char* text, SDL_Color* color);
 
 
 	// ================================ MU_time.h =================================
@@ -118,6 +127,13 @@ namespace musnake {
 		MU_GAME_STATE_END
 	};
 
+	enum GameKeyType {
+		MU_KEY_UP,
+		MU_KEY_DOWN,
+		MU_KEY_LEFT,
+		MU_KEY_RIGHT
+	};
+
 	// 锟斤拷锟斤拷帧锟斤拷锟斤拷锟角凤拷
 	enum SnakeFlameIndex {
 		MU_SNAKE_FLAME_HEAD_UP,
@@ -184,6 +200,7 @@ namespace musnake {
 	Grid* gameMap[64][64] = { nullptr };  // 锟斤拷锟斤拷锟斤拷戏锟矫碉拷锟侥地革拷锟角ｏ拷锟斤拷一维为X锟斤拷锟疥，锟节讹拷维为Y锟斤拷锟斤拷
 
 	Mix_Music* titleBGM = nullptr;
+	Mix_Music* configBGM = nullptr;
 
 	Flame* snakeFlame[50] = { nullptr };  // 锟斤拷锟斤拷锟斤拷要锟矫碉拷锟斤拷帧锟斤拷
 	Flame* gridFlame = nullptr;
@@ -201,17 +218,25 @@ namespace musnake {
 	Flame* titleRBGFlame = nullptr;
 	Flame* titleMusnakeFlame = nullptr;
 	Flame* titleAuthorFlame = nullptr;
+	Flame* configFGMask = nullptr;
 	Flame* gamePauseBGMask = nullptr;
 	Flame* gamePauseTitleFlame = nullptr;
 	Flame* gamewinBGFlame = nullptr;
 	Flame* gamewinNewBestFlame = nullptr;
+	Flame* configSetKeyFlame = nullptr;
+	Flame* configSetDeltaFlame = nullptr;
+	Flame* configSetPointerFlame = nullptr;
+	Flame* configKeyFlame[4] = { nullptr };
 
 	Flame* titleEnterButtonFlame = nullptr;
 	Flame* menuBackButtonFlame = nullptr;
 	Flame* menuUpButtonFlame = nullptr;
 	Flame* menuDownButtonFlame = nullptr;
 	Flame* menuPlayButtonFlame = nullptr;
+	Flame* menuConfigButtonFlame = nullptr;
 	Flame* menuClassButtonFlame = nullptr;
+	Flame* configBackButtonFlame = nullptr;
+	Flame* configOKButtonFlame = nullptr;
 	Flame* gamePauseBackButtonLFlame = nullptr;
 	Flame* gamePauseUpButtonFlame = nullptr;
 	Flame* gamePauseDownButtonFlame = nullptr;
@@ -223,6 +248,8 @@ namespace musnake {
 	Flame* gameOverRetryButtonFlame = nullptr;
 
 	Flame* text_Best_Flame = nullptr;
+	Flame* text_KeyConf_Flame = nullptr;
+	Flame* text_DeltaConf_Flame = nullptr;
 
 	TTF_Font* titleMusnakeFont = nullptr;  // 标题，游戏名的字体
 	TTF_Font* titleAuthorFont = nullptr;  // 标题下角的作者名字体
@@ -232,6 +259,8 @@ namespace musnake {
 	TTF_Font* menuSongtimeFont = nullptr;  // 菜单处歌曲时长字体
 	TTF_Font* menuSongBestTextFont = nullptr;  // 菜单处最高纪录文字
 	TTF_Font* menuSongBestNumFont = nullptr;  // 菜单处最高记录数字
+	TTF_Font* configSettingFont = nullptr;
+	TTF_Font* configKeyFont = nullptr;
 	TTF_Font* gameScorelabelFont = nullptr;  // 游戏时分数提示文字字体
 	TTF_Font* gameScorenumFont = nullptr;  // 游戏时分数数字字体
 	TTF_Font* gameCombolabelFont = nullptr;  // 游戏时连击提示文字字体
@@ -304,7 +333,7 @@ namespace musnake {
 
 	void loadUserData();
 	void updateUserScore(char* levelId, int rank, int score, int length);
-	void updateUserKeySetting(char* keyType, char* keyName, char* keyCode);
+	void updateUserKeySetting(int keyType, SDL_Keycode keyCode);
 	void flushUserData();
 	void loadLevels();
 	Json::Value userData;

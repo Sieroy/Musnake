@@ -1,8 +1,10 @@
 #pragma once
 
 #include "SDL.h"
+#include "SDL_image.h"
 
 #include "MU_declaration.h"
+#include "MU_path.h"
 
 class musnake::Flame {
 public:
@@ -19,6 +21,7 @@ public:
 	void setGroupId(int id);  // 标记帧组号，帧组号用来在terminate时能稳定地释放这些帧
 	void anchorCenter(int* x, int* y);  // 将给定的中心坐标偏移至Flame顶点位置
 
+	unsigned getAlpha();
 	Flame* getNext();  // 获取下一帧
 	long long getDuration();  // 获取当前帧应持续的时间
 
@@ -104,6 +107,12 @@ inline void musnake::Flame::anchorCenter(int* x, int* y) {
 	*y -= h / 2;
 }
 
+inline unsigned musnake::Flame::getAlpha() {
+	Uint8 al;
+	SDL_GetTextureAlphaMod(tex, &al);
+	return al;
+}
+
 inline musnake::Flame* musnake::Flame::getNext(){
 	return next;
 }
@@ -129,4 +138,27 @@ inline void musnake::Flame::draw_centered(SDL_Renderer* render, int x, int y, do
 		SDL_Rect r = { x - w / 2, y - h / 2, w, h };
 		SDL_RenderCopyEx(render, tex, NULL, &r, angle, NULL, SDL_FLIP_NONE);
 	}
+}
+
+inline musnake::Flame* musnake::loadFlameFromFile(char* relapath) {
+	char tmpPath[256];
+	catPath(tmpPath, relapath);
+	SDL_Surface* tmpSurf = IMG_Load(tmpPath);
+	Flame* fp = new Flame(tmpSurf, NULL, -1);
+	SDL_FreeSurface(tmpSurf);
+	return fp;
+}
+
+inline musnake::Flame* musnake::loadFlameForText(TTF_Font* font, char* text, SDL_Color* color) {
+	SDL_Surface* tmpSurf = TTF_RenderText_Blended(font, text, *color);
+	Flame* fp = new Flame(tmpSurf, NULL, -1);
+	SDL_FreeSurface(tmpSurf);
+	return fp;
+}
+
+inline musnake::Flame* musnake::loadFlameForUTF8(TTF_Font* font, char* text, SDL_Color* color) {
+	SDL_Surface* tmpSurf = TTF_RenderUTF8_Blended(font, text, *color);
+	Flame* fp = new Flame(tmpSurf, NULL, -1);
+	SDL_FreeSurface(tmpSurf);
+	return fp;
 }

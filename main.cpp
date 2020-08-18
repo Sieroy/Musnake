@@ -23,6 +23,7 @@ void load(SDL_Renderer* render);
 void unload();
 void drawStart(SDL_Renderer* render);
 void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, int* turningLevel, int* turningClass);
+void drawConfig(SDL_Renderer* render, int keyread);
 
 int main(int argc, char* argv[]) {
 	SDL_Event evt;
@@ -32,6 +33,9 @@ int main(int argc, char* argv[]) {
 	int panelTurning = 0;
 	int classTurning = 0;
 	int bonus = 0;
+	int settingKey = -1;
+	bool settingDelta = false;
+	SDL_Point settingDeltaPoint;
 
 	initPath(argv[0]);
 	SDL_Init(SDL_INIT_EVERYTHING);
@@ -114,6 +118,7 @@ __start:
 					break;
 				case SDLK_RETURN:
 				case SDLK_RETURN2:
+				case SDLK_KP_ENTER:
 					Mix_HaltMusic();
 					if (bonus == 10) {
 						musnakeState = MU_STATE_GAMING;
@@ -145,7 +150,7 @@ __start:
 			case SDL_MOUSEBUTTONDOWN:
 				if( evt.button.button == SDL_BUTTON_LEFT){
 					SDL_Point point{evt.button.x, evt.button.y};
-					SDL_Rect ReturnButton{ 300,440,150,60 };
+					SDL_Rect ReturnButton{ 300,410,150,60 };
 					if( SDL_PointInRect( &point, &ReturnButton ) ){
 						Mix_HaltMusic();
 						goto __menu;
@@ -157,6 +162,7 @@ __start:
 		drawStart(render);
 		SDL_RenderPresent(render);
 	}
+	goto __end;
 
 __menu:
 	if (userData["hasTutorial"].empty()) {
@@ -189,6 +195,8 @@ __menu:
 						goto __start;
 					}
 					break;
+				case SDLK_TAB:
+					goto __config;
 				case SDLK_UP:
 					if (!(panelTurning || classTurning)) panelTurning = -200;
 					break;
@@ -203,6 +211,7 @@ __menu:
 					break;
 				case SDLK_RETURN:
 				case SDLK_RETURN2:
+				case SDLK_KP_ENTER:
 					if (!(panelTurning || classTurning)) {
 						musnakeState = MU_STATE_GAMING;
 						while (musnakeState == MU_STATE_GAMING) {
@@ -220,10 +229,11 @@ __menu:
 				case SDL_MOUSEBUTTONDOWN:
 					if( evt.button.button == SDL_BUTTON_LEFT && !(classTurning || panelTurning ) ){
 						SDL_Point point{evt.button.x, evt.button.y};
-						SDL_Rect BackButton, UPButton, DownButton, PlayButton, LeftButton, RightButton, ImgButton ;
+						SDL_Rect BackButton, UPButton, DownButton, PlayButton, LeftButton, RightButton, ImgButton, ConfigButton;
 						BackButton = { 0,0,150,60 };
 						UPButton = { 0,100,150,60 };
 						DownButton = { 0,170,150,60 };
+						ConfigButton = { 0,380, 150, 60 };
 						PlayButton = { 0,520,150,60 };
 						LeftButton = { 305,40,40,40 };
 						RightButton = { 605,40,40,40 };
@@ -236,6 +246,9 @@ __menu:
 						}
 						else if( SDL_PointInRect( &point, &DownButton ) ) {
 							panelTurning = 200;
+						}
+						else if (SDL_PointInRect(&point, &ConfigButton)) {
+							goto __config;
 						}
 						else if( SDL_PointInRect( &point, &PlayButton ) || SDL_PointInRect( &point, &ImgButton ) ) {
 							musnakeState = MU_STATE_GAMING;
@@ -263,7 +276,72 @@ __menu:
 		drawPanels(render, &nowLevel,&nowClass, &panelTurning, &classTurning);
 		SDL_RenderPresent(render);
 	}
-	
+	goto __end;
+
+__config:
+	Mix_PlayMusic(configBGM, -1);
+	settingKey = -1;
+	while (musnakeState) {
+
+		updateTime();
+		SDL_RenderClear(render);
+
+		while (SDL_PollEvent(&evt)) {
+			switch (evt.type) {
+			case SDL_QUIT:
+				musnakeState = MU_STATE_OVER;
+				break;
+			case SDL_KEYDOWN:
+				switch (evt.key.keysym.sym) {
+				case SDLK_ESCAPE:
+				case SDLK_RETURN:
+				case SDLK_RETURN2:
+				case SDLK_KP_ENTER:
+					if (settingKey == -1)
+						goto __menu;
+					else
+						settingKey = -1;
+					break;
+				default:
+					if (settingKey >= 0) {
+						updateUserKeySetting(settingKey, evt.key.keysym.sym);
+						settingKey = -1;
+					}
+				}
+			case SDL_MOUSEBUTTONDOWN:
+				if (evt.button.button == SDL_BUTTON_LEFT && !(classTurning || panelTurning)) {
+					SDL_Point point{ evt.button.x, evt.button.y };
+					SDL_Rect BackButton, OKButton, KeyUpButton, KeyDownButton, KeyLeftButton, KeyRightButton;
+					BackButton = { 0,0,150,60 };
+					OKButton = { 0,520,150,60 };
+					KeyUpButton = { 240, 100, 80, 160 };
+					KeyDownButton = { 380, 100, 80, 160 };
+					KeyLeftButton = { 520, 100, 80, 160 };
+					KeyRightButton = { 660, 100, 80, 160 };
+					if (settingKey == -1) {
+						if (SDL_PointInRect(&point, &BackButton) || SDL_PointInRect(&point, &OKButton))
+							goto __menu;
+						else if (SDL_PointInRect(&point, &KeyUpButton))
+							settingKey = MU_KEY_UP;
+						else if (SDL_PointInRect(&point, &KeyRightButton))
+							settingKey = MU_KEY_RIGHT;
+						else if (SDL_PointInRect(&point, &KeyDownButton))
+							settingKey = MU_KEY_DOWN;
+						else if (SDL_PointInRect(&point, &KeyLeftButton))
+							settingKey = MU_KEY_LEFT;
+					}
+					else {
+						settingKey = -1;
+					}
+				}
+				break;
+			}
+		}
+		drawConfig(render, settingKey);
+		SDL_RenderPresent(render);
+	}
+
+__end:
 	if (Mix_PlayingMusic()) Mix_HaltMusic();
 
 	unload();
@@ -280,7 +358,7 @@ __menu:
 
 void load(SDL_Renderer* render) {
 	// ��˵����Ӧ���Ǵ������ļ������������ʼ���ظ�ģ��ֽ׶ξ���д����
-	SDL_Surface* picSurf, * tmpSurf;
+	SDL_Surface* picSurf;
 	SDL_Color tmpColor = { 255, 255, 255, 255 };
 	SDL_Rect tmpRect = { 0,0,170,1000 };
 
@@ -300,13 +378,15 @@ void load(SDL_Renderer* render) {
 	menuSongBestNumFont = TTF_OpenFont(tmpPath, 20);
 
 	catPath(tmpPath, (char*)"font\\msyhbd.ttc");
-	titleAuthorFont = TTF_OpenFont(tmpPath, 16);
+	titleAuthorFont = 
+	configKeyFont = TTF_OpenFont(tmpPath, 16);
 	menuSongtimeFont = 
 	menuSongbyFont = 
 	menuSongBestTextFont = 
 	gameScorelabelFont = 
 	gameLoseSongnameFont = TTF_OpenFont(tmpPath, 20);
 	menuSongnameFont = 
+	configSettingFont =
 	gameToastFont = 
 	gamePauseSongnameFont = 
 	gameWinSongnameFont =
@@ -320,8 +400,11 @@ void load(SDL_Renderer* render) {
 	loadLevels();
 
 	// װ�ر������BGM
-	catPath(tmpPath, (char*)"sound\\bgm.mp3");
+	catPath(tmpPath, (char*)"sound\\bgm_title.mp3");
 	titleBGM = Mix_LoadMUS(tmpPath);
+
+	catPath(tmpPath, (char*)"sound\\bgm_config.mp3");
+	configBGM = Mix_LoadMUS(tmpPath);
 
 	// װ�ر�����汳��ͼ
 	catPath(tmpPath, (char*)"image\\menu_bg.png");
@@ -333,102 +416,30 @@ void load(SDL_Renderer* render) {
 	titleRBGFlame = new Flame(picSurf, &tmpRect, -1);
 	SDL_FreeSurface(picSurf);
 
-	// װ��ENTER��ʾ��
-	catPath(tmpPath, (char*)"image\\button_enter.png");
-	picSurf = IMG_Load(tmpPath);
-	titleEnterButtonFlame = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-
-	// װ��BACK��ʾ��
-	catPath(tmpPath, (char*)"image\\button_back.png");
-	picSurf = IMG_Load(tmpPath);
-	menuBackButtonFlame = gamePauseBackButtonLFlame = gameOverBackButtonFlame = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-
-	// װ��UP��ʾ��
-	catPath(tmpPath, (char*)"image\\button_up.png");
-	picSurf = IMG_Load(tmpPath);
-	menuUpButtonFlame = gamePauseUpButtonFlame = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-
-	// װ��DOWN��ʾ��
-	catPath(tmpPath, (char*)"image\\button_down.png");
-	picSurf = IMG_Load(tmpPath);
-	menuDownButtonFlame = gamePauseDownButtonFlame = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-
-	// װ��PLAY��ʾ��
-	catPath(tmpPath, (char*)"image\\button_play.png");
-	picSurf = IMG_Load(tmpPath);
-	menuPlayButtonFlame = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-
-	// װ��CLASS��ʾ��
-	catPath(tmpPath, (char*)"image\\button_class.png");
-	picSurf = IMG_Load(tmpPath);
-	menuClassButtonFlame = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-
-	// װ��RESUME��ʾ��
-	catPath(tmpPath, (char*)"image\\button_resume_nc.png");
-	picSurf = IMG_Load(tmpPath);
-	gamePauseResumeButtonFlame[0] = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-
-	catPath(tmpPath, (char*)"image\\button_resume_c.png");
-	picSurf = IMG_Load(tmpPath);
-	gamePauseResumeButtonFlame[1] = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-
-	// װ��RETRY��ʾ��
-	catPath(tmpPath, (char*)"image\\button_retry_nc.png");
-	picSurf = IMG_Load(tmpPath);
-	gamePauseRetryButtonFlame[0] = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-
-	catPath(tmpPath, (char*)"image\\button_retry_c.png");
-	picSurf = IMG_Load(tmpPath);
-	gamePauseRetryButtonFlame[1] = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-
-	// װ��BACK��ʾ��
-	catPath(tmpPath, (char*)"image\\button_back_nc.png");
-	picSurf = IMG_Load(tmpPath);
-	gamePauseBackButtonFlame[0] = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-
-	catPath(tmpPath, (char*)"image\\button_back_c.png");
-	picSurf = IMG_Load(tmpPath);
-	gamePauseBackButtonFlame[1] = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-
-	// װ��RETRY��ʾ��
-	catPath(tmpPath, (char*)"image\\button_retry.png");
-	picSurf = IMG_Load(tmpPath);
-	gameOverRetryButtonFlame = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-
-	// װ��OK��ʾ��
-	catPath(tmpPath, (char*)"image\\button_ok.png");
-	picSurf = IMG_Load(tmpPath);
-	gameOverOKButtonFlame = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-
-	// װ��Noteͼ
-	catPath(tmpPath, (char*)"image\\notesign.png");
-	picSurf = IMG_Load(tmpPath);
-	notesignFlame[0] = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-
-	catPath(tmpPath, (char*)"image\\notesign_fever.png");
-	picSurf = IMG_Load(tmpPath);
-	notesignFlame[1] = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-
-	catPath(tmpPath, (char*)"image\\notesign_edge.png");
-	picSurf = IMG_Load(tmpPath);
-	notesignFlame[2] = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
+	titleEnterButtonFlame = loadFlameFromFile((char*)"image\\button_enter.png");
+	menuBackButtonFlame = 
+	configBackButtonFlame =
+	gameOverBackButtonFlame = loadFlameFromFile((char*)"image\\button_back.png");
+	menuConfigButtonFlame = loadFlameFromFile((char*)"image\\button_config.png");
+	menuUpButtonFlame = loadFlameFromFile((char*)"image\\button_up.png");
+	menuDownButtonFlame = loadFlameFromFile((char*)"image\\button_down.png");
+	menuPlayButtonFlame = loadFlameFromFile((char*)"image\\button_play.png");
+	menuClassButtonFlame = loadFlameFromFile((char*)"image\\button_class.png");
+	configSetKeyFlame = loadFlameFromFile((char*)"image\\button_settingkey.png");
+	configSetDeltaFlame = loadFlameFromFile((char*)"image\\button_settingbar.png");
+	configSetPointerFlame = loadFlameFromFile((char*)"image\\button_settingpin.png");
+	gamePauseResumeButtonFlame[0] = loadFlameFromFile((char*)"image\\button_resume_nc.png");
+	gamePauseResumeButtonFlame[1] = loadFlameFromFile((char*)"image\\button_resume_c.png");
+	gamePauseRetryButtonFlame[0] = loadFlameFromFile((char*)"image\\button_retry_nc.png");
+	gamePauseRetryButtonFlame[1] = loadFlameFromFile((char*)"image\\button_retry_c.png");
+	gamePauseBackButtonFlame[0] = loadFlameFromFile((char*)"image\\button_back_nc.png");
+	gamePauseBackButtonFlame[1] = loadFlameFromFile((char*)"image\\button_back_c.png");
+	gameOverRetryButtonFlame = loadFlameFromFile((char*)"image\\button_retry.png");
+	configOKButtonFlame =
+	gameOverOKButtonFlame = loadFlameFromFile((char*)"image\\button_ok.png");
+	notesignFlame[0] = loadFlameFromFile((char*)"image\\notesign.png");
+	notesignFlame[1] = loadFlameFromFile((char*)"image\\notesign_fever.png");
+	notesignFlame[2] = loadFlameFromFile((char*)"image\\notesign_edge.png");
 
 	// װ��Ѫ��ͼ
 	catPath(tmpPath, (char*)"image\\hp.png");
@@ -442,81 +453,23 @@ void load(SDL_Renderer* render) {
 	SDL_FreeSurface(picSurf);
 
 	// װ��ʳ��ͼ
-	catPath(tmpPath, (char*)"image\\food_0.png");
-	picSurf = IMG_Load(tmpPath);
-	foodFlame[0] = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-	foodFlame[0]->setNext(nullptr);
-
-	catPath(tmpPath, (char*)"image\\food_1.png");
-	picSurf = IMG_Load(tmpPath);
-	foodFlame[1] = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-	foodFlame[1]->setNext(nullptr);
-
-	catPath(tmpPath, (char*)"image\\food_2.png");
-	picSurf = IMG_Load(tmpPath);
-	foodFlame[2] = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-	foodFlame[2]->setNext(nullptr);
+	foodFlame[0] = loadFlameFromFile((char*)"image\\food_0.png");
+	foodFlame[1] = loadFlameFromFile((char*)"image\\food_1.png");
+	foodFlame[2] = loadFlameFromFile((char*)"image\\food_2.png");
 
 	// 读取食物指示图
-	catPath(tmpPath, (char*)"image\\foodpointer_0.png");
-	picSurf = IMG_Load(tmpPath);
-	foodPointerFlame[0][0] = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-	foodPointerFlame[0][0]->setNext(nullptr);
-
-	catPath(tmpPath, (char*)"image\\foodpointer_1.png");
-	picSurf = IMG_Load(tmpPath);
-	foodPointerFlame[1][0] = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-	foodPointerFlame[1][0]->setNext(nullptr);
-
-	catPath(tmpPath, (char*)"image\\foodpointer_2.png");
-	picSurf = IMG_Load(tmpPath);
-	foodPointerFlame[2][0] = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-	foodPointerFlame[2][0]->setNext(nullptr);
-
-	catPath(tmpPath, (char*)"image\\foodpointer_0L.png");
-	picSurf = IMG_Load(tmpPath);
-	foodPointerFlame[0][1] = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-	foodPointerFlame[0][1]->setNext(nullptr);
-
-	catPath(tmpPath, (char*)"image\\foodpointer_1L.png");
-	picSurf = IMG_Load(tmpPath);
-	foodPointerFlame[1][1] = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-	foodPointerFlame[1][1]->setNext(nullptr);
-
-	catPath(tmpPath, (char*)"image\\foodpointer_2L.png");
-	picSurf = IMG_Load(tmpPath);
-	foodPointerFlame[2][1] = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-	foodPointerFlame[2][1]->setNext(nullptr);
+	foodPointerFlame[0][0] = loadFlameFromFile((char*)"image\\foodpointer_0.png");
+	foodPointerFlame[1][0] = loadFlameFromFile((char*)"image\\foodpointer_1.png");
+	foodPointerFlame[2][0] = loadFlameFromFile((char*)"image\\foodpointer_2.png");
+	foodPointerFlame[0][1] = loadFlameFromFile((char*)"image\\foodpointer_0L.png");
+	foodPointerFlame[1][1] = loadFlameFromFile((char*)"image\\foodpointer_1L.png");
+	foodPointerFlame[2][1] = loadFlameFromFile((char*)"image\\foodpointer_2L.png");
 
 	// 读取地格图像
-	catPath(tmpPath, (char*)"image\\grid_earth.png");
-	picSurf = IMG_Load(tmpPath);
-	gridFlame = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-
-	catPath(tmpPath, (char*)"image\\grid_water.png");
-	picSurf = IMG_Load(tmpPath);
-	gridWaterFlame = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-
-	catPath(tmpPath, (char*)"image\\grid_none.png");
-	picSurf = IMG_Load(tmpPath);
-	gridDarkFlame = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
-
-	catPath(tmpPath, (char*)"image\\grid_block.png");
-	picSurf = IMG_Load(tmpPath);
-	gridBlockFlame = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
+	gridFlame = loadFlameFromFile((char*)"image\\grid_earth.png");
+	gridWaterFlame = loadFlameFromFile((char*)"image\\grid_water.png");
+	gridDarkFlame = loadFlameFromFile((char*)"image\\grid_none.png");
+	gridBlockFlame = loadFlameFromFile((char*)"image\\grid_block.png");
 
 	// ��ʼװ���ַ�ͼ
 	catPath(tmpPath, (char*)"image\\char.png");
@@ -613,33 +566,23 @@ void load(SDL_Renderer* render) {
 	snakeFlame[MU_SNAKE_FLAME_TAIL_DOWNtoLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFT]);
 
 	// ����Title����Ҫ�õ�����
-	tmpSurf = TTF_RenderText_Blended(titleMusnakeFont, "MUSNAKE", tmpColor);
-	titleMusnakeFlame = new Flame(tmpSurf, NULL, -1);
-	SDL_FreeSurface(tmpSurf);
-	tmpSurf = TTF_RenderText_Blended(titleAuthorFont, "By Sieroy & StdCat", tmpColor);
-	titleAuthorFlame = new Flame(tmpSurf, NULL, -1);
-	SDL_FreeSurface(tmpSurf);
+	titleMusnakeFlame = loadFlameForText(titleMusnakeFont, (char*)"MUSNAKE", &tmpColor);
+	titleAuthorFlame = loadFlameForText(titleAuthorFont, (char*)"By Sieroy & StdCat", &tmpColor);
 
-	// װ��Pause���������ͼ
-	catPath(tmpPath, (char*)"image\\mask_gamepause.png");
-	picSurf = IMG_Load(tmpPath);
-	gamePauseBGMask = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
+	text_KeyConf_Flame = loadFlameForUTF8(configSettingFont, (char*)"\xe6\xb8\xb8\xe6\x88\x8f\xe6\x8c\x89\xe9\x94\xae\xe8\xae\xbe\xe7\xbd\xae", &tmpColor);
+	text_DeltaConf_Flame = loadFlameForUTF8(configSettingFont, (char*)"\xe8\x8a\x82\xe5\xa5\x8f\xe5\x81\x8f\xe7\xa7\xbb\xe8\xae\xbe\xe7\xbd\xae", &tmpColor);
+	
+	configFGMask = loadFlameFromFile((char*)"image\\mask_configkey.png");
+	configFGMask->setAlpha(0);
+	gamePauseBGMask = loadFlameFromFile((char*)"image\\mask_gamepause.png");
 
 	// ����GamePause����Ҫ�õ�������
-	tmpSurf = TTF_RenderText_Blended(gamePauseTitleFont, "- PAUSED -", tmpColor);
-	gamePauseTitleFlame = new Flame(tmpSurf, NULL, -1);
-	SDL_FreeSurface(tmpSurf);
+	gamePauseTitleFlame = loadFlameForText(gamePauseTitleFont, (char*)"- PAUSE -", &tmpColor);
 
-	tmpSurf = TTF_RenderUTF8_Blended(gameWinNewBestFont, "\xe6\x96\xb0\xe7\xba\xaa\xe5\xbd\x95\xef\xbc\x81\xef\xbc\x81", tmpColor);;
-	gamewinNewBestFlame = new Flame(tmpSurf, NULL, -1);
-	SDL_FreeSurface(tmpSurf);
+	gamewinNewBestFlame = loadFlameForUTF8(gameWinNewBestFont, (char*)"\xe6\x96\xb0\xe7\xba\xaa\xe5\xbd\x95\xef\xbc\x81\xef\xbc\x81", &tmpColor);
 
 	// װ��GameWin����ı���
-	catPath(tmpPath, (char*)"image\\gamewin_bg.png");
-	picSurf = IMG_Load(tmpPath);
-	gamewinBGFlame = new Flame(picSurf, NULL, -1);
-	SDL_FreeSurface(picSurf);
+	gamewinBGFlame = loadFlameFromFile((char*)"image\\gamewin_bg.png");
 
 }
 
@@ -706,6 +649,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 		menuBackButtonFlame->draw(render, 0, 0);
 		menuUpButtonFlame->draw(render, 0, 100);
 		menuDownButtonFlame->draw(render, 0, 170);
+		menuConfigButtonFlame->draw(render, 0, 380);
 		menuPlayButtonFlame->draw(render, 0, 520);
 		if (!*turningLevel) {  // �����Ƶ�ǰ��Ŀ
 			SDL_Rect rect = {200, 200, 200, 200};
@@ -741,6 +685,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 				menuBackButtonFlame->draw(render, 0, 0);
 				menuUpButtonFlame->draw(render, 0, 100);
 				menuDownButtonFlame->draw(render, 0, 170);
+				menuConfigButtonFlame->draw(render, 0, 380);
 				menuPlayButtonFlame->draw(render, 0, 520);
 				SDL_RenderFillRect(render, &prect);
 				re1.y = 200;
@@ -787,6 +732,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 				menuBackButtonFlame->draw(render, 0, 0);
 				menuUpButtonFlame->draw(render, 0, 100);
 				menuDownButtonFlame->draw(render, 0, 170);
+				menuConfigButtonFlame->draw(render, 0, 380);
 				menuPlayButtonFlame->draw(render, 0, 520);
 				SDL_RenderFillRect(render, &prect);
 				re1.y = 200;
@@ -840,6 +786,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 		menuBackButtonFlame->draw(render, 0, 0);
 		menuUpButtonFlame->draw(render, 0, 100);
 		menuDownButtonFlame->draw(render, 0, 170);
+		menuConfigButtonFlame->draw(render, 0, 380);
 		menuPlayButtonFlame->draw(render, 0, 520);
 
 		*turningClass -= getTimeDelta();
@@ -849,6 +796,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 			menuBackButtonFlame->draw(render, 0, 0);
 			menuUpButtonFlame->draw(render, 0, 100);
 			menuDownButtonFlame->draw(render, 0, 170);
+			menuConfigButtonFlame->draw(render, 0, 380);
 			menuPlayButtonFlame->draw(render, 0, 520);
 			SDL_RenderFillRect(render, &prect);
 
@@ -901,6 +849,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 		menuBackButtonFlame->draw(render, 0, 0);
 		menuUpButtonFlame->draw(render, 0, 100);
 		menuDownButtonFlame->draw(render, 0, 170);
+		menuConfigButtonFlame->draw(render, 0, 380);
 		menuPlayButtonFlame->draw(render, 0, 520);
 
 		*turningClass += getTimeDelta();
@@ -910,6 +859,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 			menuBackButtonFlame->draw(render, 0, 0);
 			menuUpButtonFlame->draw(render, 0, 100);
 			menuDownButtonFlame->draw(render, 0, 170);
+			menuConfigButtonFlame->draw(render, 0, 380);
 			menuPlayButtonFlame->draw(render, 0, 520);
 			SDL_RenderFillRect(render, &prect);
 
@@ -932,6 +882,39 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 			*nowPanel = lp;
 		}
 	}
+}
 
+void drawConfig(SDL_Renderer* render, int keyread) {
+	static int x = 0, y = 0;
+	static int dt = 0;
+	SDL_Rect prect = { 170, 0, 610, 600 };
+	dt += getTimeDelta();
+	dt %= 3290;
+	titleBGFlame->draw(render, 0, -dt / 10);
+	SDL_RenderFillRect(render, &prect);
+	configBackButtonFlame->draw(render, 0, 0);
+	configOKButtonFlame->draw(render, 0, 520);
+	text_KeyConf_Flame->draw(render, 200, 40);
+	text_DeltaConf_Flame->draw(render, 200, 300);
+	configSetKeyFlame->draw(render, 170, 100);
+	configSetDeltaFlame->draw(render, 170, 380);
+	for (int i = 0;i < 4;i++)
+		if(configKeyFlame[i]) configKeyFlame[i]->draw_centered(render, 280 + 140 * i, 220);
+	configSetPointerFlame->draw_centered(render, 490 + noteDelta / 4, 383);
 
+	int al = (int)configFGMask->getAlpha();
+	if (keyread >= 0) {
+		if (al < 255) {
+			al += getTimeDelta();
+			if (al > 255) al = 255;
+			configFGMask->setAlpha((unsigned char)al);
+		}
+		configFGMask->draw(render, (x = 140 * keyread -420), (y = 0));
+	}
+	else if (al > 0) {
+		al -= getTimeDelta();
+		if (al < 0) al = 0;
+		configFGMask->setAlpha(al);
+		configFGMask->draw(render, x, y);
+	}
 }

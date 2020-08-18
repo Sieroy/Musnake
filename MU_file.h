@@ -21,9 +21,15 @@ void musnake::loadUserData() {
 	catPath(tmpStr, (char*)"data\\save.mu");
 	std::ifstream ifs(tmpStr, std::ios::binary);
 	reader.parse(ifs, userData);
+	for(int i=0;i<4;i++)
+		if (!userData["settings"]["key"][keyName[i]].empty()) {
+			updateUserKeySetting(i, userData["settings"]["key"][keyName[i]].asInt());
+			// 因为不想把下面的代码再抄过来了，就直接这样写吧
+		}
+	noteDelta = userData["settings"]["timeOffset"].asInt();
 }
 
-void musnake::updateUserScore(char* levelId, int rank, int score, int length) {
+inline void musnake::updateUserScore(char* levelId, int rank, int score, int length) {
 	if (rank >= 0) userData["record"][levelId]["rank"] = rank;
 	if (score >= 0) userData["record"][levelId]["score"] = score;
 	if (length) userData["record"][levelId]["length"] = length;
@@ -33,17 +39,47 @@ void musnake::updateUserScore(char* levelId, int rank, int score, int length) {
 		userData["record"][levelId]["times"] = userData["record"][levelId]["times"].asInt() + 1;
 }
 
-void musnake::updateUserKeySetting(char* keyType, char* keyName, char* keyCode){
-	char keys[16];
-	SDL_strlcpy(keys, keyType, 15);
-	SDL_strlcat(keys, "KeyCode", 15);
-	userData["settings"]["key"][keys] = keyCode;
-	SDL_strlcpy(keys, keyType, 15);
-	SDL_strlcat(keys, "KeyName", 15);
-	userData["settings"]["key"][keys] = keyName;
+inline void musnake::updateUserKeySetting(int keyType, SDL_Keycode keyCode){
+	SDL_Color tmpColor = { 255,255,255,255 };
+	Flame* fp;
+	if (keyCode == SDLK_SPACE) 
+		fp = loadFlameForText(configKeyFont, (char*)"SPACE", &tmpColor);
+	else if ((keyCode >= SDLK_EXCLAIM && keyCode <= SDLK_AT)
+		|| (keyCode >= SDLK_LEFTBRACKET && keyCode <= SDLK_BACKQUOTE)) {
+
+		char s[2] = { keyCode, 0 };
+		fp = loadFlameForText(configKeyFont, s, &tmpColor);
+	}
+	else if (keyCode >= SDLK_a && keyCode <= SDLK_z) {
+		char s[2] = { keyCode & 223, 0 };
+		fp = loadFlameForText(configKeyFont, s, &tmpColor);
+	}
+	else if (keyCode == SDLK_KP_DIVIDE)
+		fp = loadFlameForText(configKeyFont, (char*)"(/)", &tmpColor);
+	else if (keyCode == SDLK_KP_MULTIPLY)
+		fp = loadFlameForText(configKeyFont, (char*)"(*)", &tmpColor);
+	else if (keyCode == SDLK_KP_MINUS)
+		fp = loadFlameForText(configKeyFont, (char*)"(-)", &tmpColor);
+	else if (keyCode == SDLK_KP_PLUS)
+		fp = loadFlameForText(configKeyFont, (char*)"(+)", &tmpColor);
+	else if (keyCode == SDLK_KP_0)
+		fp = loadFlameForText(configKeyFont, (char*)"(0)", &tmpColor);
+	else if (keyCode == SDLK_KP_PERIOD)
+		fp = loadFlameForText(configKeyFont, (char*)"(.)", &tmpColor);
+	else if (keyCode >= SDLK_KP_1 && keyCode <= SDLK_KP_9) {
+		char s[4] = { '(', (keyCode - SDLK_KP_1 + 49), ')', 0 };
+		fp = loadFlameForText(configKeyFont, s, &tmpColor);
+	}
+	else {
+		return;
+	}
+	if (configKeyFlame[keyType]) delete configKeyFlame[keyType];
+	configKeyFlame[keyType] = fp;
+	musnakeKey[keyType] = keyCode;
+	userData["settings"]["key"][keyName[keyType]] = keyCode;
 }
 
-void musnake::flushUserData() {
+inline void musnake::flushUserData() {
 	Json::FastWriter writer;
 	char tmpStr[256];
 	catPath(tmpStr, (char*)"data\\save.mu");
@@ -121,7 +157,6 @@ void musnake::updateLevelBestFlame(Level* lp) {
 }
 
 void musnake::loadLevels() {
-	SDL_Surface* tmpSurf;
 	SDL_Color tmpColor = { 255, 255, 255, 255 };
 	Json::Reader reader;
 	Json::Value levelRoot;
@@ -142,9 +177,7 @@ void musnake::loadLevels() {
 			clp = clp->next;
 		}
 		*(tmpStr + levelRoot["classes"][i]["name"].asString().copy(tmpStr, 31, 0)) = 0;
-		tmpSurf = TTF_RenderUTF8_Blended(menuClassNameFont, tmpStr, tmpColor);
-		clp->nameFlm = new Flame(tmpSurf, NULL, -1);
-		SDL_FreeSurface(tmpSurf);
+		clp->nameFlm = loadFlameForUTF8(menuClassNameFont, tmpStr, &tmpColor);
 
 		int itemCount = levelRoot["classes"][i]["items"].size();
 		Level* lp = nullptr;
@@ -164,20 +197,14 @@ void musnake::loadLevels() {
 			}
 
 			*(tmpStr + levelRoot["classes"][i]["items"][j]["name"].asString().copy(tmpStr, 31, 0)) = 0;
-			tmpSurf = TTF_RenderUTF8_Blended(menuSongnameFont, tmpStr, tmpColor);
-			lp->nameFlm = new Flame(tmpSurf, NULL, -1);
-			SDL_FreeSurface(tmpSurf);
+			lp->nameFlm = loadFlameForUTF8(menuSongnameFont, tmpStr, &tmpColor);
 
 			*(tmpStr + levelRoot["classes"][i]["items"][j]["time"].asString().copy(tmpStr, 31, 0)) = 0;
-			tmpSurf = TTF_RenderText_Blended(menuSongtimeFont, tmpStr, tmpColor);
-			lp->timeFlm = new Flame(tmpSurf, NULL, -1);
-			SDL_FreeSurface(tmpSurf);
+			lp->timeFlm = loadFlameForText(menuSongtimeFont, tmpStr, &tmpColor);
 
 			*tmpStr = 'B';  *(tmpStr + 1) = 'y';  *(tmpStr + 2) = ' ';
 			*(tmpStr + levelRoot["classes"][i]["items"][j]["by"].asString().copy(tmpStr + 3, 28, 0) + 3) = 0;
-			tmpSurf = TTF_RenderUTF8_Blended(menuSongbyFont, tmpStr, tmpColor);
-			lp->byFlm = new Flame(tmpSurf, NULL, -1);
-			SDL_FreeSurface(tmpSurf);
+			lp->byFlm = loadFlameForUTF8(menuSongbyFont, tmpStr, &tmpColor);
 
 			lp->timev = levelRoot["classes"][i]["items"][j]["timeVal"].asInt();
 
@@ -189,10 +216,7 @@ void musnake::loadLevels() {
 			SDL_strlcpy(ss, "level\\", 48);
 			SDL_strlcat(ss, lp->id, 48);
 			SDL_strlcat(ss, "\\cover.png", 48);
-			catPath(tmpStr, ss);
-			tmpSurf = IMG_Load(tmpStr);
-			lp->cover = new Flame(SDL_CreateTextureFromSurface(render, tmpSurf), -1);
-			SDL_FreeSurface(tmpSurf);
+			lp->cover = loadFlameFromFile(ss);
 		}
 		lp->next = clp->levels;
 		clp->levels->prev = lp;
@@ -207,9 +231,7 @@ void musnake::loadLevels() {
 	*(lp->id + levelRoot["bonus"]["tutorial"]["id"].asString().copy(lp->id, 3, 0)) = 0;
 	if (!userData["record"][lp->id].empty()) updateLevelBestFlame(lp);
 	*(tmpStr + levelRoot["bonus"]["tutorial"]["name"].asString().copy(tmpStr, 31, 0)) = 0;
-	tmpSurf = TTF_RenderUTF8_Blended(menuSongnameFont, tmpStr, tmpColor);
-	lp->nameFlm = new Flame(tmpSurf, NULL, -1);
-	SDL_FreeSurface(tmpSurf);
+	lp->nameFlm = loadFlameForUTF8(menuSongnameFont, tmpStr, &tmpColor);
 	lp->timev = levelRoot["bonus"]["tutorial"]["timeVal"].asInt();
 
 	lp = bonusInfoLevel = new Level;
@@ -219,9 +241,7 @@ void musnake::loadLevels() {
 	*(lp->id + levelRoot["bonus"]["info"]["id"].asString().copy(lp->id, 3, 0)) = 0;
 	if (!userData["record"][lp->id].empty()) updateLevelBestFlame(lp);
 	*(tmpStr + levelRoot["bonus"]["info"]["name"].asString().copy(tmpStr, 31, 0)) = 0;
-	tmpSurf = TTF_RenderUTF8_Blended(menuSongnameFont, tmpStr, tmpColor);
-	lp->nameFlm = new Flame(tmpSurf, NULL, -1);
-	SDL_FreeSurface(tmpSurf);
+	lp->nameFlm = loadFlameForUTF8(menuSongnameFont, tmpStr, &tmpColor);
 	lp->timev = levelRoot["bonus"]["info"]["timeVal"].asInt();
 
 	ifs.close();
@@ -407,11 +427,8 @@ void musnake::Game::loadToast() {
 		int rs = root.size();
 		for (int i = 0;i < rs;i++) {
 			Toast* tp = new Toast;
-			SDL_Surface* tmpSurf;
 			*(tmpStr + root[i]["str"].asString().copy(tmpStr, 256)) = 0;
-			tmpSurf = TTF_RenderUTF8_Blended(gameToastFont, tmpStr, tmpColor);
-			tp->flame = new Flame(tmpSurf, NULL, -1);
-			SDL_FreeSurface(tmpSurf);
+			tp->flame = loadFlameForUTF8(gameToastFont, tmpStr, &tmpColor);
 			tp->duration = root[i]["duration"].asInt();
 			tp->x = root[i]["x"].asInt();
 			tp->y = root[i]["y"].asInt();

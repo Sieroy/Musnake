@@ -501,8 +501,7 @@ void musnake::Game::run() {
 			switch (evt.type) {
 			case SDL_KEYDOWN:
 				switch (evt.key.keysym.sym) {
-				case SDLK_UP:
-				case SDLK_w:  // �������λ�ȱ����Űɣ��Ժ󿪷��������ü�λʱ��˵���ʵ�ַ���
+				case SDLK_UP:__keyup:
 					if (!moveSnake(MU_SNAKE_DIRECT_UP)) {
 						hits++;
 						if (fever > 0) {
@@ -517,8 +516,7 @@ void musnake::Game::run() {
 						fever = 0;
 					}
 					break;
-				case SDLK_RIGHT:
-				case SDLK_d:
+				case SDLK_RIGHT:__keyright:
 					if (!moveSnake(MU_SNAKE_DIRECT_RIGHT)) {
 						hits++;
 						if (fever > 0) {
@@ -533,8 +531,7 @@ void musnake::Game::run() {
 						fever = 0;
 					}
 					break;
-				case SDLK_DOWN:
-				case SDLK_s:
+				case SDLK_DOWN:__keydown:
 					if (!moveSnake(MU_SNAKE_DIRECT_DOWN)) {
 						hits++;
 						if (fever > 0) {
@@ -549,8 +546,7 @@ void musnake::Game::run() {
 						fever = 0;
 					}
 					break;
-				case SDLK_LEFT:
-				case SDLK_a:
+				case SDLK_LEFT:__keyleft:
 					if (!moveSnake(MU_SNAKE_DIRECT_LEFT)) {
 						hits++;
 						if (fever > 0) {
@@ -569,6 +565,11 @@ void musnake::Game::run() {
 					state = MU_GAME_STATE_PAUSED;
 					pause();
 					break;
+				default:
+					if (evt.key.keysym.sym == musnakeKey[MU_KEY_UP]) goto __keyup;
+					if (evt.key.keysym.sym == musnakeKey[MU_KEY_DOWN]) goto __keydown;
+					if (evt.key.keysym.sym == musnakeKey[MU_KEY_LEFT]) goto __keyleft;
+					if (evt.key.keysym.sym == musnakeKey[MU_KEY_RIGHT]) goto __keyright;
 				}
 				break;
 			case SDL_WINDOWEVENT:
@@ -668,6 +669,7 @@ void musnake::Game::run() {
 				switch (evt.key.keysym.sym) {
 				case SDLK_RETURN:
 				case SDLK_RETURN2:
+				case SDLK_KP_ENTER:
 				case SDLK_ESCAPE:
 					state = MU_GAME_STATE_END;
 					musnakeState = MU_STATE_RUNNING;
