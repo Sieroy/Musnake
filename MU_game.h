@@ -84,7 +84,7 @@ private:
 	// ����ʳ��
 	void refreshFood(int index);
 
-	void draw();
+	void drawGame();
 
 	void drawUI();
 
@@ -608,7 +608,7 @@ void musnake::Game::run() {
 		if (!food[2])
 			refreshFood(2);
 
-		draw();
+		drawGame();
 
 		triggerDelayFunc(&toastQueue);
 
@@ -707,7 +707,7 @@ void musnake::Game::run() {
 
 		if (hp > 0) {  // ˳������
 			if (timing < 1000) {
-				draw();
+				drawGame();
 				gamewinBGFlame->draw(gameRender, 0, (int)(600 - timing));
 			}
 			else {
@@ -723,12 +723,10 @@ void musnake::Game::run() {
 
 				// ���Ƶ÷�
 				levelinfo->nameFlm->draw(gameRender, 1300 - 2 * l, 140);
-				drawText(gameRender, (char*)"score", 1000 - 2 * l, 300, 20);
-				drawText(gameRender, (char*)"length", 1000 - 2 * l, 450, 20);
-				int2str(ss, score);
-				drawText(gameRender, ss, 1060 - 2 * l, 355, 40);
-				int2str(ss, length);
-				drawText(gameRender, ss, 1060 - 2 * l, 505, 40);
+				text_TotalScore_Flame->draw(gameRender, 1000 - 2 * l, 300);
+				text_TotalLength_Flame->draw(gameRender, 1000 - 2 * l, 450);
+				drawNumber(gameRender, numberTotalFlame, score, 1060 - 2 * l, 355);
+				drawNumber(gameRender, numberTotalFlame, length, 1060 - 2 * l, 505);
 				if (rv >= 0) gamewinNewBestFlame->draw(gameRender, 1300 - 2 * l, 200);
 				if (sv >= 0) gamewinNewBestFlame->draw(gameRender, 1140 - 2 * l, 300);
 				if (lv > 0) gamewinNewBestFlame->draw(gameRender, 1140 - 2 * l, 450);
@@ -736,16 +734,14 @@ void musnake::Game::run() {
 			timing += getTimeDelta();
 		}
 		else {  // ����
-			draw();
+			drawGame();
 			SDL_RenderFillRect(gameRender, NULL);
 			drawText(gameRender, (char*)"you", 340, 150, 40);
 			drawText(gameRender, (char*)"are", 340, 250, 40);
 			drawText(gameRender, (char*)"dead", 280, 350, 60);
 		}
 		// ����FPS
-		int2str(ss, fps);
-		drawText(gameRender, ss, 740 - 10 * SDL_strlen(ss), 570, 10);
-		drawText(gameRender, (char*)"FPS", 750, 570, 10);
+		drawNumber(gameRender, numberFPSFlame, fps, 750, 580);
 
 		SDL_RenderPresent(gameRender);
 	}
@@ -787,7 +783,7 @@ void musnake::Game::pause() {
 					if (choosing == 0) {  // RESUME
 				case SDLK_ESCAPE:
 						state = MU_GAME_STATE_RUNNING;
-						draw();
+						drawGame();
 						SDL_Delay(300);
 						break;
 					}
@@ -808,7 +804,7 @@ void musnake::Game::pause() {
 					BackButton = {280,410,240,60};
 					if( SDL_PointInRect( &point, &ResumeButton ) ){
 						state = MU_GAME_STATE_RUNNING;
-						draw();
+						drawGame();
 						SDL_Delay(300);
 					}
 					else if( SDL_PointInRect( &point, &RetryButton ) ){
@@ -834,10 +830,7 @@ void musnake::Game::pause() {
 		long long nt = (getTimeVal() / 500) & 1 ? 4 - (getTimeVal() % 1000 / 200) : getTimeVal() % 1000 / 100;
 		titleBGFlame->draw(gameRender, 0, -dt / 10);
 		gamePauseBGMask->draw(gameRender, 0, 0);
-		//gamePauseBackButtonLFlame->draw(gameRender, 0, 0);
-		//gamePauseUpButtonFlame->draw(gameRender, 0, 100);
-		//gamePauseDownButtonFlame->draw(gameRender, 0, 170);
-		gamePauseTitleFlame->draw(gameRender, 200, 140);
+		gamePauseTitleFlame->draw_centered(gameRender, 400, 180);
 		gamePauseResumeButtonFlame[choosing == 0]->draw(gameRender, 280, 250);
 		gamePauseRetryButtonFlame[choosing == 1]->draw(gameRender, 280, 330);
 		gamePauseBackButtonFlame[choosing == 2]->draw(gameRender, 280, 410);
@@ -845,11 +838,13 @@ void musnake::Game::pause() {
 	}
 	SDL_RenderClear(gameRender);
 	Mix_ResumeMusic();
-	updateTime();
-	refreshTime(0);
+	if (state == MU_GAME_STATE_RUNNING) {
+		updateTime();
+		refreshTime(0);
+	}
 }
 
-inline void musnake::Game::draw() {
+inline void musnake::Game::drawGame() {
 	static int v = 0;
 	v += getTimeDelta();
 	int vp = v / 50;
@@ -923,21 +918,17 @@ inline void musnake::Game::drawUI() {
 
 	// ���Ƶ÷�
 	char ss[16] = { 0 };  // �ҾͲ��������ܴ�15λ���ķ��ˣ�
-	drawText(gameRender, (char*)"score:", 10, 10, 10);
-	int2str(ss, score);
-	drawText(gameRender, ss, 10, 23, 20);
+	text_Score_Flame->draw(gameRender, 10, 5);
+	drawNumber(gameRender, numberScoreFlame, score, 10, 30);
 
 	// ����������
 	if (combo >= 2) {
-		int2str(ss, combo);
-		SDL_strlcat(ss, " hits!", 16);
-		drawText(gameRender, ss, 10, 440, 20);
+		drawNumber_Centered(gameRender, numberHitsFlame, combo, 140, 470);
+		text_Hits_Flame->draw_centered(gameRender, 140, 510);
 	}
 
 	// ����FPS
-	int2str(ss, fps);
-	drawText(gameRender, ss, 740 - 10 * SDL_strlen(ss), 570, 10);
-	drawText(gameRender, (char*)"FPS", 750, 570, 10);
+	drawNumber(gameRender, numberFPSFlame, fps, 750, 580);
 }
 
 void musnake::Game::drawFoodPointer(int index) {

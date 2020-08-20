@@ -22,6 +22,8 @@ public:
 	void anchorCenter(int* x, int* y);  // 将给定的中心坐标偏移至Flame顶点位置
 
 	unsigned getAlpha();
+	int getW();
+	int getH();
 	Flame* getNext();  // 获取下一帧
 	long long getDuration();  // 获取当前帧应持续的时间
 
@@ -113,6 +115,14 @@ inline unsigned musnake::Flame::getAlpha() {
 	return al;
 }
 
+inline int musnake::Flame::getW() {
+	return w;
+}
+
+inline int musnake::Flame::getH() {
+	return h;
+}
+
 inline musnake::Flame* musnake::Flame::getNext(){
 	return next;
 }
@@ -157,8 +167,39 @@ inline musnake::Flame* musnake::loadFlameForText(TTF_Font* font, char* text, SDL
 }
 
 inline musnake::Flame* musnake::loadFlameForUTF8(TTF_Font* font, char* text, SDL_Color* color) {
+	if (!*text) return nullptr;
 	SDL_Surface* tmpSurf = TTF_RenderUTF8_Blended(font, text, *color);
 	Flame* fp = new Flame(tmpSurf, NULL, -1);
 	SDL_FreeSurface(tmpSurf);
 	return fp;
+}
+
+inline void musnake::drawNumber(SDL_Renderer* render, Flame** flames, int num, int x, int y) {
+	char ns[16], * p = ns;
+	int2str(ns, num);
+	while (*p) {
+		if (*p == '-') {
+			flames[10]->draw(render, x, y);
+			x += flames[10]->getW();
+		}
+		else {
+			flames[*p - '0']->draw(render, x, y);
+			x += flames[*p - '0']->getW();
+		}
+		p++;
+	}
+}
+
+inline void musnake::drawNumber_Centered(SDL_Renderer* render, Flame** flames, int num, int x, int y) {
+	char ns[16], * p = ns;
+	int w = 0;
+	int2str(ns, num);
+	while (*p) w += flames[*(p++) - '0']->getW();
+	x -= w / 2;
+	p = ns;
+	while (*p) {
+		flames[*p - '0']->draw(render, x, y);
+		x += flames[*p - '0']->getW();
+		p++;
+	}
 }

@@ -47,6 +47,9 @@ namespace musnake {
 
 	Flame* loadFlameForUTF8(TTF_Font* font, char* text, SDL_Color* color);
 
+	void drawNumber(SDL_Renderer* render, Flame** flames, int num, int x, int y);
+	void drawNumber_Centered(SDL_Renderer* render, Flame** flames, int num, int x, int y);
+
 
 	// ================================ MU_time.h =================================
 
@@ -250,6 +253,19 @@ namespace musnake {
 	Flame* text_Best_Flame = nullptr;
 	Flame* text_KeyConf_Flame = nullptr;
 	Flame* text_DeltaConf_Flame = nullptr;
+	Flame* text_DeltaValue_Flame = nullptr;
+	Flame* text_Score_Flame = nullptr;
+	Flame* text_TotalScore_Flame = nullptr;
+	Flame* text_TotalLength_Flame = nullptr;
+	Flame* text_Hits_Flame = nullptr;
+
+	Flame* numberTotalFlame[10] = { nullptr };
+	Flame* numberScoreFlame[10] = { nullptr };
+	Flame* numberHitsFlame[10] = { nullptr };
+	Flame* numberFPSFlame[10] = { nullptr };
+	Flame* numberConfigDeltaFlame[11] = { nullptr };
+
+	Flame* rankFlame[7] = { nullptr };  // SSS  SS  S  A  B  C  D
 
 	TTF_Font* titleMusnakeFont = nullptr;  // 标题，游戏名的字体
 	TTF_Font* titleAuthorFont = nullptr;  // 标题下角的作者名字体
@@ -258,24 +274,24 @@ namespace musnake {
 	TTF_Font* menuSongbyFont = nullptr;  // 菜单处的作者字体
 	TTF_Font* menuSongtimeFont = nullptr;  // 菜单处歌曲时长字体
 	TTF_Font* menuSongBestTextFont = nullptr;  // 菜单处最高纪录文字
-	TTF_Font* menuSongBestNumFont = nullptr;  // 菜单处最高记录数字
-	TTF_Font* configSettingFont = nullptr;
-	TTF_Font* configKeyFont = nullptr;
+	TTF_Font* menuSongBestDataFont = nullptr;  // 菜单处最高纪录数据
+	TTF_Font* configSettingFont = nullptr;  // 设置页各分项标签字体
+	TTF_Font* configKeyFont = nullptr;  // 设置页按键设置 按键字体
+	TTF_Font* configDeltaLabelFont = nullptr;  // 设置页面偏移值提示文字字体
 	TTF_Font* gameScorelabelFont = nullptr;  // 游戏时分数提示文字字体
-	TTF_Font* gameScorenumFont = nullptr;  // 游戏时分数数字字体
 	TTF_Font* gameCombolabelFont = nullptr;  // 游戏时连击提示文字字体
-	TTF_Font* gameCombonumFont = nullptr;  // 游戏时连击数字字体
 	TTF_Font* gameToastFont = nullptr;  // 游戏中Toast文字字体
 	TTF_Font* gamePauseTitleFont = nullptr;  // 游戏暂停标题字体
-	TTF_Font* gamePauseSongnameFont = nullptr;  // 游戏暂停歌名字体
-	TTF_Font* gameWinSongnameFont = nullptr;  // 游戏通关页的歌曲名字体
 	TTF_Font* gameWinScorelabelFont = nullptr;  // 游戏通关得分提示文字字体
-	TTF_Font* gameWinScorenumFont = nullptr;  // 游戏通关得分数字字体
 	TTF_Font* gameWinLengthlabelFont = nullptr;  // 游戏通关蛇长提示字体
-	TTF_Font* gameWinLengthnumFont = nullptr;  // 游戏通关蛇长数字字体
 	TTF_Font* gameWinNewBestFont = nullptr;  // 游戏通关后新纪录字体
 	TTF_Font* gameLoseTitleFont = nullptr;  // 游戏失败标题字体
-	TTF_Font* gameLoseSongnameFont = nullptr;  // 游戏失败歌名字体
+
+	TTF_Font* numberTotalFont = nullptr;
+	TTF_Font* numberScoreFont = nullptr;
+	TTF_Font* numberHitsFont = nullptr;
+	TTF_Font* numberFPSFont = nullptr;
+	TTF_Font* numberConfigDeltaFont = nullptr;
 
 	Game* thisGame = nullptr;  // 当前进行中的游戏对象（鱼，好大的鱼，虎纹鲨鱼……）
 	int noteDelta = 0;  // 节奏偏移

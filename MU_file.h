@@ -133,21 +133,21 @@ void musnake::updateLevelBestFlame(Level* lp) {
 	SDL_FreeSurface(textSurf);
 
 	parseRankStr(tmpStr, userData["record"][lp->id]["rank"].asInt());
-	textSurf = TTF_RenderText_Blended(menuSongBestNumFont, tmpStr, tmpColor);
+	textSurf = TTF_RenderText_Blended(menuSongBestDataFont, tmpStr, tmpColor);
 	rect.x = 20;  rect.y = 30;  rect.w = textSurf->w; rect.h = textSurf->h;
 	SDL_BlitSurface(textSurf, NULL, tmpSurf, &rect);
 	SDL_FreeSurface(textSurf);
 
 	int2str(tmpStr, userData["record"][lp->id]["score"].asInt());
 	SDL_strlcat(tmpStr, " pt", 32);
-	textSurf = TTF_RenderText_Blended(menuSongBestNumFont, tmpStr, tmpColor);
+	textSurf = TTF_RenderText_Blended(menuSongBestDataFont, tmpStr, tmpColor);
 	rect.x = 84;  rect.y = 30;  rect.w = textSurf->w; rect.h = textSurf->h;
 	SDL_BlitSurface(textSurf, NULL, tmpSurf, &rect);
 	SDL_FreeSurface(textSurf);
 	
 	int2str(tmpStr, userData["record"][lp->id]["length"].asInt());
 	SDL_strlcat(tmpStr, " m", 32);
-	textSurf = TTF_RenderText_Blended(menuSongBestNumFont, tmpStr, tmpColor);
+	textSurf = TTF_RenderText_Blended(menuSongBestDataFont, tmpStr, tmpColor);
 	rect.x = 200;  rect.y = 30;  rect.w = textSurf->w; rect.h = textSurf->h;
 	SDL_BlitSurface(textSurf, NULL, tmpSurf, &rect);
 	SDL_FreeSurface(textSurf);

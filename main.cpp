@@ -36,6 +36,7 @@ int main(int argc, char* argv[]) {
 	int settingKey = -1;
 	bool settingDelta = false;
 	SDL_Point settingDeltaPoint;
+	int settingDeltaOri = 0;
 
 	initPath(argv[0]);
 	SDL_Init(SDL_INIT_EVERYTHING);
@@ -297,8 +298,11 @@ __config:
 				case SDLK_RETURN:
 				case SDLK_RETURN2:
 				case SDLK_KP_ENTER:
-					if (settingKey == -1)
+					if (settingKey == -1) {
+						userData["settings"]["timeOffset"] = noteDelta;
+						flushUserData();
 						goto __menu;
+					}
 					else
 						settingKey = -1;
 					break;
@@ -311,16 +315,21 @@ __config:
 			case SDL_MOUSEBUTTONDOWN:
 				if (evt.button.button == SDL_BUTTON_LEFT && !(classTurning || panelTurning)) {
 					SDL_Point point{ evt.button.x, evt.button.y };
-					SDL_Rect BackButton, OKButton, KeyUpButton, KeyDownButton, KeyLeftButton, KeyRightButton;
+					SDL_Rect BackButton, OKButton, KeyUpButton, KeyDownButton, KeyLeftButton, KeyRightButton, DeltaBarRect, DeltaPinRect;
 					BackButton = { 0,0,150,60 };
 					OKButton = { 0,520,150,60 };
 					KeyUpButton = { 240, 100, 80, 160 };
 					KeyDownButton = { 380, 100, 80, 160 };
 					KeyLeftButton = { 520, 100, 80, 160 };
 					KeyRightButton = { 660, 100, 80, 160 };
-					if (settingKey == -1) {
-						if (SDL_PointInRect(&point, &BackButton) || SDL_PointInRect(&point, &OKButton))
+					DeltaBarRect = { 240, 380, 500, 6 };
+					DeltaPinRect = { 480 + noteDelta / 4, 368 , 20, 30};
+					if (settingKey == -1 && !settingDelta) {
+						if (SDL_PointInRect(&point, &BackButton) || SDL_PointInRect(&point, &OKButton)) {
+							userData["settings"]["timeOffset"] = noteDelta;
+							flushUserData();
 							goto __menu;
+						}
 						else if (SDL_PointInRect(&point, &KeyUpButton))
 							settingKey = MU_KEY_UP;
 						else if (SDL_PointInRect(&point, &KeyRightButton))
@@ -329,11 +338,32 @@ __config:
 							settingKey = MU_KEY_DOWN;
 						else if (SDL_PointInRect(&point, &KeyLeftButton))
 							settingKey = MU_KEY_LEFT;
+						else if (SDL_PointInRect(&point, &DeltaBarRect)) {
+							settingDelta = true;
+							settingDeltaPoint = point;
+							settingDeltaOri = noteDelta = (point.x - 490) * 4;
+						}
+						else if (SDL_PointInRect(&point, &DeltaPinRect)) {
+							settingDelta = true;
+							settingDeltaPoint = point;
+							settingDeltaOri = noteDelta;
+						}
 					}
 					else {
 						settingKey = -1;
 					}
 				}
+				break;
+			case SDL_MOUSEMOTION:
+				if (settingDelta) {
+					noteDelta = settingDeltaOri + (evt.motion.x - settingDeltaPoint.x) * 4;
+					if (noteDelta < -1000) noteDelta = -1000;
+					else if (noteDelta > 1000) noteDelta = 1000;
+				}
+				break;
+			case SDL_MOUSEBUTTONUP:
+				userData["settings"]["timeOffset"] = noteDelta;
+				settingDelta = false;
 				break;
 			}
 		}
@@ -370,26 +400,26 @@ void load(SDL_Renderer* render) {
 	titleMusnakeFont = TTF_OpenFont(tmpPath, 144);  // ����͵����棡
 	gamePauseTitleFont =
 	gameLoseTitleFont = TTF_OpenFont(tmpPath, 80);
-	gameWinLengthnumFont =
+	numberTotalFont =
 	gameWinScorelabelFont = TTF_OpenFont(tmpPath, 50);
-	gameScorenumFont =
-	gameCombonumFont = TTF_OpenFont(tmpPath, 40);
-	gameCombolabelFont = 
-	menuSongBestNumFont = TTF_OpenFont(tmpPath, 20);
+	numberHitsFont =
+	numberScoreFont = TTF_OpenFont(tmpPath, 40);
+	menuSongBestDataFont = TTF_OpenFont(tmpPath, 20);
+	gameCombolabelFont = TTF_OpenFont(tmpPath, 14);
 
 	catPath(tmpPath, (char*)"font\\msyhbd.ttc");
 	titleAuthorFont = 
-	configKeyFont = TTF_OpenFont(tmpPath, 16);
+	configKeyFont =
+	numberFPSFont = TTF_OpenFont(tmpPath, 16);
 	menuSongtimeFont = 
 	menuSongbyFont = 
-	menuSongBestTextFont = 
+	menuSongBestTextFont =
+	configDeltaLabelFont =
 	gameScorelabelFont = 
-	gameLoseSongnameFont = TTF_OpenFont(tmpPath, 20);
+	numberConfigDeltaFont = TTF_OpenFont(tmpPath, 20);
 	menuSongnameFont = 
 	configSettingFont =
 	gameToastFont = 
-	gamePauseSongnameFont = 
-	gameWinSongnameFont =
 	gameWinScorelabelFont = 
 	gameWinLengthlabelFont = 
 	gameWinNewBestFont = 
@@ -571,7 +601,23 @@ void load(SDL_Renderer* render) {
 
 	text_KeyConf_Flame = loadFlameForUTF8(configSettingFont, (char*)"\xe6\xb8\xb8\xe6\x88\x8f\xe6\x8c\x89\xe9\x94\xae\xe8\xae\xbe\xe7\xbd\xae", &tmpColor);
 	text_DeltaConf_Flame = loadFlameForUTF8(configSettingFont, (char*)"\xe8\x8a\x82\xe5\xa5\x8f\xe5\x81\x8f\xe7\xa7\xbb\xe8\xae\xbe\xe7\xbd\xae", &tmpColor);
-	
+	text_DeltaValue_Flame = loadFlameForUTF8(configDeltaLabelFont, (char*)"\xe5\x81\x8f\xe7\xa7\xbb\xe5\x80\xbc: ", &tmpColor);
+	text_Score_Flame = loadFlameForUTF8(gameScorelabelFont, (char*)"\xe5\xbe\x97\xe5\x88\x86", &tmpColor);
+	text_Hits_Flame = loadFlameForText(gameCombolabelFont, (char*)"Hits!", &tmpColor);
+	text_TotalScore_Flame = loadFlameForUTF8(gameWinScorelabelFont, (char*)"\xe5\x88\x86\xe6\x95\xb0", &tmpColor);
+	text_TotalLength_Flame = loadFlameForUTF8(gameWinLengthlabelFont, (char*)"\xe9\x95\xbf\xe5\xba\xa6", &tmpColor);
+
+	tmpPath[1] = 0;
+	for (char i = 0;i < 10;i++) {
+		tmpPath[0] = i + '0';
+		numberConfigDeltaFlame[i] = loadFlameForText(numberConfigDeltaFont, tmpPath, &tmpColor);
+		numberFPSFlame[i] = loadFlameForText(numberFPSFont, tmpPath, &tmpColor);
+		numberHitsFlame[i] = loadFlameForText(numberHitsFont, tmpPath, &tmpColor);
+		numberScoreFlame[i] = loadFlameForText(numberScoreFont, tmpPath, &tmpColor);
+		numberTotalFlame[i] = loadFlameForText(numberTotalFont, tmpPath, &tmpColor);
+	}
+	numberConfigDeltaFlame[10] = loadFlameForText(numberConfigDeltaFont, (char*)"-", &tmpColor);
+
 	configFGMask = loadFlameFromFile((char*)"image\\mask_configkey.png");
 	configFGMask->setAlpha(0);
 	gamePauseBGMask = loadFlameFromFile((char*)"image\\mask_gamepause.png");
@@ -633,6 +679,7 @@ void drawStart(SDL_Renderer* render) {  // ������Ϸ��ʼҳ��
 			break;
 		}
 	}
+	drawNumber(render, numberFPSFlame, fps, 750, 580);
 }
 
 void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, int* turningLevel, int* turningClass) {
@@ -882,6 +929,7 @@ void drawPanels(SDL_Renderer* render, Level** nowPanel, LevelClass** nowClass, i
 			*nowPanel = lp;
 		}
 	}
+	drawNumber(render, numberFPSFlame, fps, 750, 580);
 }
 
 void drawConfig(SDL_Renderer* render, int keyread) {
@@ -896,8 +944,10 @@ void drawConfig(SDL_Renderer* render, int keyread) {
 	configOKButtonFlame->draw(render, 0, 520);
 	text_KeyConf_Flame->draw(render, 200, 40);
 	text_DeltaConf_Flame->draw(render, 200, 300);
+	text_DeltaValue_Flame->draw(render, 240, 400);
 	configSetKeyFlame->draw(render, 170, 100);
 	configSetDeltaFlame->draw(render, 170, 380);
+	drawNumber(render, numberConfigDeltaFlame, noteDelta, 250 + text_DeltaValue_Flame->getW(), 400);
 	for (int i = 0;i < 4;i++)
 		if(configKeyFlame[i]) configKeyFlame[i]->draw_centered(render, 280 + 140 * i, 220);
 	configSetPointerFlame->draw_centered(render, 490 + noteDelta / 4, 383);
@@ -917,4 +967,5 @@ void drawConfig(SDL_Renderer* render, int keyread) {
 		configFGMask->setAlpha(al);
 		configFGMask->draw(render, x, y);
 	}
+	drawNumber(render, numberFPSFlame, fps, 750, 580);
 }
