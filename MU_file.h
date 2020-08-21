@@ -77,6 +77,15 @@ inline void musnake::updateUserKeySetting(int keyType, SDL_Keycode keyCode){
 	configKeyFlame[keyType] = fp;
 	musnakeKey[keyType] = keyCode;
 	userData["settings"]["key"][keyName[keyType]] = keyCode;
+	for (int i = 0;i < 4;i++) {
+		if (i == keyType) continue;
+		if (musnakeKey[i] == keyCode) {
+			delete configKeyFlame[i];
+			musnakeKey[i] = 0;
+			configKeyFlame[i] = nullptr;
+			userData["settings"]["key"][keyName[keyType]] = 0;
+		}
+	}
 }
 
 inline void musnake::flushUserData() {
@@ -132,23 +141,25 @@ void musnake::updateLevelBestFlame(Level* lp) {
 	SDL_BlitSurface(textSurf, NULL, tmpSurf, &rect);
 	SDL_FreeSurface(textSurf);
 
-	parseRankStr(tmpStr, userData["record"][lp->id]["rank"].asInt());
-	textSurf = TTF_RenderText_Blended(menuSongBestDataFont, tmpStr, tmpColor);
-	rect.x = 20;  rect.y = 30;  rect.w = textSurf->w; rect.h = textSurf->h;
-	SDL_BlitSurface(textSurf, NULL, tmpSurf, &rect);
-	SDL_FreeSurface(textSurf);
+	if (lp->interval <= 0) {
+		parseRankStr(tmpStr, userData["record"][lp->id]["rank"].asInt());
+		textSurf = TTF_RenderText_Blended(menuSongBestDataFont, tmpStr, tmpColor);
+		rect.x = 20;  rect.y = 30;  rect.w = textSurf->w; rect.h = textSurf->h;
+		SDL_BlitSurface(textSurf, NULL, tmpSurf, &rect);
+		SDL_FreeSurface(textSurf);
 
-	int2str(tmpStr, userData["record"][lp->id]["score"].asInt());
-	SDL_strlcat(tmpStr, " pt", 32);
-	textSurf = TTF_RenderText_Blended(menuSongBestDataFont, tmpStr, tmpColor);
-	rect.x = 84;  rect.y = 30;  rect.w = textSurf->w; rect.h = textSurf->h;
-	SDL_BlitSurface(textSurf, NULL, tmpSurf, &rect);
-	SDL_FreeSurface(textSurf);
-	
+		int2str(tmpStr, userData["record"][lp->id]["score"].asInt());
+		SDL_strlcat(tmpStr, " pt", 32);
+		textSurf = TTF_RenderText_Blended(menuSongBestDataFont, tmpStr, tmpColor);
+		rect.x = 84;  rect.y = 30;  rect.w = textSurf->w; rect.h = textSurf->h;
+		SDL_BlitSurface(textSurf, NULL, tmpSurf, &rect);
+		SDL_FreeSurface(textSurf);
+	}
+
 	int2str(tmpStr, userData["record"][lp->id]["length"].asInt());
 	SDL_strlcat(tmpStr, " m", 32);
 	textSurf = TTF_RenderText_Blended(menuSongBestDataFont, tmpStr, tmpColor);
-	rect.x = 200;  rect.y = 30;  rect.w = textSurf->w; rect.h = textSurf->h;
+	rect.x = lp->interval > 0 ? 20 : 200;  rect.y = 30;  rect.w = textSurf->w; rect.h = textSurf->h;
 	SDL_BlitSurface(textSurf, NULL, tmpSurf, &rect);
 	SDL_FreeSurface(textSurf);
 
@@ -199,14 +210,28 @@ void musnake::loadLevels() {
 			*(tmpStr + levelRoot["classes"][i]["items"][j]["name"].asString().copy(tmpStr, 31, 0)) = 0;
 			lp->nameFlm = loadFlameForUTF8(menuSongnameFont, tmpStr, &tmpColor);
 
-			*(tmpStr + levelRoot["classes"][i]["items"][j]["time"].asString().copy(tmpStr, 31, 0)) = 0;
-			lp->timeFlm = loadFlameForText(menuSongtimeFont, tmpStr, &tmpColor);
-
 			*tmpStr = 'B';  *(tmpStr + 1) = 'y';  *(tmpStr + 2) = ' ';
 			*(tmpStr + levelRoot["classes"][i]["items"][j]["by"].asString().copy(tmpStr + 3, 28, 0) + 3) = 0;
 			lp->byFlm = loadFlameForUTF8(menuSongbyFont, tmpStr, &tmpColor);
 
-			lp->timev = levelRoot["classes"][i]["items"][j]["timeVal"].asInt();
+			if (levelRoot["classes"][i]["items"][j]["time"].empty()) {
+				lp->timev = 0;
+
+				SDL_strlcpy(tmpStr, "\xe9\x80\x9f\xe5\xba\xa6\xef\xbc\x9a", 16);
+				*(tmpStr + 9 + levelRoot["classes"][i]["items"][j]["bpm"].asString().copy(tmpStr + 9, 31, 0)) = 0;
+				lp->timeFlm = loadFlameForUTF8(menuSongtimeFont, tmpStr, &tmpColor);
+
+				lp->interval = (int)levelRoot["classes"][i]["items"][j]["interval"].asFloat();
+			}
+			else {
+				lp->interval = 0;
+
+				SDL_strlcpy(tmpStr, "\xe6\x97\xb6\xe9\x95\xbf\xef\xbc\x9a", 16);
+				*(tmpStr + 9 + levelRoot["classes"][i]["items"][j]["time"].asString().copy(tmpStr + 9, 31, 0)) = 0;
+				lp->timeFlm = loadFlameForUTF8(menuSongtimeFont, tmpStr, &tmpColor);
+
+				lp->timev = levelRoot["classes"][i]["items"][j]["timeVal"].asInt();
+			}
 
 			SDL_strlcpy(ss, "level\\", 48);
 			SDL_strlcat(ss, lp->id, 48);

@@ -36,7 +36,7 @@ public:
 	void unlockMoving();
 
 	// ����BGM
-	void playBGM();
+	void playBGM(int loop);
 
 	void init(Level* lp);
 
@@ -55,14 +55,16 @@ private:
 	char levelPath[32] = "level\\";
 	char rankVal;
 	char rankStr[4];
-	unsigned short combo = 0;  // ������
+	unsigned int combo = 0;  // ������
 	unsigned short noteCount = 0;  // �ܵ�������
 	unsigned short badCount = 0;  // 对于只会冲冲冲不会踩节奏的人的评级惩罚
 	unsigned int score = 0;  // �÷�
 	short hp = 5;  // �ߵ�Ѫ������ʼΪ5
-	unsigned short hits = 0;  // ���е�������
+	unsigned int hits = 0;  // ���е�������
 	short fever = 0;  // FEVER״̬��2���÷�
-	unsigned short length = 4;  // һ����Ϸ��65531��ƻ�����Ǿ����NB�ˣ�����0.1s���ƶ������⼴ʹ��ŷ������ҲҪ���ϸ���Сʱ
+	unsigned int length = 4;  // һ����Ϸ��65531��ƻ�����Ǿ����NB�ˣ�����0.1s���ƶ������⼴ʹ��ŷ������ҲҪ���ϸ���Сʱ
+
+	int interval = 0;
 
 	Level* levelinfo = nullptr;
 	Note* note = nullptr;  // ����
@@ -144,39 +146,48 @@ void musnake::Game::init(Level* lp){
 	catPath(tmpPath, levelfile);
 	bgm = Mix_LoadMUS(tmpPath);
 
-	// װ�عؿ��Ľ���
-	SDL_strlcpy(levelfile, levelPath, 64);
-	SDL_strlcat(levelfile, "\\notes.mu", 64);
-	catPath(tmpPath, levelfile);
-	SDL_RWops* f = SDL_RWFromFile(tmpPath, "r");
-	char nts[16], * ntp = nts;
-	char c = 1;
-	Note* endn = nullptr;
-	while (SDL_RWread(f, &c, 1, 1)) {
-		if (c != ';') {
-			*ntp = c;
-			ntp++;
-		}
-		else {
-			long long nt = 0;
-			unsigned long p = 1;
-			do {
-				ntp--;
-				nt += (*ntp - '0') * p;
-				p *= 10;
-			} while (ntp != nts);
-
-			if (!endn) {
-				endn = note = newNote(nt);
+	if (lp->timev) {
+		// װ�عؿ��Ľ���
+		SDL_strlcpy(levelfile, levelPath, 64);
+		SDL_strlcat(levelfile, "\\notes.mu", 64);
+		catPath(tmpPath, levelfile);
+		SDL_RWops* f = SDL_RWFromFile(tmpPath, "r");
+		char nts[16], * ntp = nts;
+		char c = 1;
+		Note* endn = nullptr;
+		while (SDL_RWread(f, &c, 1, 1)) {
+			if (c != ';') {
+				*ntp = c;
+				ntp++;
 			}
 			else {
-				endn->next = newNote(nt);
-				endn = endn->next;
+				long long nt = 0;
+				unsigned long p = 1;
+				do {
+					ntp--;
+					nt += (*ntp - '0') * p;
+					p *= 10;
+				} while (ntp != nts);
+
+				if (!endn) {
+					endn = note = newNote(nt);
+				}
+				else {
+					endn->next = newNote(nt);
+					endn = endn->next;
+				}
+				noteCount++;
 			}
-			noteCount++;
 		}
+		SDL_RWclose(f);
 	}
-	SDL_RWclose(f);
+	else {
+		Note* nnp = new Note;
+		nnp->time = 0;
+		nnp->next = nullptr;
+		interval = lp->interval;
+		addNote(&note, nnp);
+	}
 
 	// ��ʼ���ؿ�
 	for (int i = 0;i < 64;i++) {
@@ -246,8 +257,8 @@ inline void musnake::Game::unlockMoving() {
 	movingLock = false;
 }
 
-inline void musnake::Game::playBGM() {
-	if(bgm) Mix_PlayMusic(bgm, 1);
+inline void musnake::Game::playBGM(int loop) {
+	if(bgm) Mix_PlayMusic(bgm, loop);
 }
 
 void unlockMoving_D(unsigned long arg) {
@@ -297,11 +308,23 @@ int musnake::Game::moveSnake(int dir) {
 		returnVal = 1;
 		dir = (snakeHead->getTailDir() + 2) % 4;
 		Note* np = note;
+		if (interval > 0) {
+			Note* nnp = new Note;
+			nnp->time = np->time + interval;
+			nnp->next = nullptr;
+			addNote(&note, nnp);
+		}
 		note = np->next;
 		delete np;
 	}
 	else {  // ������������
 		Note* np = note;
+		if (interval > 0) {
+			Note* nnp = new Note;
+			nnp->time = np->time + interval;
+			nnp->next = nullptr;
+			addNote(&note, nnp);
+		}
 		note = np->next;
 		delete np;
 	}
@@ -327,7 +350,7 @@ int musnake::Game::moveSnake(int dir) {
 		if (gp->getSnake() != snakeTail) {  // �����ָΪ��������ʼ�˺��ж���ȡ���˴��ƶ�
 	case MU_GRID_OBJECT_TYPE_BLOCK:  // ���ǰ�����ϰ�����ͬ
 	case MU_GRID_OBJECT_TYPE_DARK:
-			hp -= 3;  // ���ˣ��ļ�һЩ���Ϳ�3Ѫ
+		hp -= interval > 0 ? 10 : 3;  // ���ˣ��ļ�һЩ���Ϳ�3Ѫ
 			if (hp < 0) hp = 0;
 			combo = 0;
 			return 1;
@@ -464,6 +487,7 @@ inline void musnake::Game::refreshTime(int delta) {
 
 		sp->delayFlameTime(dt);
 		do {
+			if (!sp) break;
 			sp = sp->getNext();
 			sp->delayFlameTime(dt);
 		} while (sp != snakeTail);
@@ -472,7 +496,7 @@ inline void musnake::Game::refreshTime(int delta) {
 
 void playBGM_D(unsigned long arg) {
 	using namespace musnake;
-	thisGame->playBGM();
+	thisGame->playBGM((long) arg);
 	thisGame->playing = true;
 	updateTime();
 	thisGame->initTime(0);
@@ -487,8 +511,13 @@ void musnake::Game::run() {
 	long long timing = 0;
 	// ��������µ����̰�
 	state = MU_GAME_STATE_RUNNING;
-	setDelayFunc(&passLevel, 0, levelinfo->timev + 2000);  // ����������߻�û�����͹���
-	setDelayFunc(&playBGM_D, 0, 500);
+	if (interval <= 0) {
+		setDelayFunc(&passLevel, 0, levelinfo->timev + 2000);  // ����������߻�û�����͹���
+		setDelayFunc(&playBGM_D, 1, 500);
+	}
+	else {
+		setDelayFunc(&playBGM_D, -1, 500);
+	}
 
 	while (state == MU_GAME_STATE_RUNNING) {
 		updateTime();
@@ -618,38 +647,45 @@ void musnake::Game::run() {
 	if (state == MU_GAME_STATE_END) return;
 
 	timing = 0;
-
-	rankVal = hits * 100 / (noteCount + badCount);
-	char rankStr[4];
-	switch (rankVal / 10) {
-	case 10:
-		SDL_strlcpy(rankStr, "SSS", 4);
-		break;
-	case 9:
-		if (rankVal >= 95)
-			SDL_strlcpy(rankStr, "SS", 3);
-		else
-			SDL_strlcpy(rankStr, "S", 3);
-		break;
-	case 8:
-		SDL_strlcpy(rankStr, "A", 3);
-		break;
-	case 7:
-		SDL_strlcpy(rankStr, "B", 3);
-		break;
-	case 6:
-		SDL_strlcpy(rankStr, "C", 3);
-		break;
-	default:
-		SDL_strlcpy(rankStr, "D", 3);
-	}
+	
 	int rv, sv, lv;
+	char rankStr[4];
 	if (hp > 0) {  // 如果胜利，那么存个档
+		rankVal = hits * 100 / (noteCount + badCount);
+		switch (rankVal / 10) {
+		case 10:
+			SDL_strlcpy(rankStr, "SSS", 4);
+			break;
+		case 9:
+			if (rankVal >= 95)
+				SDL_strlcpy(rankStr, "SS", 3);
+			else
+				SDL_strlcpy(rankStr, "S", 3);
+			break;
+		case 8:
+			SDL_strlcpy(rankStr, "A", 3);
+			break;
+		case 7:
+			SDL_strlcpy(rankStr, "B", 3);
+			break;
+		case 6:
+			SDL_strlcpy(rankStr, "C", 3);
+			break;
+		default:
+			SDL_strlcpy(rankStr, "D", 3);
+		}
 		rv = rankVal > userData["record"][levelinfo->id]["rank"].asInt() ? rankVal : -1;
 		sv = score > userData["record"][levelinfo->id]["score"].asUInt() ? score : -1;
 		lv = length > userData["record"][levelinfo->id]["length"].asInt() ? length : 0;
 
 		updateUserScore(levelinfo->id, rv, sv, lv);
+		updateLevelBestFlame(levelinfo);
+		flushUserData();
+	}
+	else if (interval > 0) {
+		lv = length > userData["record"][levelinfo->id]["length"].asInt() ? length : 0;
+
+		updateUserScore(levelinfo->id, -1, -1, lv);
 		updateLevelBestFlame(levelinfo);
 		flushUserData();
 	}
@@ -705,7 +741,7 @@ void musnake::Game::run() {
 			}
 		}
 
-		if (hp > 0) {  // ˳������
+		if (hp > 0 || interval > 0) {  // ˳������
 			if (timing < 1000) {
 				drawGame();
 				gamewinBGFlame->draw(gameRender, 0, (int)(600 - timing));
@@ -719,17 +755,26 @@ void musnake::Game::run() {
 				gameOverRetryButtonFlame->draw(gameRender, l - 400, 450);
 				gameOverOKButtonFlame->draw(gameRender, l - 400, 520);
 
-				drawText(gameRender, rankStr, 1000 - 2 * l, 100, 80);
+				if (interval <= 0)
+					drawText(gameRender, rankStr, 1000 - 2 * l, 100, 80);
 
 				// ���Ƶ÷�
-				levelinfo->nameFlm->draw(gameRender, 1300 - 2 * l, 140);
-				text_TotalScore_Flame->draw(gameRender, 1000 - 2 * l, 300);
-				text_TotalLength_Flame->draw(gameRender, 1000 - 2 * l, 450);
-				drawNumber(gameRender, numberTotalFlame, score, 1060 - 2 * l, 355);
-				drawNumber(gameRender, numberTotalFlame, length, 1060 - 2 * l, 505);
-				if (rv >= 0) gamewinNewBestFlame->draw(gameRender, 1300 - 2 * l, 200);
-				if (sv >= 0) gamewinNewBestFlame->draw(gameRender, 1140 - 2 * l, 300);
-				if (lv > 0) gamewinNewBestFlame->draw(gameRender, 1140 - 2 * l, 450);
+				if (interval > 0) {
+					levelinfo->nameFlm->draw(gameRender, 1000 - 2 * l, 140);
+					text_TotalLength_Flame->draw(gameRender, 1000 - 2 * l, 200);
+					drawNumber(gameRender, numberTotalFlame, length, 1060 - 2 * l, 240);
+					if (lv > 0) gamewinNewBestFlame->draw(gameRender, 1060 - 2 * l, 280);
+				}
+				else {
+					levelinfo->nameFlm->draw(gameRender, 1300 - 2 * l, 140);
+					text_TotalScore_Flame->draw(gameRender, 1000 - 2 * l, 300);
+					text_TotalLength_Flame->draw(gameRender, 1000 - 2 * l, 450);
+					drawNumber(gameRender, numberTotalFlame, score, 1060 - 2 * l, 355);
+					drawNumber(gameRender, numberTotalFlame, length, 1060 - 2 * l, 505);
+					if (rv >= 0) gamewinNewBestFlame->draw(gameRender, 1300 - 2 * l, 200);
+					if (sv >= 0) gamewinNewBestFlame->draw(gameRender, 1140 - 2 * l, 300);
+					if (lv > 0) gamewinNewBestFlame->draw(gameRender, 1140 - 2 * l, 450);
+				}
 			}
 			timing += getTimeDelta();
 		}
@@ -866,6 +911,9 @@ inline void musnake::Game::drawGame() {
 	snakeTail->draw(gameRender, &base);  // Ϊ�˱�֤��β��ʹ������ʧ�׶�Ҳ����ȷ���ƣ��������һ����
 
 	drawUI();
+
+	// ����FPS
+	drawNumber(gameRender, numberFPSFlame, fps, 750, 580);
 }
 
 inline void musnake::Game::drawUI() {
@@ -873,6 +921,12 @@ inline void musnake::Game::drawUI() {
 	if (!pointInWindow(food[0]->getGrid()->getCenterPoint())) drawFoodPointer(0);
 	if (!pointInWindow(food[1]->getGrid()->getCenterPoint())) drawFoodPointer(1);
 	if (!pointInWindow(food[2]->getGrid()->getCenterPoint())) drawFoodPointer(2);
+
+	if (interval > 0) {
+		text_Score_Flame->draw(gameRender, 10, 4);
+		drawNumber(gameRender, numberScoreFlame, length, 10, 32);
+		return;
+	}
 
 	// �������Ѫ��
 	SDL_Rect hpRect[5] = {
@@ -916,19 +970,14 @@ inline void musnake::Game::drawUI() {
 		}
 	}
 
-	// ���Ƶ÷�
-	char ss[16] = { 0 };  // �ҾͲ��������ܴ�15λ���ķ��ˣ�
-	text_Score_Flame->draw(gameRender, 10, 5);
-	drawNumber(gameRender, numberScoreFlame, score, 10, 30);
+	text_Score_Flame->draw(gameRender, 10, 4);
+	drawNumber(gameRender, numberScoreFlame, score, 10, 32);
 
 	// ����������
 	if (combo >= 2) {
 		drawNumber_Centered(gameRender, numberHitsFlame, combo, 140, 470);
 		text_Hits_Flame->draw_centered(gameRender, 140, 510);
 	}
-
-	// ����FPS
-	drawNumber(gameRender, numberFPSFlame, fps, 750, 580);
 }
 
 void musnake::Game::drawFoodPointer(int index) {
@@ -938,15 +987,29 @@ void musnake::Game::drawFoodPointer(int index) {
 	if (dx > 0) {
 		if (dy > 0) {
 			double k;
-			if ((k = 1. * dx / dy) > 360. / 180) {
-				int y;
-				foodPointerFlame[index][0]->draw_centered(gameRender, 760, (y = int(300 + 360 / k)));
-				foodPointerFlame[index][1]->draw_centered(gameRender, 760, y, 180 - 180 * atan(k) / M_PI);
+			if (interval > 0) {
+				if ((k = 1. * dx / dy) > 360. / 260) {
+					int y;
+					foodPointerFlame[index][0]->draw_centered(gameRender, 760, (y = int(300 + 360 / k)));
+					foodPointerFlame[index][1]->draw_centered(gameRender, 760, y, 180 - 180 * atan(k) / M_PI);
+				}
+				else {
+					int x;
+					foodPointerFlame[index][0]->draw_centered(gameRender, (x = int(400 + 260 * k)), 560);
+					foodPointerFlame[index][1]->draw_centered(gameRender, x, 560, 180 - 180 * atan(k) / M_PI);
+				}
 			}
 			else {
-				int x;
-				foodPointerFlame[index][0]->draw_centered(gameRender, (x = int(400 + 180 * k)), 480);
-				foodPointerFlame[index][1]->draw_centered(gameRender, x, 480, 180 - 180 * atan(k) / M_PI);
+				if ((k = 1. * dx / dy) > 360. / 180) {
+					int y;
+					foodPointerFlame[index][0]->draw_centered(gameRender, 760, (y = int(300 + 360 / k)));
+					foodPointerFlame[index][1]->draw_centered(gameRender, 760, y, 180 - 180 * atan(k) / M_PI);
+				}
+				else {
+					int x;
+					foodPointerFlame[index][0]->draw_centered(gameRender, (x = int(400 + 180 * k)), 480);
+					foodPointerFlame[index][1]->draw_centered(gameRender, x, 480, 180 - 180 * atan(k) / M_PI);
+				}
 			}
 		}
 		else if (dy < 0) {
@@ -970,15 +1033,29 @@ void musnake::Game::drawFoodPointer(int index) {
 	else if (dx < 0) {
 		if (dy > 0) {
 			double k;
-			if ((k = 1. * -dx / dy) > 360. / 180) {
-				int y;
-				foodPointerFlame[index][0]->draw_centered(gameRender, 40, (y = int(300 + 360 / k)));
-				foodPointerFlame[index][1]->draw_centered(gameRender, 40, y, 180 + 180 * atan(k) / M_PI);
+			if (interval > 0) {
+				if ((k = 1. * -dx / dy) > 360. / 260) {
+					int y;
+					foodPointerFlame[index][0]->draw_centered(gameRender, 40, (y = int(300 + 360 / k)));
+					foodPointerFlame[index][1]->draw_centered(gameRender, 40, y, 180 + 180 * atan(k) / M_PI);
+				}
+				else {
+					int x;
+					foodPointerFlame[index][0]->draw_centered(gameRender, (x = int(400 - 260 * k)), 560);
+					foodPointerFlame[index][1]->draw_centered(gameRender, x, 560, 180 + 180 * atan(k) / M_PI);
+				}
 			}
 			else {
-				int x;
-				foodPointerFlame[index][0]->draw_centered(gameRender, (x = int(400 - 180 * k)), 480);
-				foodPointerFlame[index][1]->draw_centered(gameRender, x, 480, 180 + 180 * atan(k) / M_PI);
+				if ((k = 1. * -dx / dy) > 360. / 180) {
+					int y;
+					foodPointerFlame[index][0]->draw_centered(gameRender, 40, (y = int(300 + 360 / k)));
+					foodPointerFlame[index][1]->draw_centered(gameRender, 40, y, 180 + 180 * atan(k) / M_PI);
+				}
+				else {
+					int x;
+					foodPointerFlame[index][0]->draw_centered(gameRender, (x = int(400 - 180 * k)), 480);
+					foodPointerFlame[index][1]->draw_centered(gameRender, x, 480, 180 + 180 * atan(k) / M_PI);
+				}
 			}
 		}
 		else if (dy < 0) {
@@ -1002,8 +1079,14 @@ void musnake::Game::drawFoodPointer(int index) {
 	}
 	else {  // dx == 0
 		if (dy > 0) {
-			foodPointerFlame[index][0]->draw_centered(gameRender, 400, 480);
-			foodPointerFlame[index][1]->draw_centered(gameRender, 400, 480, 180);
+			if (interval > 0) {
+				foodPointerFlame[index][0]->draw_centered(gameRender, 400, 560);
+				foodPointerFlame[index][1]->draw_centered(gameRender, 400, 560, 180);
+			}
+			else {
+				foodPointerFlame[index][0]->draw_centered(gameRender, 400, 480);
+				foodPointerFlame[index][1]->draw_centered(gameRender, 400, 480, 180);
+			}
 		}
 		if (dy < 0) {
 			foodPointerFlame[index][0]->draw_centered(gameRender, 400, 40);

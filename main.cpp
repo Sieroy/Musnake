@@ -282,6 +282,7 @@ __menu:
 __config:
 	Mix_PlayMusic(configBGM, -1);
 	settingKey = -1;
+	settingDelta = false;
 	while (musnakeState) {
 
 		updateTime();

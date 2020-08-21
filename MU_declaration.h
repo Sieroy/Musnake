@@ -307,11 +307,12 @@ namespace musnake {
 	typedef struct _Level {
 		char id[4];  // 最多3位ID号，用来确定路径
 		int timev;  // 总时间ms
+		int interval;
 		Mix_Music* sample;  // 预览歌
 		Flame* cover;  // 封面
 		Flame* nameFlm;
-		Flame* timeFlm;
 		Flame* byFlm;
+		Flame* timeFlm;
 		Flame* bestFlm;
 		struct _Level* prev;
 		struct _Level* next;

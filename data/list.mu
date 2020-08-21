@@ -46,6 +46,32 @@
 			]
 		},
 		{
+			"name": "经典模式",
+			"items": [
+				{
+					"id": "m01",
+					"name": "Open Your Eyes",
+					"by": "Yann Fontaine",
+					"bpm": "128",
+					"interval": 466.8
+				},
+				{
+					"id": "m02",
+					"name": "狂喜蘭舞",
+					"by": "LeaF",
+					"bpm": "223",
+					"interval": 268.734375
+				},
+				{
+					"id": "m03",
+					"name": "GOODTEK",
+					"by": "EBIMAYO",
+					"bpm": "380",
+					"interval": 157.6
+				}
+			]
+		},
+		{
 			"name": "Debug",
 			"items": [
 				{
