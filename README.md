@@ -365,7 +365,7 @@ SDL2文档-> https://wiki.libsdl.org/
 > >
 > > 优化了游戏中地图的绘制机制，现在FPS提升到了700甚至800+；（终于）把死亡画面给做了一下；对部分歌曲的节奏进行了校准。
 > >
-> > 此外，为了方便在报告中画出好康的流程图来，我学了学Mermaid图的画法，发现——
+> > 此外，为了方便在报告中画出好康的流程图来，我学了学[Mermaid](https://mermaid-js.github.io/mermaid/#/flowchart)图的画法，发现——
 > >
 > > ```mermaid
 > > graph LR
