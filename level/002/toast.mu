@@ -225,10 +225,18 @@
 	},
 	{
 		"time": 85000,
-		"str": "游戏使用了微软雅黑和Showcard Gothic字体",
+		"str": "游戏使用了微软雅黑、Showcard Gothic",
 		"duration": 3000,
 		"x": 400,
-		"y": 80,
+		"y": 60,
+		"centered": 1
+	},
+	{
+		"time": 85000,
+		"str": "和SWGothici字体",
+		"duration": 3000,
+		"x": 400,
+		"y": 100,
 		"centered": 1
 	},
 	{

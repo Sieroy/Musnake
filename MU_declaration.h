@@ -47,8 +47,8 @@ namespace musnake {
 
 	Flame* loadFlameForUTF8(TTF_Font* font, char* text, SDL_Color* color);
 
-	void drawNumber(SDL_Renderer* render, Flame** flames, int num, int x, int y);
-	void drawNumber_Centered(SDL_Renderer* render, Flame** flames, int num, int x, int y);
+	void drawNumber(Flame** flames, int num, int x, int y);
+	void drawNumber_Centered(Flame** flames, int num, int x, int y);
 
 
 	// ================================ MU_time.h =================================
@@ -199,7 +199,8 @@ namespace musnake {
 
 	class Game;
 
-	SDL_Renderer* render = nullptr;
+	SDL_Renderer* musnakeRender = nullptr;
+	SDL_Window* musnakeWindow = nullptr;
 	Grid* gameMap[64][64] = { nullptr };  // 锟斤拷锟斤拷锟斤拷戏锟矫碉拷锟侥地革拷锟角ｏ拷锟斤拷一维为X锟斤拷锟疥，锟节讹拷维为Y锟斤拷锟斤拷
 
 	Mix_Music* titleBGM = nullptr;
@@ -226,6 +227,8 @@ namespace musnake {
 	Flame* gamePauseTitleFlame = nullptr;
 	Flame* gamewinBGFlame = nullptr;
 	Flame* gamewinNewBestFlame = nullptr;
+	Flame* gameloseBGFlame = nullptr;
+	Flame* gameloseFGFlame = nullptr;
 	Flame* configSetKeyFlame = nullptr;
 	Flame* configSetDeltaFlame = nullptr;
 	Flame* configSetPointerFlame = nullptr;
@@ -353,6 +356,10 @@ namespace musnake {
 	void updateUserKeySetting(int keyType, SDL_Keycode keyCode);
 	void flushUserData();
 	void loadLevels();
+	void loadFonts();
+	void loadImages();
+	void loadSound();
+	void loadText();
 	Json::Value userData;
 
 

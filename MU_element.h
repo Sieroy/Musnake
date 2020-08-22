@@ -14,8 +14,8 @@ public:
 	void delayFlameTime(long long delta);  // 由于暂停等而导致的延迟处理
 
 	void update();
-	void draw(SDL_Renderer* render);
-	void draw(SDL_Renderer* render, SDL_Point* base);  // 指定绘制开始位置。
+	void draw();
+	void draw(SDL_Point* base);  // 指定绘制开始位置。
 
 protected:
 	SDL_Rect rect = { 0,0,0,0 };  // 物体矩形
@@ -57,17 +57,18 @@ inline void musnake::Element::update() {
 	}
 }
 
-inline void musnake::Element::draw(SDL_Renderer* render) {
-	if (flame) flame->draw(render, &rect);
+inline void musnake::Element::draw() {
+	if (flame) flame->draw(&rect);
 }
 
-inline void musnake::Element::draw(SDL_Renderer* render, SDL_Point* base) {
+inline void musnake::Element::draw(SDL_Point* base) {
 	if (flame) {
 		SDL_Rect r = rect;
 		if (base) {
 			r.x += base->x;
 			r.y += base->y;
 		}
-		flame->draw(render, &r);
+		if (r.x > MU_WINDOW_WIDTH || r.y > MU_WINDOW_HEIGHT || r.x + 40 < 0 || r.y + 40 < 0) return;
+		flame->draw(&r);
 	}
 }

@@ -28,7 +28,7 @@ public:
 	SDL_Point* getCenterPoint();
 
 	void update();
-	void draw(SDL_Renderer* render, SDL_Point* base);
+	void draw(SDL_Point* base);
 
 private:
 	SDL_Point center;
@@ -113,26 +113,28 @@ inline void musnake::Grid::update() {
 	if (objType == GridObjectType::MU_GRID_OBJECT_TYPE_SNAKE) obj.snake->update();
 }
 
-inline void musnake::Grid::draw(SDL_Renderer* render, SDL_Point* base) {
+inline void musnake::Grid::draw(SDL_Point* base) {
 	if( objType == MU_GRID_OBJECT_TYPE_BLOCK ) {
 		SDL_Rect r = rect;
 		r.x += base->x;
 		r.y += base->y - 20;
+		if (r.x > MU_WINDOW_WIDTH || r.y > MU_WINDOW_HEIGHT || r.x + 40 < 0 || r.y + 60 < 0) return;
 		r.h = 60;
-		gridBlockFlame->draw(render, &r);
+		gridBlockFlame->draw(&r);
 		return;
 	}
 	if (objType == MU_GRID_OBJECT_TYPE_DARK) {
 		SDL_Rect r = rect;
 		r.x += base->x;
 		r.y += base->y - 20;
+		if (r.x > 800 || r.y > 600 || r.x + 40 < 0 || r.y + 60 < 0) return;
 		r.h = 60;
-		gridDarkFlame->draw(render, &r);
+		gridDarkFlame->draw(&r);
 		return;
 	}
-	Element::draw(render, base);
-	if (objType == MU_GRID_OBJECT_TYPE_SNAKE) obj.snake->draw(render, base);
-	if (objType == MU_GRID_OBJECT_TYPE_FOOD) obj.food->draw(render, base);
+	Element::draw(base);
+	if (objType == MU_GRID_OBJECT_TYPE_SNAKE) obj.snake->draw(base);
+	if (objType == MU_GRID_OBJECT_TYPE_FOOD) obj.food->draw(base);
 }
 
 
@@ -150,12 +152,4 @@ inline musnake::Grid* musnake::Food::getGrid() {
 
 inline void musnake::Food::update() {
 	Element::update();
-
-	//if (duration > 0) {  // �������ʱʳ��
-	//	duration -= getTimeDelta();
-	//	if (duration <= 0) {
-	//		grid->setFood(nullptr);
-	//		// ��ʱ�Ȳ�������ʾʳ��ȣ����滹Ҫ�и��ֳ���
-	//	}
-	//}
 }

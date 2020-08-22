@@ -27,10 +27,10 @@ public:
 	Flame* getNext();  // 获取下一帧
 	long long getDuration();  // 获取当前帧应持续的时间
 
-	void draw(SDL_Renderer* render, SDL_Rect* rect);  // 在指定地点绘制
-	void draw(SDL_Renderer* render, int x, int y);  // 指定基点绘制
+	void draw(SDL_Rect* rect);  // 在指定地点绘制
+	void draw(int x, int y);  // 指定基点绘制
 
-	void draw_centered(SDL_Renderer* render, int x, int y, double angle=0);  // 指定中心点旋转绘制
+	void draw_centered(int x, int y, double angle=0);  // 指定中心点旋转绘制
 
 private:
 	int w = 0;
@@ -53,7 +53,7 @@ musnake::Flame::Flame(SDL_Texture* texture, int duration) {
 musnake::Flame::Flame(SDL_Surface* surf, SDL_Rect* blitrect, int duration) {
 	SDL_Texture* texture;
 	if (!blitrect) {
-		texture = SDL_CreateTextureFromSurface(render, surf);
+		texture = SDL_CreateTextureFromSurface(musnakeRender, surf);
 		w = surf->w;
 		h = surf->h;
 	}
@@ -65,7 +65,7 @@ musnake::Flame::Flame(SDL_Surface* surf, SDL_Rect* blitrect, int duration) {
 		tmpSurf = SDL_CreateRGBSurface(0, blitrect->w, blitrect->h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
 #endif
 		SDL_BlitSurface(surf, blitrect, tmpSurf, NULL);
-		texture = SDL_CreateTextureFromSurface(render, tmpSurf);
+		texture = SDL_CreateTextureFromSurface(musnakeRender, tmpSurf);
 		w = tmpSurf->w;
 		h = tmpSurf->h;
 		SDL_FreeSurface(tmpSurf);
@@ -131,22 +131,22 @@ inline long long musnake::Flame::getDuration() {
 	return duration;
 }
 
-inline void musnake::Flame::draw(SDL_Renderer* render, SDL_Rect* rect){
-	SDL_RenderCopy(render, tex, NULL, rect);
+inline void musnake::Flame::draw(SDL_Rect* rect){
+	SDL_RenderCopy(musnakeRender, tex, NULL, rect);
 }
 
-inline void musnake::Flame::draw(SDL_Renderer* render, int x, int y) {
+inline void musnake::Flame::draw(int x, int y) {
 	SDL_Rect r = { x, y, w, h };
-	SDL_RenderCopy(render, tex, NULL, &r);
+	SDL_RenderCopy(musnakeRender, tex, NULL, &r);
 }
 
-inline void musnake::Flame::draw_centered(SDL_Renderer* render, int x, int y, double angle) {
+inline void musnake::Flame::draw_centered(int x, int y, double angle) {
 	if (!angle) {
-		draw(render, x - w / 2, y - h / 2);
+		draw(x - w / 2, y - h / 2);
 	}
 	else {
 		SDL_Rect r = { x - w / 2, y - h / 2, w, h };
-		SDL_RenderCopyEx(render, tex, NULL, &r, angle, NULL, SDL_FLIP_NONE);
+		SDL_RenderCopyEx(musnakeRender, tex, NULL, &r, angle, NULL, SDL_FLIP_NONE);
 	}
 }
 
@@ -174,23 +174,23 @@ inline musnake::Flame* musnake::loadFlameForUTF8(TTF_Font* font, char* text, SDL
 	return fp;
 }
 
-inline void musnake::drawNumber(SDL_Renderer* render, Flame** flames, int num, int x, int y) {
+inline void musnake::drawNumber(Flame** flames, int num, int x, int y) {
 	char ns[16], * p = ns;
 	int2str(ns, num);
 	while (*p) {
 		if (*p == '-') {
-			flames[10]->draw(render, x, y);
+			flames[10]->draw(x, y);
 			x += flames[10]->getW();
 		}
 		else {
-			flames[*p - '0']->draw(render, x, y);
+			flames[*p - '0']->draw(x, y);
 			x += flames[*p - '0']->getW();
 		}
 		p++;
 	}
 }
 
-inline void musnake::drawNumber_Centered(SDL_Renderer* render, Flame** flames, int num, int x, int y) {
+inline void musnake::drawNumber_Centered(Flame** flames, int num, int x, int y) {
 	char ns[16], * p = ns;
 	int w = 0;
 	int2str(ns, num);
@@ -198,7 +198,7 @@ inline void musnake::drawNumber_Centered(SDL_Renderer* render, Flame** flames, i
 	x -= w / 2;
 	p = ns;
 	while (*p) {
-		flames[*p - '0']->draw(render, x, y);
+		flames[*p - '0']->draw(x, y);
 		x += flames[*p - '0']->getW();
 		p++;
 	}
