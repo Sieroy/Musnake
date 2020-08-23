@@ -16,9 +16,15 @@
     <Filter Include="外来库">
       <UniqueIdentifier>{d832b49d-4db0-4e92-83bf-2631f57bae3f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="配置文件">
+      <UniqueIdentifier>{7d797bf2-fb42-4b41-b334-70129d69689c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="jsoncpp.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,8 +41,55 @@
     <Library Include="SDL2main.lib">
       <Filter>外来库</Filter>
     </Library>
+    <Library Include="SDL2_mixer.lib">
+      <Filter>外来库</Filter>
+    </Library>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
+    <None Include="data\maps.mu">
+      <Filter>配置文件</Filter>
+    </None>
+    <None Include="data\save.mu">
+      <Filter>配置文件</Filter>
+    </None>
+    <None Include="data\list.mu">
+      <Filter>配置文件</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MU_time.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MU_snake.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MU_flame.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MU_game.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MU_grid.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MU_path.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MU_declaration.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MU_note.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MU_food.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MU_element.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MU_loader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
