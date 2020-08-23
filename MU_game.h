@@ -17,125 +17,76 @@
 
 class musnake::Game {
 public:
-	Game();
+	Game(Level* lp);
 	~Game();
 
 	int state;
-	SDL_Renderer* gameRender;
 	Snake* snakeTail = nullptr;
-	DelayFunc* timingFunc = nullptr;  // ������Ϸ�õ���ʱ��������ע��ʵ����ͣЧ��ʱ����ʱ�䣩
+	DelayFunc* timingFunc = nullptr;
 	DelayFunc* toastQueue = nullptr;
 	bool playing = false;
 
-	void setRenderer(SDL_Renderer* render);
 	void setDelayFunc(void (*func)(unsigned long), unsigned long arg, int delay);
 	void setSnakeHead(Snake* snake);
 	void setSnakeTail(Snake* snake);
 
-	// ΪС�߽��ƶ���
 	void unlockMoving();
-
-	// ����BGM
 	void playBGM(int loop);
 
-	void init(Level* lp);
-
-	// ��Ϸ���е�С������
 	void run();
-
-	// ��ͣʱ����
 	void pause();
 
-	// ˢ����ʱ������Note��ʱ��ֵ���ڿ��ֺͽ�����ͣʱ����
 	void initTime(int delta);
 	void refreshTime(int delta);
-
 
 private:
 	char levelPath[32] = "level\\";
 	char rankVal;
-	char rankStr[4];
-	unsigned int combo = 0;  // ������
-	unsigned short noteCount = 0;  // �ܵ�������
-	unsigned short badCount = 0;  // 对于只会冲冲冲不会踩节奏的人的评级惩罚
-	unsigned int score = 0;  // �÷�
-	short hp = 5;  // �ߵ�Ѫ������ʼΪ5
-	unsigned int hits = 0;  // ���е�������
-	short fever = 0;  // FEVER״̬��2���÷�
-	unsigned int length = 4;  // һ����Ϸ��65531��ƻ�����Ǿ����NB�ˣ�����0.1s���ƶ������⼴ʹ��ŷ������ҲҪ���ϸ���Сʱ
+	unsigned int combo = 0;
+	unsigned short noteCount = 0;
+	unsigned short badCount = 0;
+	unsigned int score = 0;
+	short hp = 5;
+	unsigned int hits = 0;
+	short fever = 0;
+	unsigned int length = 4;
 
-	int rv, sv, lv;
+	int rv, ri, sv, lv;
 
 	int interval = 0;
 
 	Level* levelinfo = nullptr;
-	Note* note = nullptr;  // ����
-	Food* food[3] = { nullptr };  // ʳ��
-	Mix_Music* bgm = nullptr;  // BGM
-	bool movingLock = false;  // Ϊʵ��Moves per Second���ƶ��ӵ��ƶ���
-	unsigned long long pausingTime = 0;  // ��ͣʱ��ʱ��ֵ
-	SDL_Rect drawRect;  // ��ǰ��Ļ���������Ӧ��������ͼ�ľ���
-	Snake* snakeHead = nullptr;  // ��ͷ����β
+	Note* note = nullptr;
+	Food* food[3] = { nullptr };
+	Mix_Music* bgm = nullptr;
+	bool movingLock = false;
+	unsigned long long pausingTime = 0;
+	SDL_Rect drawRect;
+	Snake* snakeHead = nullptr;
 	SDL_Point base = { 0, 0 };
 
 	bool pointInWindow(SDL_Point* p);
 
-	// ���ߺ�������������ƶ����ͷ���0�����򷵻�1���ں�����ʵ�ֿ�Ѫ֮��Ĳ���
-	// �����ƶ������Ž������β��ķ��򡢳ɹ����ƶ���
-	// �������ƶ����������ƶ���β���ƶ���ײǽ��ײ����
 	int moveSnake(int dir);
-
-	// ����ʳ��
 	void refreshFood(int index);
+	void ending();
 
 	void drawGame();
-
 	void drawUI();
-
 	void drawFoodPointer(int index);
-
 	void drawWin(int t);
 	void drawLose(int t);
 
 	void loadMap();
-
 	void loadToast();
-
 	void unloadToast();
-
 	void updateBase();
-
-	void ending();
 };
 
-musnake::Game::Game() {
-
-}
-
-musnake::Game::~Game() {
-
-	for (int i = 0;i < 64;i++) {
-		for (int j = 0;j < 64;j++) {
-			delete gameMap[i][j];
-		}
-	}
-
-	delete snakeHead;
-	delete snakeTail;
-	if (food[0]) delete food[0];
-	if (food[1]) delete food[1];
-	if (food[2]) delete food[2];
-
-	clearDelayFunc(&timingFunc);
-	unloadToast();
-	clearNotes(&note);
-
-	Mix_HaltMusic();
-	Mix_FreeMusic(bgm);
-}
-
-void musnake::Game::init(Level* lp){
+musnake::Game::Game(Level* lp) {
 	state = MU_GAME_STATE_LOADING;
+
+	loadForGame();
 
 	levelinfo = lp;
 	SDL_strlcat(levelPath, lp->id, 25);
@@ -196,7 +147,7 @@ void musnake::Game::init(Level* lp){
 			map->setFlame(gridFlame);
 			if (i == 0 || i == 63 || j == 0 || j == 63)
 				map->objType = MU_GRID_OBJECT_TYPE_DARK;
-			else 
+			else
 				map->objType = MU_GRID_OBJECT_TYPE_EMPTY;
 		}
 	}
@@ -205,8 +156,27 @@ void musnake::Game::init(Level* lp){
 	loadToast();
 }
 
-inline void musnake::Game::setRenderer(SDL_Renderer* render) {
-	gameRender = render;
+musnake::Game::~Game() {
+	for (int i = 0;i < 64;i++) {
+		for (int j = 0;j < 64;j++) {
+			delete gameMap[i][j];
+		}
+	}
+
+	delete snakeHead;
+	delete snakeTail;
+	if (food[0]) delete food[0];
+	if (food[1]) delete food[1];
+	if (food[2]) delete food[2];
+
+	clearDelayFunc(&timingFunc);
+	unloadToast();
+	clearNotes(&note);
+
+	Mix_HaltMusic();
+	Mix_FreeMusic(bgm);
+
+	unloadForGame();
 }
 
 inline void musnake::Game::setDelayFunc(void(*func)(unsigned long), unsigned long arg, int delay) {
@@ -481,7 +451,6 @@ void passLevel(unsigned long arg) {
 
 void musnake::Game::run() {
 	SDL_Event evt;
-	SDL_Surface* tmpSurf;
 
 	state = MU_GAME_STATE_RUNNING;
 	if (interval <= 0) {
@@ -494,7 +463,7 @@ void musnake::Game::run() {
 
 	while (state == MU_GAME_STATE_RUNNING) {
 		updateTime();
-		SDL_RenderClear(gameRender);
+		SDL_RenderClear(musnakeRender);
 
 		while (SDL_PollEvent(&evt)) {
 			switch (evt.type) {
@@ -610,7 +579,7 @@ void musnake::Game::run() {
 
 		triggerDelayFunc(&toastQueue);
 
-		SDL_RenderPresent(gameRender);
+		SDL_RenderPresent(musnakeRender);
 	}
 
 	ending();
@@ -620,52 +589,49 @@ void musnake::Game::run() {
 	
 void musnake::Game::ending(){
 	int timing = 0;
-	char rankStr[4];
 	SDL_Event evt;
 
-	if (hp > 0) {  // 如果胜利，那么存个档
+	if (interval <= 0 && hp > 0) {  // 如果胜利，那么存个档
 		rankVal = hits * 100 / (noteCount + badCount);
 		switch (rankVal / 10) {
 		case 10:
-			SDL_strlcpy(rankStr, "SSS", 4);
+			ri = 0;
 			break;
 		case 9:
 			if (rankVal >= 95)
-				SDL_strlcpy(rankStr, "SS", 3);
+				ri = 1;
 			else
-				SDL_strlcpy(rankStr, "S", 3);
+				ri = 2;
 			break;
 		case 8:
-			SDL_strlcpy(rankStr, "A", 3);
+			ri = 3;
 			break;
 		case 7:
-			SDL_strlcpy(rankStr, "B", 3);
+			ri = 4;
 			break;
 		case 6:
-			SDL_strlcpy(rankStr, "C", 3);
+			ri = 5;
 			break;
 		default:
-			SDL_strlcpy(rankStr, "D", 3);
+			ri = 6;
 		}
 		rv = rankVal > userData["record"][levelinfo->id]["rank"].asInt() ? rankVal : -1;
 		sv = score > userData["record"][levelinfo->id]["score"].asUInt() ? score : -1;
 		lv = length > userData["record"][levelinfo->id]["length"].asUInt() ? length : 0;
 
 		updateUserScore(levelinfo->id, rv, sv, lv);
-		updateLevelBestFlame(levelinfo);
 		flushUserData();
 	}
 	else if (interval > 0) {
 		lv = length > userData["record"][levelinfo->id]["length"].asUInt() ? length : 0;
 
 		updateUserScore(levelinfo->id, -1, -1, lv);
-		updateLevelBestFlame(levelinfo);
 		flushUserData();
 	}
 
 	while (state == MU_GAME_STATE_OVER) {
 		updateTime();
-		SDL_RenderClear(gameRender);
+		SDL_RenderClear(musnakeRender);
 
 		while (SDL_PollEvent(&evt)) {
 			switch (evt.type) {
@@ -722,10 +688,10 @@ void musnake::Game::ending(){
 		
 		drawNumber(numberFPSFlame, fps, 750, 580);
 
-		SDL_RenderPresent(gameRender);
+		SDL_RenderPresent(musnakeRender);
 		timing += getTimeDelta();
 	}
-	SDL_RenderClear(gameRender);
+	SDL_RenderClear(musnakeRender);
 }
 
 void musnake::Game::drawWin(int t) {
@@ -737,13 +703,10 @@ void musnake::Game::drawWin(int t) {
 		int l = t > 1400 ? 400 : (int)(t - 1000);
 		SDL_Rect prect = { 970 - 2 * l, 0, 610, 600 };
 		gamewinBGFlame->draw(0, -400 - (t / 10 - 100) % 130);
-		SDL_RenderFillRect(gameRender, &prect);
+		SDL_RenderFillRect(musnakeRender, &prect);
 		gameOverBackButtonFlame->draw(l - 400, 0);
 		gameOverRetryButtonFlame->draw(l - 400, 450);
 		gameOverOKButtonFlame->draw(l - 400, 520);
-
-		if (interval <= 0)
-			drawText(gameRender, rankStr, 1000 - 2 * l, 100, 80);
 
 		if (interval > 0) {
 			levelinfo->nameFlm->draw(1000 - 2 * l, 140);
@@ -752,6 +715,7 @@ void musnake::Game::drawWin(int t) {
 			if (lv > 0) gamewinNewBestFlame->draw(1060 - 2 * l, 280);
 		}
 		else {
+			rankFlame[ri]->draw_centered(1120 - 2 * l, 200);
 			levelinfo->nameFlm->draw(1300 - 2 * l, 140);
 			text_TotalScore_Flame->draw(1000 - 2 * l, 300);
 			text_TotalLength_Flame->draw(1000 - 2 * l, 450);
@@ -776,7 +740,7 @@ void musnake::Game::drawLose(int t) {
 		int l = t > 1400 ? 400 : (int)(t - 1000);
 		SDL_Rect prect = { 970 - 2 * l, 0, 610, 600 };
 		gameloseBGFlame->draw(&musnakeRect);
-		SDL_RenderFillRect(gameRender, &prect);
+		SDL_RenderFillRect(musnakeRender, &prect);
 		gameOverBackButtonFlame->draw(l - 400, 0);
 		gameOverRetryButtonFlame->draw(l - 400, 450);
 		gameOverOKButtonFlame->draw(l - 400, 520);
@@ -794,7 +758,7 @@ void musnake::Game::pause() {
 	pausingTime = getTimeVal();
 
 	while (state == MU_GAME_STATE_PAUSED) {
-		SDL_RenderClear(gameRender);
+		SDL_RenderClear(musnakeRender);
 		updateTime();
 
 		while (SDL_PollEvent(&evt)) {
@@ -865,9 +829,9 @@ void musnake::Game::pause() {
 		gamePauseBackButtonFlame[choosing == 2]->draw(280, 410);
 		drawNumber(numberFPSFlame, fps, 750, 580);
 
-		SDL_RenderPresent(gameRender);
+		SDL_RenderPresent(musnakeRender);
 	}
-	SDL_RenderClear(gameRender);
+	SDL_RenderClear(musnakeRender);
 	Mix_ResumeMusic();
 	if (state == MU_GAME_STATE_RUNNING) {
 		updateTime();
@@ -1076,16 +1040,6 @@ void musnake::Game::drawFoodPointer(int index) {
 			foodPointerFlame[index][0]->draw_centered(400, 40);
 			foodPointerFlame[index][1]->draw_centered(400, 40);
 		}
-	}
-}
-
-void musnake::drawText(SDL_Renderer* render, char* text, int x, int y, int size) {
-	char* cp = text;
-	while (*cp) {
-		SDL_Rect r = { x, y, size, size * 2 };
-		charFlame[*cp - 32]->draw(&r);
-		cp++;
-		x += size;
 	}
 }
 

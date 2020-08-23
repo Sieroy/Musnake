@@ -5,20 +5,16 @@
 #include "MU_food.h"
 
 
-// ��ͼ��
 class musnake::Grid :public Element {
 public:
 	Grid();
-	// ��ʼ��������֪�õظ��������ĵظ�����
 	Grid(int x, int y);
 	~Grid();
 
 	int x, y;
 	int objType;
 
-	// ���õؿ�����Ϊһ���ߣ�������ߵ�setGrid��ʹ��ǰ��ע��ظ���ԭ��������
 	void setSnake(Snake* snake);
-	// ���õؿ�����Ϊʳ������ʳ���setGrid��ʹ��ǰ��ע��ظ���ԭ��������
 	void setFood(Food* food);
 
 	Snake* getSnake();
@@ -57,7 +53,7 @@ musnake::Grid::Grid(int x, int y) {
 }
 
 musnake::Grid::~Grid() {
-	// �벻����Ҫдʲô�����������ɡ���
+
 }
 
 inline void musnake::Grid::setSnake(Snake* snake) {

@@ -47,7 +47,7 @@ inline void musnake::updateUserKeySetting(int keyType, SDL_Keycode keyCode){
 	else if ((keyCode >= SDLK_EXCLAIM && keyCode <= SDLK_AT)
 		|| (keyCode >= SDLK_LEFTBRACKET && keyCode <= SDLK_BACKQUOTE)) {
 
-		char s[2] = { keyCode, 0 };
+		char s[2] = { (char)keyCode, 0 };
 		fp = loadFlameForText(configKeyFont, s, &tmpColor);
 	}
 	else if (keyCode >= SDLK_a && keyCode <= SDLK_z) {
@@ -67,7 +67,7 @@ inline void musnake::updateUserKeySetting(int keyType, SDL_Keycode keyCode){
 	else if (keyCode == SDLK_KP_PERIOD)
 		fp = loadFlameForText(configKeyFont, (char*)"(.)", &tmpColor);
 	else if (keyCode >= SDLK_KP_1 && keyCode <= SDLK_KP_9) {
-		char s[4] = { '(', (keyCode - SDLK_KP_1 + 49), ')', 0 };
+		char s[4] = { '(', (char)(keyCode - SDLK_KP_1 + 49), ')', 0 };
 		fp = loadFlameForText(configKeyFont, s, &tmpColor);
 	}
 	else {
@@ -88,6 +88,20 @@ inline void musnake::updateUserKeySetting(int keyType, SDL_Keycode keyCode){
 	}
 }
 
+inline void musnake::emptyUserData() {
+	userData["record"].clear();
+	userData["settings"]["timeOffset"] = noteDelta = 0;
+	userData["settings"]["key"].clear();
+	for (int i = 0;i < 4;i++) {
+		musnakeKey[i] = 0;
+		if (configKeyFlame[i]) {
+			delete configKeyFlame[i];
+			configKeyFlame[i] = nullptr;
+		}
+	}
+	flushUserData();
+}
+
 inline void musnake::flushUserData() {
 	Json::FastWriter writer;
 	char tmpStr[256];
@@ -104,8 +118,7 @@ inline void musnake::loadFonts() {
 	catPath(tmpPath, (char*)"font\\SHOWG.TTF");
 	titleMusnakeFont = TTF_OpenFont(tmpPath, 144);
 
-	gamePauseTitleFont =
-	gameLoseTitleFont = TTF_OpenFont(tmpPath, 80);
+	gamePauseTitleFont = TTF_OpenFont(tmpPath, 80);
 
 	numberTotalFont =
 	gameWinScorelabelFont = TTF_OpenFont(tmpPath, 50);
@@ -125,7 +138,7 @@ inline void musnake::loadFonts() {
 	menuSongtimeFont =
 	menuSongbyFont =
 	menuSongBestTextFont =
-	configDeltaLabelFont =
+	configLabelFont =
 	gameScorelabelFont =
 	numberConfigDeltaFont = TTF_OpenFont(tmpPath, 20);
 
@@ -138,218 +151,491 @@ inline void musnake::loadFonts() {
 	menuClassNameFont = TTF_OpenFont(tmpPath, 30);
 }
 
-void musnake::loadImages() {
-	char tmpPath[256];
-	SDL_Surface* picSurf;
-	SDL_Rect tmpRect = { 0,0,170,1000 };
 
-	// 初始页面背景以及修边的载入
-	catPath(tmpPath, (char*)"image\\bg_main.png");
-	picSurf = IMG_Load(tmpPath);
-	titleBGFlame = new Flame(picSurf, NULL, -1);
-	titleLBGFlame = new Flame(picSurf, &tmpRect, -1);
-	tmpRect.x = 780;
-	tmpRect.w = 20;
-	titleRBGFlame = new Flame(picSurf, &tmpRect, -1);
-	SDL_FreeSurface(picSurf);
-
-	titleEnterButtonFlame = loadFlameFromFile((char*)"image\\button_enter.png");
-	menuBackButtonFlame =
-		configBackButtonFlame =
-		gameOverBackButtonFlame = loadFlameFromFile((char*)"image\\button_back.png");
-	menuConfigButtonFlame = loadFlameFromFile((char*)"image\\button_config.png");
-	menuUpButtonFlame = loadFlameFromFile((char*)"image\\button_up.png");
-	menuDownButtonFlame = loadFlameFromFile((char*)"image\\button_down.png");
-	menuPlayButtonFlame = loadFlameFromFile((char*)"image\\button_play.png");
-	menuClassButtonFlame = loadFlameFromFile((char*)"image\\button_class.png");
-	configSetKeyFlame = loadFlameFromFile((char*)"image\\button_settingkey.png");
-	configSetDeltaFlame = loadFlameFromFile((char*)"image\\button_settingbar.png");
-	configSetPointerFlame = loadFlameFromFile((char*)"image\\button_settingpin.png");
-	gamePauseResumeButtonFlame[0] = loadFlameFromFile((char*)"image\\button_resume_nc.png");
-	gamePauseResumeButtonFlame[1] = loadFlameFromFile((char*)"image\\button_resume_c.png");
-	gamePauseRetryButtonFlame[0] = loadFlameFromFile((char*)"image\\button_retry_nc.png");
-	gamePauseRetryButtonFlame[1] = loadFlameFromFile((char*)"image\\button_retry_c.png");
-	gamePauseBackButtonFlame[0] = loadFlameFromFile((char*)"image\\button_back_nc.png");
-	gamePauseBackButtonFlame[1] = loadFlameFromFile((char*)"image\\button_back_c.png");
-	gameOverRetryButtonFlame = loadFlameFromFile((char*)"image\\button_retry.png");
-	configOKButtonFlame =
-		gameOverOKButtonFlame = loadFlameFromFile((char*)"image\\button_ok.png");
-	notesignFlame[0] = loadFlameFromFile((char*)"image\\notesign.png");
-	notesignFlame[1] = loadFlameFromFile((char*)"image\\notesign_fever.png");
-	notesignFlame[2] = loadFlameFromFile((char*)"image\\notesign_edge.png");
-
-	// װ��Ѫ��ͼ
-	catPath(tmpPath, (char*)"image\\hp.png");
-	picSurf = IMG_Load(tmpPath);
-	for (int i = 0;i < 6;i++) {
-		SDL_Rect srect = { i * 20, 0, 20, 20 };
-
-		hpFlame[i / 2][i & 1] = new Flame(picSurf, &srect, -1);
-		hpFlame[i / 2][i & 1]->setNext(nullptr);
-	}
-	SDL_FreeSurface(picSurf);
-
-	// װ��ʳ��ͼ
-	foodFlame[0] = loadFlameFromFile((char*)"image\\food_0.png");
-	foodFlame[1] = loadFlameFromFile((char*)"image\\food_1.png");
-	foodFlame[2] = loadFlameFromFile((char*)"image\\food_2.png");
-
-	// 读取食物指示图
-	foodPointerFlame[0][0] = loadFlameFromFile((char*)"image\\foodpointer_0.png");
-	foodPointerFlame[1][0] = loadFlameFromFile((char*)"image\\foodpointer_1.png");
-	foodPointerFlame[2][0] = loadFlameFromFile((char*)"image\\foodpointer_2.png");
-	foodPointerFlame[0][1] = loadFlameFromFile((char*)"image\\foodpointer_0L.png");
-	foodPointerFlame[1][1] = loadFlameFromFile((char*)"image\\foodpointer_1L.png");
-	foodPointerFlame[2][1] = loadFlameFromFile((char*)"image\\foodpointer_2L.png");
-
-	// 读取地格图像
-	gridFlame = loadFlameFromFile((char*)"image\\grid_earth.png");
-	gridWaterFlame = loadFlameFromFile((char*)"image\\grid_water.png");
-	gridDarkFlame = loadFlameFromFile((char*)"image\\grid_none.png");
-	gridBlockFlame = loadFlameFromFile((char*)"image\\grid_block.png");
-
-	// ��ʼװ���ַ�ͼ
-	catPath(tmpPath, (char*)"image\\char.png");
-	picSurf = IMG_Load(tmpPath);
-	for (int i = 0;i < 6;i++) {  // 6����������
-		for (int j = 0;j < 16;j++) {  // ÿ��16���ַ�
-			SDL_Rect srect = { j * 80, i * 160, 80, 160 };
-			charFlame[16 * i + j] = new Flame(picSurf, &srect, -1);
-		}
-	}
-	SDL_FreeSurface(picSurf);
-
-	// ��ʼװ����ͷͼ��������ͷ��Ӧ��ö�ٴ�14�ţ�MU_SNAKE_FLAME_HEAD_0toUP����ʼ��29�Ž���
-	catPath(tmpPath, (char*)"image\\snake_0_head.png");
-	picSurf = IMG_Load(tmpPath);
-	for (int i = 0;i < 16;i++) {  // 16����ͷ�˶����
-		Flame* flames[8];
-		for (int j = 0;j < 8;j++) {  // ÿ���˶������8֡
-			SDL_Rect srect = { j * 20, i * 20, 20, 20 };
-
-			flames[j] = new Flame(picSurf, &srect, 9);
-			flames[j]->setGroupId(MU_SNAKE_FLAME_HEAD_0toUP + i);
-			if (j)flames[j - 1]->setNext(flames[j]);
-		}
-		snakeFlame[MU_SNAKE_FLAME_HEAD_0toUP + i] = flames[0];
-	}
-	SDL_FreeSurface(picSurf);
-
-	// ��ʼװ����βͼ��������β��Ӧ��ö�ٴ�30�ţ�MU_SNAKE_FLAME_TAIL_UPshake����ʼ��49�Ž���
-	catPath(tmpPath, (char*)"image\\snake_0_tail.png");
-	picSurf = IMG_Load(tmpPath);
-	for (int i = 0;i < 20;i++) {  // 20��������β�����
-		Flame* flames[8];
-		for (int j = 0;j < 8;j++) {
-			SDL_Rect srect = { j * 20, i * 20, 20, 20 };
-
-			flames[j] = new Flame(picSurf, &srect, 10);
-			flames[j]->setGroupId(MU_SNAKE_FLAME_TAIL_UPshake + i);
-			if (j)flames[j - 1]->setNext(flames[j]);
-		}
-		snakeFlame[MU_SNAKE_FLAME_TAIL_UPshake + i] = flames[0];
-	}
-	SDL_FreeSurface(picSurf);
-
-	// ��ʼװ��һ������ͼ��һ�������Ӧ��ö�ٴ�0�ţ�MU_SNAKE_FLAME_HEAD_UP����ʼ��13�Ž���
-	catPath(tmpPath, (char*)"image\\snake_0_body.png");
-	picSurf = IMG_Load(tmpPath);
-	for (int j = MU_SNAKE_FLAME_HEAD_UP;j <= MU_SNAKE_FLAME_TAIL_LEFT;j++) {
-		SDL_Rect srect = { j * 20, 0, 20, 20 };
-
-		snakeFlame[j] = new Flame(picSurf, &srect, -1);
-		snakeFlame[j]->setGroupId(j);
-	}
-	for (int j = MU_SNAKE_FLAME_BODY_UPDOWN;j <= MU_SNAKE_FLAME_BODY_UPLEFT;j++) {
-		SDL_Rect srect = { (j - MU_SNAKE_FLAME_BODY_UPDOWN) * 20, 20, 20, 20 };
-
-		snakeFlame[j] = new Flame(picSurf, &srect, -1);
-		snakeFlame[j]->setGroupId(j);
-	}
-
-	// Ȼ��Բ�ͬ��֡����й�����ܳ��
-	snakeFlame[MU_SNAKE_FLAME_HEAD_0toUP]->setNext(snakeFlame[MU_SNAKE_FLAME_HEAD_UP]);
-	snakeFlame[MU_SNAKE_FLAME_HEAD_0toRIGHT]->setNext(snakeFlame[MU_SNAKE_FLAME_HEAD_RIGHT]);
-	snakeFlame[MU_SNAKE_FLAME_HEAD_0toDOWN]->setNext(snakeFlame[MU_SNAKE_FLAME_HEAD_DOWN]);
-	snakeFlame[MU_SNAKE_FLAME_HEAD_0toLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_HEAD_LEFT]);
-	snakeFlame[MU_SNAKE_FLAME_HEAD_UPtoRIGHT]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_UPRIGHT]);
-	snakeFlame[MU_SNAKE_FLAME_HEAD_UPtoDOWN]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_UPDOWN]);
-	snakeFlame[MU_SNAKE_FLAME_HEAD_UPtoLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_UPLEFT]);
-	snakeFlame[MU_SNAKE_FLAME_HEAD_RIGHTtoUP]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_UPRIGHT]);
-	snakeFlame[MU_SNAKE_FLAME_HEAD_RIGHTtoDOWN]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_RIGHTDOWN]);
-	snakeFlame[MU_SNAKE_FLAME_HEAD_RIGHTtoLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_RIGHTLEFT]);
-	snakeFlame[MU_SNAKE_FLAME_HEAD_DOWNtoUP]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_UPDOWN]);
-	snakeFlame[MU_SNAKE_FLAME_HEAD_DOWNtoRIGHT]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_RIGHTDOWN]);
-	snakeFlame[MU_SNAKE_FLAME_HEAD_DOWNtoLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_DOWNLEFT]);
-	snakeFlame[MU_SNAKE_FLAME_HEAD_LEFTtoUP]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_UPLEFT]);
-	snakeFlame[MU_SNAKE_FLAME_HEAD_LEFTtoRIGHT]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_RIGHTLEFT]);
-	snakeFlame[MU_SNAKE_FLAME_HEAD_LEFTtoDOWN]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_DOWNLEFT]);
-
-	snakeFlame[MU_SNAKE_FLAME_TAIL_UPshake]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_UP]);
-	snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHTtoUP]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_UP]);
-	snakeFlame[MU_SNAKE_FLAME_TAIL_DOWNtoUP]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_UP]);
-	snakeFlame[MU_SNAKE_FLAME_TAIL_LEFTtoUP]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_UP]);
-	snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHTshake]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHT]);
-	snakeFlame[MU_SNAKE_FLAME_TAIL_UPtoRIGHT]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHT]);
-	snakeFlame[MU_SNAKE_FLAME_TAIL_DOWNtoRIGHT]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHT]);
-	snakeFlame[MU_SNAKE_FLAME_TAIL_LEFTtoRIGHT]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHT]);
-	snakeFlame[MU_SNAKE_FLAME_TAIL_DOWNshake]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_DOWN]);
-	snakeFlame[MU_SNAKE_FLAME_TAIL_UPtoDOWN]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_DOWN]);
-	snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHTtoDOWN]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_DOWN]);
-	snakeFlame[MU_SNAKE_FLAME_TAIL_LEFTtoDOWN]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_DOWN]);
-	snakeFlame[MU_SNAKE_FLAME_TAIL_LEFTshake]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFT]);
-	snakeFlame[MU_SNAKE_FLAME_TAIL_UPtoLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFT]);
-	snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHTtoLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFT]);
-	snakeFlame[MU_SNAKE_FLAME_TAIL_DOWNtoLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFT]);
-
-	configFGMask = loadFlameFromFile((char*)"image\\mask_configkey.png");
-	configFGMask->setAlpha(0);
-	gamePauseBGMask = loadFlameFromFile((char*)"image\\mask_gamepause.png");
-	gamewinBGFlame = loadFlameFromFile((char*)"image\\bg_gamewin.png");
-	gameloseBGFlame = loadFlameFromFile((char*)"image\\bg_gamelose.png");
-	gameloseFGFlame = loadFlameFromFile((char*)"image\\fg_gamelose.png");
-}
-
-void musnake::loadSound() {
-	char tmpPath[256];
-
-	catPath(tmpPath, (char*)"sound\\bgm_title.mp3");
-	titleBGM = Mix_LoadMUS(tmpPath);
-
-	catPath(tmpPath, (char*)"sound\\bgm_config.mp3");
-	configBGM = Mix_LoadMUS(tmpPath);
-}
-
-void musnake::loadText() {
+void musnake::loadForPublic() {
 	char tmpStr[2];
 	SDL_Color tmpColor = { 255,255,255,255 };
-
-	titleMusnakeFlame = loadFlameForText(titleMusnakeFont, (char*)"MUSNAKE", &tmpColor);
-	titleAuthorFlame = loadFlameForText(titleAuthorFont, (char*)"By Sieroy & StdCat", &tmpColor);
-
-	text_KeyConf_Flame = loadFlameForUTF8(configSettingFont, (char*)"\xe6\xb8\xb8\xe6\x88\x8f\xe6\x8c\x89\xe9\x94\xae\xe8\xae\xbe\xe7\xbd\xae", &tmpColor);
-	text_DeltaConf_Flame = loadFlameForUTF8(configSettingFont, (char*)"\xe8\x8a\x82\xe5\xa5\x8f\xe5\x81\x8f\xe7\xa7\xbb\xe8\xae\xbe\xe7\xbd\xae", &tmpColor);
-	text_DeltaValue_Flame = loadFlameForUTF8(configDeltaLabelFont, (char*)"\xe5\x81\x8f\xe7\xa7\xbb\xe5\x80\xbc: ", &tmpColor);
-	text_Score_Flame = loadFlameForUTF8(gameScorelabelFont, (char*)"\xe5\xbe\x97\xe5\x88\x86", &tmpColor);
-	text_Hits_Flame = loadFlameForText(gameCombolabelFont, (char*)"Hits!", &tmpColor);
-	text_TotalScore_Flame = loadFlameForUTF8(gameWinScorelabelFont, (char*)"\xe5\x88\x86\xe6\x95\xb0", &tmpColor);
-	text_TotalLength_Flame = loadFlameForUTF8(gameWinLengthlabelFont, (char*)"\xe9\x95\xbf\xe5\xba\xa6", &tmpColor);
 
 	tmpStr[1] = 0;
 	for (char i = 0;i < 10;i++) {
 		tmpStr[0] = i + '0';
-		numberConfigDeltaFlame[i] = loadFlameForText(numberConfigDeltaFont, tmpStr, &tmpColor);
 		numberFPSFlame[i] = loadFlameForText(numberFPSFont, tmpStr, &tmpColor);
-		numberHitsFlame[i] = loadFlameForText(numberHitsFont, tmpStr, &tmpColor);
-		numberScoreFlame[i] = loadFlameForText(numberScoreFont, tmpStr, &tmpColor);
-		numberTotalFlame[i] = loadFlameForText(numberTotalFont, tmpStr, &tmpColor);
 	}
-	numberConfigDeltaFlame[10] = loadFlameForText(numberConfigDeltaFont, (char*)"-", &tmpColor);
 
-	gamePauseTitleFlame = loadFlameForText(gamePauseTitleFont, (char*)"- PAUSE -", &tmpColor);
+	titleBGFlame = loadFlameFromFile((char*)"image\\bg_main.png");
+	menuBackButtonFlame =
+	configBackButtonFlame =
+	gameOverBackButtonFlame = loadFlameFromFile((char*)"image\\button_back.png");
+	configOKButtonFlame =
+	gameOverOKButtonFlame = loadFlameFromFile((char*)"image\\button_ok.png");
+}
 
-	gamewinNewBestFlame = loadFlameForUTF8(gameWinNewBestFont, (char*)"\xe6\x96\xb0\xe7\xba\xaa\xe5\xbd\x95\xef\xbc\x81\xef\xbc\x81", &tmpColor);
+void musnake::unloadForPublic() {
+	for (char i = 0;i < 10;i++) delete numberFPSFlame[i];
+	delete titleBGFlame, gameOverBackButtonFlame, gameOverOKButtonFlame;
+}
 
+void musnake::loadForTitle() {
+	if (!loadingList[MU_LOAD_TITLE]) {
+		char tmpPath[256];
+		SDL_Color tmpColor = { 255,255,255,255 };
+
+		titleEnterButtonFlame = loadFlameFromFile((char*)"image\\button_enter.png");
+
+		titleMusnakeFlame = loadFlameForText(titleMusnakeFont, (char*)"MUSNAKE", &tmpColor);
+		titleAuthorFlame = loadFlameForText(titleAuthorFont, (char*)"By Sieroy & StdCat", &tmpColor);
+
+		catPath(tmpPath, (char*)"sound\\bgm_title.mp3");
+		titleBGM = Mix_LoadMUS(tmpPath);
+
+		loadingList[MU_LOAD_TITLE] = true;
+	}
+}
+
+void musnake::unloadForTitle() {
+	if (loadingList[MU_LOAD_TITLE]) {
+		delete titleEnterButtonFlame;
+		delete titleMusnakeFlame;
+		delete titleAuthorFlame;
+		Mix_FreeMusic(titleBGM);
+
+		titleEnterButtonFlame = titleMusnakeFlame = titleAuthorFlame = nullptr;
+		titleBGM = nullptr;
+
+		loadingList[MU_LOAD_TITLE] = false;
+	}
+}
+
+void musnake::loadForMenu() {
+	if (!loadingList[MU_LOAD_MENU]) {
+		char tmpPath[256];
+		SDL_Surface* picSurf;
+		SDL_Rect tmpRect = { 0,0,170,1000 };
+
+		// 初始页面背景以及修边的载入
+		catPath(tmpPath, (char*)"image\\bg_main.png");
+		picSurf = IMG_Load(tmpPath);
+		titleLBGFlame = new Flame(picSurf, &tmpRect, -1);
+		tmpRect.x = 780;
+		tmpRect.w = 20;
+		titleRBGFlame = new Flame(picSurf, &tmpRect, -1);
+		SDL_FreeSurface(picSurf);
+
+		menuConfigButtonFlame = loadFlameFromFile((char*)"image\\button_config.png");
+		menuUpButtonFlame = loadFlameFromFile((char*)"image\\button_up.png");
+		menuDownButtonFlame = loadFlameFromFile((char*)"image\\button_down.png");
+		menuPlayButtonFlame = loadFlameFromFile((char*)"image\\button_play.png");
+		menuClassButtonFlame = loadFlameFromFile((char*)"image\\button_class.png");
+
+		loadingList[MU_LOAD_MENU] = true;
+	}
+}
+
+void musnake::unloadForMenu() {
+	if (loadingList[MU_LOAD_MENU]) {
+		delete titleLBGFlame;
+		delete titleRBGFlame;
+		delete menuConfigButtonFlame;
+		delete menuUpButtonFlame;
+		delete menuDownButtonFlame;
+		delete menuPlayButtonFlame;
+		delete menuClassButtonFlame;
+
+		titleLBGFlame =
+		titleRBGFlame =
+		menuConfigButtonFlame =
+		menuUpButtonFlame =
+		menuDownButtonFlame =
+		menuPlayButtonFlame =
+		menuClassButtonFlame = nullptr;
+
+		loadingList[MU_LOAD_MENU] = false;
+	}
+}
+
+void musnake::loadForConfig() {
+	if (!loadingList[MU_LOAD_CONFIG]) {
+		char tmpPath[256];
+		char tmpStr[2];
+		SDL_Color tmpColor = { 255,255,255,255 };
+
+		configSetKeyFlame = loadFlameFromFile((char*)"image\\button_settingkey.png");
+		configSetDeltaFlame = loadFlameFromFile((char*)"image\\button_settingbar.png");
+		configSetPointerFlame = loadFlameFromFile((char*)"image\\button_settingpin.png");
+		configDeleteButtonFlame = loadFlameFromFile((char*)"image\\button_delete.png");
+		configTutorialButtonFlame = loadFlameFromFile((char*)"image\\button_tutorial.png");
+		configFGMask = loadFlameFromFile((char*)"image\\mask_configkey.png");
+		configFGMask->setAlpha(0);
+
+		text_KeyConf_Flame = loadFlameForUTF8(configSettingFont, (char*)"\xe6\xb8\xb8\xe6\x88\x8f\xe6\x8c\x89\xe9\x94\xae\xe8\xae\xbe\xe7\xbd\xae", &tmpColor);
+		text_DeltaConf_Flame = loadFlameForUTF8(configSettingFont, (char*)"\xe8\x8a\x82\xe5\xa5\x8f\xe5\x81\x8f\xe7\xa7\xbb\xe8\xae\xbe\xe7\xbd\xae", &tmpColor);
+		text_DeltaValue_Flame = loadFlameForUTF8(configLabelFont, (char*)"\xe5\x81\x8f\xe7\xa7\xbb\xe5\x80\xbc: ", &tmpColor);
+		text_DeleteData_Flame = loadFlameForUTF8(configSettingFont, (char*)"\xe5\x88\xa0\xe9\x99\xa4\xe7\x94\xa8\xe6\x88\xb7\xe6\x95\xb0\xe6\x8d\xae", &tmpColor);
+		text_Tutorial_Flame = loadFlameForUTF8(configSettingFont, (char*)"\xe9\x87\x8d\xe6\xb8\xa9\xe6\x96\xb0\xe6\x89\x8b\xe6\x95\x99\xe5\xad\xa6", &tmpColor);
+
+		tmpStr[1] = 0;
+		for (char i = 0;i < 10;i++) {
+			tmpStr[0] = i + '0';
+			numberConfigDeltaFlame[i] = loadFlameForText(numberConfigDeltaFont, tmpStr, &tmpColor);
+		}
+		numberConfigDeltaFlame[10] = loadFlameForText(numberConfigDeltaFont, (char*)"-", &tmpColor);
+
+		catPath(tmpPath, (char*)"sound\\bgm_config.mp3");
+		configBGM = Mix_LoadMUS(tmpPath);
+
+		loadingList[MU_LOAD_CONFIG] = true;
+	}
+}
+
+void musnake::unloadForConfig() {
+	if (loadingList[MU_LOAD_CONFIG]) {
+		delete configSetKeyFlame;
+		delete configSetDeltaFlame;
+		delete configSetPointerFlame;
+		delete configDeleteButtonFlame;
+		delete configTutorialButtonFlame;
+		delete configFGMask;
+		delete text_KeyConf_Flame;
+		delete text_DeltaConf_Flame;
+		delete text_DeltaValue_Flame;
+		delete text_DeleteData_Flame;
+		delete text_Tutorial_Flame;
+		delete numberConfigDeltaFlame[0];
+		delete numberConfigDeltaFlame[1];
+		delete numberConfigDeltaFlame[2];
+		delete numberConfigDeltaFlame[3];
+		delete numberConfigDeltaFlame[4];
+		delete numberConfigDeltaFlame[5];
+		delete numberConfigDeltaFlame[6];
+		delete numberConfigDeltaFlame[7];
+		delete numberConfigDeltaFlame[8];
+		delete numberConfigDeltaFlame[9];
+		delete numberConfigDeltaFlame[10];
+
+		configSetKeyFlame =
+		configSetDeltaFlame =
+		configSetPointerFlame =
+		configDeleteButtonFlame =
+		configTutorialButtonFlame =
+		configFGMask =
+		text_KeyConf_Flame =
+		text_DeltaConf_Flame =
+		text_DeltaValue_Flame =
+		text_DeleteData_Flame =
+		text_Tutorial_Flame =
+		numberConfigDeltaFlame[0] =
+		numberConfigDeltaFlame[1] =
+		numberConfigDeltaFlame[2] =
+		numberConfigDeltaFlame[3] =
+		numberConfigDeltaFlame[4] =
+		numberConfigDeltaFlame[5] =
+		numberConfigDeltaFlame[6] =
+		numberConfigDeltaFlame[7] =
+		numberConfigDeltaFlame[8] =
+		numberConfigDeltaFlame[9] =
+		numberConfigDeltaFlame[10] = nullptr;
+
+		loadingList[MU_LOAD_CONFIG] = false;
+	}
+}
+
+void musnake::loadForGame() {
+	if (!loadingList[MU_LOAD_GAME]) {
+		char tmpPath[256];
+		char tmpStr[2];
+		SDL_Surface* picSurf;
+		SDL_Color tmpColor = { 255,255,255,255 };
+
+		gamePauseResumeButtonFlame[0] = loadFlameFromFile((char*)"image\\button_resume_nc.png");
+		gamePauseResumeButtonFlame[1] = loadFlameFromFile((char*)"image\\button_resume_c.png");
+		gamePauseRetryButtonFlame[0] = loadFlameFromFile((char*)"image\\button_retry_nc.png");
+		gamePauseRetryButtonFlame[1] = loadFlameFromFile((char*)"image\\button_retry_c.png");
+		gamePauseBackButtonFlame[0] = loadFlameFromFile((char*)"image\\button_back_nc.png");
+		gamePauseBackButtonFlame[1] = loadFlameFromFile((char*)"image\\button_back_c.png");
+		gameOverRetryButtonFlame = loadFlameFromFile((char*)"image\\button_retry.png");
+		notesignFlame[0] = loadFlameFromFile((char*)"image\\notesign.png");
+		notesignFlame[1] = loadFlameFromFile((char*)"image\\notesign_fever.png");
+		notesignFlame[2] = loadFlameFromFile((char*)"image\\notesign_edge.png");
+
+		catPath(tmpPath, (char*)"image\\hp.png");
+		picSurf = IMG_Load(tmpPath);
+		for (int i = 0;i < 6;i++) {
+			SDL_Rect srect = { i * 20, 0, 20, 20 };
+
+			hpFlame[i / 2][i & 1] = new Flame(picSurf, &srect, -1);
+			hpFlame[i / 2][i & 1]->setNext(nullptr);
+		}
+		SDL_FreeSurface(picSurf);
+
+		foodFlame[0] = loadFlameFromFile((char*)"image\\food_0.png");
+		foodFlame[1] = loadFlameFromFile((char*)"image\\food_1.png");
+		foodFlame[2] = loadFlameFromFile((char*)"image\\food_2.png");
+
+		// 读取食物指示图
+		foodPointerFlame[0][0] = loadFlameFromFile((char*)"image\\foodpointer_0.png");
+		foodPointerFlame[1][0] = loadFlameFromFile((char*)"image\\foodpointer_1.png");
+		foodPointerFlame[2][0] = loadFlameFromFile((char*)"image\\foodpointer_2.png");
+		foodPointerFlame[0][1] = loadFlameFromFile((char*)"image\\foodpointer_0L.png");
+		foodPointerFlame[1][1] = loadFlameFromFile((char*)"image\\foodpointer_1L.png");
+		foodPointerFlame[2][1] = loadFlameFromFile((char*)"image\\foodpointer_2L.png");
+
+		// 读取地格图像
+		gridFlame = loadFlameFromFile((char*)"image\\grid_earth.png");
+		gridWaterFlame = loadFlameFromFile((char*)"image\\grid_water.png");
+		gridDarkFlame = loadFlameFromFile((char*)"image\\grid_none.png");
+		gridBlockFlame = loadFlameFromFile((char*)"image\\grid_block.png");
+
+		catPath(tmpPath, (char*)"image\\snake_0_head.png");
+		picSurf = IMG_Load(tmpPath);
+		for (int i = 0;i < 16;i++) {
+			Flame* flames[8];
+			for (int j = 0;j < 8;j++) {
+				SDL_Rect srect = { j * 20, i * 20, 20, 20 };
+
+				flames[j] = new Flame(picSurf, &srect, 9);
+				flames[j]->setGroupId(MU_SNAKE_FLAME_HEAD_0toUP + i);
+				if (j)flames[j - 1]->setNext(flames[j]);
+			}
+			snakeFlame[MU_SNAKE_FLAME_HEAD_0toUP + i] = flames[0];
+		}
+		SDL_FreeSurface(picSurf);
+
+		catPath(tmpPath, (char*)"image\\snake_0_tail.png");
+		picSurf = IMG_Load(tmpPath);
+		for (int i = 0;i < 20;i++) {
+			Flame* flames[8];
+			for (int j = 0;j < 8;j++) {
+				SDL_Rect srect = { j * 20, i * 20, 20, 20 };
+
+				flames[j] = new Flame(picSurf, &srect, 10);
+				flames[j]->setGroupId(MU_SNAKE_FLAME_TAIL_UPshake + i);
+				if (j)flames[j - 1]->setNext(flames[j]);
+			}
+			snakeFlame[MU_SNAKE_FLAME_TAIL_UPshake + i] = flames[0];
+		}
+		SDL_FreeSurface(picSurf);
+
+		catPath(tmpPath, (char*)"image\\snake_0_body.png");
+		picSurf = IMG_Load(tmpPath);
+		for (int j = MU_SNAKE_FLAME_HEAD_UP;j <= MU_SNAKE_FLAME_TAIL_LEFT;j++) {
+			SDL_Rect srect = { j * 20, 0, 20, 20 };
+
+			snakeFlame[j] = new Flame(picSurf, &srect, -1);
+			snakeFlame[j]->setGroupId(j);
+		}
+		for (int j = MU_SNAKE_FLAME_BODY_UPDOWN;j <= MU_SNAKE_FLAME_BODY_UPLEFT;j++) {
+			SDL_Rect srect = { (j - MU_SNAKE_FLAME_BODY_UPDOWN) * 20, 20, 20, 20 };
+
+			snakeFlame[j] = new Flame(picSurf, &srect, -1);
+			snakeFlame[j]->setGroupId(j);
+		}
+
+		snakeFlame[MU_SNAKE_FLAME_HEAD_0toUP]->setNext(snakeFlame[MU_SNAKE_FLAME_HEAD_UP]);
+		snakeFlame[MU_SNAKE_FLAME_HEAD_0toRIGHT]->setNext(snakeFlame[MU_SNAKE_FLAME_HEAD_RIGHT]);
+		snakeFlame[MU_SNAKE_FLAME_HEAD_0toDOWN]->setNext(snakeFlame[MU_SNAKE_FLAME_HEAD_DOWN]);
+		snakeFlame[MU_SNAKE_FLAME_HEAD_0toLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_HEAD_LEFT]);
+		snakeFlame[MU_SNAKE_FLAME_HEAD_UPtoRIGHT]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_UPRIGHT]);
+		snakeFlame[MU_SNAKE_FLAME_HEAD_UPtoDOWN]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_UPDOWN]);
+		snakeFlame[MU_SNAKE_FLAME_HEAD_UPtoLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_UPLEFT]);
+		snakeFlame[MU_SNAKE_FLAME_HEAD_RIGHTtoUP]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_UPRIGHT]);
+		snakeFlame[MU_SNAKE_FLAME_HEAD_RIGHTtoDOWN]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_RIGHTDOWN]);
+		snakeFlame[MU_SNAKE_FLAME_HEAD_RIGHTtoLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_RIGHTLEFT]);
+		snakeFlame[MU_SNAKE_FLAME_HEAD_DOWNtoUP]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_UPDOWN]);
+		snakeFlame[MU_SNAKE_FLAME_HEAD_DOWNtoRIGHT]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_RIGHTDOWN]);
+		snakeFlame[MU_SNAKE_FLAME_HEAD_DOWNtoLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_DOWNLEFT]);
+		snakeFlame[MU_SNAKE_FLAME_HEAD_LEFTtoUP]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_UPLEFT]);
+		snakeFlame[MU_SNAKE_FLAME_HEAD_LEFTtoRIGHT]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_RIGHTLEFT]);
+		snakeFlame[MU_SNAKE_FLAME_HEAD_LEFTtoDOWN]->setNext(snakeFlame[MU_SNAKE_FLAME_BODY_DOWNLEFT]);
+
+		snakeFlame[MU_SNAKE_FLAME_TAIL_UPshake]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_UP]);
+		snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHTtoUP]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_UP]);
+		snakeFlame[MU_SNAKE_FLAME_TAIL_DOWNtoUP]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_UP]);
+		snakeFlame[MU_SNAKE_FLAME_TAIL_LEFTtoUP]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_UP]);
+		snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHTshake]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHT]);
+		snakeFlame[MU_SNAKE_FLAME_TAIL_UPtoRIGHT]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHT]);
+		snakeFlame[MU_SNAKE_FLAME_TAIL_DOWNtoRIGHT]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHT]);
+		snakeFlame[MU_SNAKE_FLAME_TAIL_LEFTtoRIGHT]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHT]);
+		snakeFlame[MU_SNAKE_FLAME_TAIL_DOWNshake]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_DOWN]);
+		snakeFlame[MU_SNAKE_FLAME_TAIL_UPtoDOWN]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_DOWN]);
+		snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHTtoDOWN]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_DOWN]);
+		snakeFlame[MU_SNAKE_FLAME_TAIL_LEFTtoDOWN]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_DOWN]);
+		snakeFlame[MU_SNAKE_FLAME_TAIL_LEFTshake]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFT]);
+		snakeFlame[MU_SNAKE_FLAME_TAIL_UPtoLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFT]);
+		snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHTtoLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFT]);
+		snakeFlame[MU_SNAKE_FLAME_TAIL_DOWNtoLEFT]->setNext(snakeFlame[MU_SNAKE_FLAME_TAIL_LEFT]);
+
+		gamePauseBGMask = loadFlameFromFile((char*)"image\\mask_gamepause.png");
+		gamewinBGFlame = loadFlameFromFile((char*)"image\\bg_gamewin.png");
+		gameloseBGFlame = loadFlameFromFile((char*)"image\\bg_gamelose.png");
+		gameloseFGFlame = loadFlameFromFile((char*)"image\\fg_gamelose.png");
+		rankFlame[0] = loadFlameFromFile((char*)"image\\fg_gamewin_SSS.png");
+		rankFlame[1] = loadFlameFromFile((char*)"image\\fg_gamewin_SS.png");
+		rankFlame[2] = loadFlameFromFile((char*)"image\\fg_gamewin_S.png");
+		rankFlame[3] = loadFlameFromFile((char*)"image\\fg_gamewin_A.png");
+		rankFlame[4] = loadFlameFromFile((char*)"image\\fg_gamewin_B.png");
+		rankFlame[5] = loadFlameFromFile((char*)"image\\fg_gamewin_C.png");
+		rankFlame[6] = loadFlameFromFile((char*)"image\\fg_gamewin_D.png");
+
+		text_Score_Flame = loadFlameForUTF8(gameScorelabelFont, (char*)"\xe5\xbe\x97\xe5\x88\x86", &tmpColor);
+		text_Hits_Flame = loadFlameForText(gameCombolabelFont, (char*)"Hits!", &tmpColor);
+		text_TotalScore_Flame = loadFlameForUTF8(gameWinScorelabelFont, (char*)"\xe5\x88\x86\xe6\x95\xb0", &tmpColor);
+		text_TotalLength_Flame = loadFlameForUTF8(gameWinLengthlabelFont, (char*)"\xe9\x95\xbf\xe5\xba\xa6", &tmpColor);
+		gamePauseTitleFlame = loadFlameForText(gamePauseTitleFont, (char*)"- PAUSE -", &tmpColor);
+		gamewinNewBestFlame = loadFlameForUTF8(gameWinNewBestFont, (char*)"\xe6\x96\xb0\xe7\xba\xaa\xe5\xbd\x95\xef\xbc\x81\xef\xbc\x81", &tmpColor);
+
+		tmpStr[1] = 0;
+		for (char i = 0;i < 10;i++) {
+			tmpStr[0] = i + '0';
+			numberHitsFlame[i] = loadFlameForText(numberHitsFont, tmpStr, &tmpColor);
+			numberScoreFlame[i] = loadFlameForText(numberScoreFont, tmpStr, &tmpColor);
+			numberTotalFlame[i] = loadFlameForText(numberTotalFont, tmpStr, &tmpColor);
+		}
+
+		loadingList[MU_LOAD_GAME] = true;
+	}
+}
+
+void musnake::unloadForGame() {
+	if (loadingList[MU_LOAD_GAME]) {
+		delete hpFlame[0][0];
+		delete hpFlame[0][1];
+		delete hpFlame[1][0];
+		delete hpFlame[1][1];
+		delete hpFlame[2][0];
+		delete hpFlame[2][1];
+		delete notesignFlame[0];
+		delete notesignFlame[1];
+		delete notesignFlame[2];
+		delete foodPointerFlame[0][0];
+		delete foodPointerFlame[1][0];
+		delete foodPointerFlame[2][0];
+		delete foodPointerFlame[0][1];
+		delete foodPointerFlame[1][1];
+		delete foodPointerFlame[2][1];
+		delete text_Score_Flame;
+		delete text_Hits_Flame;
+		delete foodFlame[0];
+		delete foodFlame[1];
+		delete foodFlame[2];
+		delete gridFlame;
+		delete gridWaterFlame;
+		delete gridDarkFlame;
+		delete gridBlockFlame;
+		delete gamePauseResumeButtonFlame[0];
+		delete gamePauseResumeButtonFlame[1];
+		delete gamePauseRetryButtonFlame[0];
+		delete gamePauseRetryButtonFlame[1];
+		delete gamePauseBackButtonFlame[0];
+		delete gamePauseBackButtonFlame[1];
+		delete gamePauseTitleFlame;
+		delete gamePauseBGMask;
+		delete gameOverRetryButtonFlame;
+		delete gamewinBGFlame;
+		delete gamewinNewBestFlame;
+		delete gameloseBGFlame;
+		delete gameloseFGFlame;
+		delete rankFlame[0];
+		delete rankFlame[1];
+		delete rankFlame[2];
+		delete rankFlame[3];
+		delete rankFlame[4];
+		delete rankFlame[5];
+		delete rankFlame[6];
+		delete text_TotalScore_Flame;
+		delete text_TotalLength_Flame;
+
+		hpFlame[0][0] =
+			hpFlame[0][1] =
+			hpFlame[1][0] =
+			hpFlame[1][1] =
+			hpFlame[2][0] =
+			hpFlame[2][1] =
+			notesignFlame[0] =
+			notesignFlame[1] =
+			notesignFlame[2] =
+			foodPointerFlame[0][0] =
+			foodPointerFlame[1][0] =
+			foodPointerFlame[2][0] =
+			foodPointerFlame[0][1] =
+			foodPointerFlame[1][1] =
+			foodPointerFlame[2][1] =
+			text_Score_Flame =
+			text_Hits_Flame =
+			foodFlame[0] =
+			foodFlame[1] =
+			foodFlame[2] =
+			gridFlame =
+			gridWaterFlame =
+			gridDarkFlame =
+			gridBlockFlame =
+			gamePauseResumeButtonFlame[0] =
+			gamePauseResumeButtonFlame[1] =
+			gamePauseRetryButtonFlame[0] =
+			gamePauseRetryButtonFlame[1] =
+			gamePauseBackButtonFlame[0] =
+			gamePauseBackButtonFlame[1] =
+			gamePauseTitleFlame =
+			gamePauseBGMask =
+			gameOverRetryButtonFlame =
+			gamewinBGFlame =
+			gamewinNewBestFlame =
+			gameloseBGFlame =
+			gameloseFGFlame =
+			rankFlame[0] =
+			rankFlame[1] =
+			rankFlame[2] =
+			rankFlame[3] =
+			rankFlame[4] =
+			rankFlame[5] =
+			rankFlame[6] =
+			text_TotalScore_Flame =
+			text_TotalLength_Flame = nullptr;
+
+		for (char i = 0;i < 10;i++) {
+			delete numberHitsFlame[i];
+			delete numberScoreFlame[i];
+			delete numberTotalFlame[i];
+			numberHitsFlame[i], numberScoreFlame[i], numberTotalFlame[i] = nullptr;
+		}
+
+		for (char i = 0;i < 50;i++) {
+			delete snakeFlame[i];
+			snakeFlame[i] = nullptr;
+		}
+
+		loadingList[MU_LOAD_GAME] = false;
+	}
+}
+
+void musnake::loadForLevel(Level* lp) {
+	char tmpStr[256];
+	char ss[64];
+	SDL_Color tmpColor = { 255, 255, 255, 255 };
+
+	if (!userData["record"][lp->id].empty()) updateLevelBestFlame(lp);
+	
+	if (!(lp->sample)) {
+		SDL_strlcpy(ss, "level\\", 48);
+		SDL_strlcat(ss, lp->id, 48);
+		SDL_strlcat(ss, "\\sample.mp3", 48);
+		catPath(tmpStr, ss);
+		lp->sample = Mix_LoadMUS(tmpStr);
+	}
+	if (!(lp->cover)) {
+		SDL_strlcpy(ss, "level\\", 48);
+		SDL_strlcat(ss, lp->id, 48);
+		SDL_strlcat(ss, "\\cover.png", 48);
+		lp->cover = loadFlameFromFile(ss);
+	}
+}
+
+void musnake::unloadForLevel(Level* lp) {
+	delete lp->bestFlm;
+	delete lp->cover;
+	Mix_FreeMusic(lp->sample);
+
+	lp->bestFlm = lp->cover = nullptr;
+	lp->sample = nullptr;
 }
 
 
@@ -449,7 +735,6 @@ void musnake::loadLevels() {
 		int itemCount = levelRoot["classes"][i]["items"].size();
 		Level* lp = nullptr;
 		for (int j = 0;j < itemCount;j++) {
-			char ss[64];
 			if (!lp)
 				lp = clp->levels = new Level;
 			else {
@@ -458,10 +743,10 @@ void musnake::loadLevels() {
 				lp = lp->next;
 			}
 			lp->bestFlm = nullptr;
+			lp->cover = nullptr;
+			lp->sample = nullptr;
+
 			*(lp->id + levelRoot["classes"][i]["items"][j]["id"].asString().copy(lp->id, 3, 0)) = 0;
-			if (!userData["record"][lp->id].empty()) {
-				updateLevelBestFlame(lp);
-			}
 
 			*(tmpStr + levelRoot["classes"][i]["items"][j]["name"].asString().copy(tmpStr, 31, 0)) = 0;
 			lp->nameFlm = loadFlameForUTF8(menuSongnameFont, tmpStr, &tmpColor);
@@ -489,15 +774,6 @@ void musnake::loadLevels() {
 				lp->timev = levelRoot["classes"][i]["items"][j]["timeVal"].asInt();
 			}
 
-			SDL_strlcpy(ss, "level\\", 48);
-			SDL_strlcat(ss, lp->id, 48);
-			SDL_strlcat(ss, "\\sample.mp3", 48);
-			catPath(tmpStr, ss);
-			lp->sample = Mix_LoadMUS(tmpStr);
-			SDL_strlcpy(ss, "level\\", 48);
-			SDL_strlcat(ss, lp->id, 48);
-			SDL_strlcat(ss, "\\cover.png", 48);
-			lp->cover = loadFlameFromFile(ss);
 		}
 		lp->next = clp->levels;
 		clp->levels->prev = lp;
@@ -509,6 +785,7 @@ void musnake::loadLevels() {
 	lp->bestFlm = nullptr;
 	lp->byFlm = nullptr;
 	lp->timeFlm = nullptr;
+	lp->cover = nullptr;
 	*(lp->id + levelRoot["bonus"]["tutorial"]["id"].asString().copy(lp->id, 3, 0)) = 0;
 	if (!userData["record"][lp->id].empty()) updateLevelBestFlame(lp);
 	*(tmpStr + levelRoot["bonus"]["tutorial"]["name"].asString().copy(tmpStr, 31, 0)) = 0;
@@ -519,6 +796,7 @@ void musnake::loadLevels() {
 	lp->bestFlm = nullptr;
 	lp->byFlm = nullptr;
 	lp->timeFlm = nullptr;
+	lp->cover = nullptr;
 	*(lp->id + levelRoot["bonus"]["info"]["id"].asString().copy(lp->id, 3, 0)) = 0;
 	if (!userData["record"][lp->id].empty()) updateLevelBestFlame(lp);
 	*(tmpStr + levelRoot["bonus"]["info"]["name"].asString().copy(tmpStr, 31, 0)) = 0;

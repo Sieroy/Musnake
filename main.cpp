@@ -16,15 +16,14 @@
 using namespace musnake;
 
 
-int bonusM = 0;
-
 void load();
 void unload();
-void drawStart();
+void drawStart(int* bonusM);
 void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int* turningClass);
 void drawConfig(int keyread);
 
 int main(int argc, char* argv[]) {
+	int bonusM = 0;
 	SDL_Event evt;
 	SDL_Surface* tmpSurf = nullptr;
 	Level* nowLevel = nullptr;
@@ -55,6 +54,7 @@ int main(int argc, char* argv[]) {
 	SDL_SetRenderDrawColor(musnakeRender, 0, 0, 0, 150);
 
 __start:
+	loadForTitle();
 	Mix_FadeInMusic(titleBGM, -1, 1000);
 	while (musnakeState) {
 		updateTime();
@@ -121,15 +121,15 @@ __start:
 				case SDLK_KP_ENTER:
 					Mix_HaltMusic();
 					if (bonus == 10) {
+						unloadForTitle();
 						musnakeState = MU_STATE_GAMING;
 						while (musnakeState == MU_STATE_GAMING) {
 							Mix_HaltMusic();
-							thisGame = new Game();
-							thisGame->setRenderer(musnakeRender);
-							thisGame->init(bonusInfoLevel);
+							thisGame = new Game(bonusInfoLevel);
 							thisGame->run();
 							delete thisGame;
 						}
+						loadForTitle();
 						Mix_FadeInMusic(titleBGM, -1, 1000);
 						bonusM = 0;
 						bonus = 0;
@@ -137,6 +137,7 @@ __start:
 					else {
 						bonus = 0;
 						bonusM = 0;
+						unloadForTitle();
 						goto __menu;
 					}
 					break;
@@ -153,30 +154,33 @@ __start:
 					SDL_Rect ReturnButton{ 300,410,150,60 };
 					if( SDL_PointInRect( &point, &ReturnButton ) ){
 						Mix_HaltMusic();
+						unloadForTitle();
 						goto __menu;
 						break;
 					}
 				}
 			}
 		}
-		drawStart();
+		drawStart(&bonusM);
 		SDL_RenderPresent(musnakeRender);
 	}
+	unloadForTitle();
 	goto __end;
 
 __menu:
 	if (userData["hasTutorial"].empty()) {
+__tutorial:
 		musnakeState = MU_STATE_GAMING;
 		while (musnakeState == MU_STATE_GAMING) {
 			Mix_HaltMusic();
-			thisGame = new Game();
-			thisGame->setRenderer(musnakeRender);
-			thisGame->init(bonusTutorialLevel);
+			thisGame = new Game(bonusTutorialLevel);
 			thisGame->run();
 			delete thisGame;
 		}
 		userData["hasTutorial"] = 1;
 	}
+	loadForMenu();
+	loadForLevel(nowLevel);
 	Mix_PlayMusic(nowLevel->sample, -1);
 	while (musnakeState) {
 		updateTime();
@@ -192,10 +196,14 @@ __menu:
 				case SDLK_ESCAPE:
 					if (!(panelTurning || classTurning)) {
 						Mix_FadeOutMusic(100);
+						unloadForLevel(nowLevel);
+						unloadForMenu();
 						goto __start;
 					}
 					break;
 				case SDLK_TAB:
+					unloadForLevel(nowLevel);
+					unloadForMenu();
 					goto __config;
 				case SDLK_UP:
 					if (!(panelTurning || classTurning)) panelTurning = -200;
@@ -213,80 +221,82 @@ __menu:
 				case SDLK_RETURN2:
 				case SDLK_KP_ENTER:
 					if (!(panelTurning || classTurning)) {
+						unloadForLevel(nowLevel);
+						unloadForMenu();
+__game:
 						musnakeState = MU_STATE_GAMING;
 						while (musnakeState == MU_STATE_GAMING) {
 							Mix_HaltMusic();
-							thisGame = new Game();
-							thisGame->setRenderer(musnakeRender);
-							thisGame->init(nowLevel);
+							thisGame = new Game(nowLevel);
 							thisGame->run();
 							delete thisGame;
 						}
+						loadForMenu();
+						loadForLevel(nowLevel);
 						Mix_PlayMusic(nowLevel->sample, -1);
 					}
 					break;
 				}
-				case SDL_MOUSEBUTTONDOWN:
-					if( evt.button.button == SDL_BUTTON_LEFT && !(classTurning || panelTurning ) ){
-						SDL_Point point{evt.button.x, evt.button.y};
-						SDL_Rect BackButton, UPButton, DownButton, PlayButton, LeftButton, RightButton, ImgButton, ConfigButton;
-						BackButton = { 0,0,150,60 };
-						UPButton = { 0,100,150,60 };
-						DownButton = { 0,170,150,60 };
-						ConfigButton = { 0,380, 150, 60 };
-						PlayButton = { 0,520,150,60 };
-						LeftButton = { 305,40,40,40 };
-						RightButton = { 605,40,40,40 };
-						ImgButton = {200, 200, 200, 200};
-						if( SDL_PointInRect( &point, &BackButton ) ) {
-							goto __start;
-						}
-						else if( SDL_PointInRect( &point, &UPButton ) ) {
-							panelTurning = -200;
-						}
-						else if( SDL_PointInRect( &point, &DownButton ) ) {
-							panelTurning = 200;
-						}
-						else if (SDL_PointInRect(&point, &ConfigButton)) {
-							goto __config;
-						}
-						else if( SDL_PointInRect( &point, &PlayButton ) || SDL_PointInRect( &point, &ImgButton ) ) {
-							musnakeState = MU_STATE_GAMING;
-							while (musnakeState == MU_STATE_GAMING) {
-								Mix_HaltMusic();
-								thisGame = new Game();
-								thisGame->setRenderer(musnakeRender);
-								thisGame->init(nowLevel);
-								thisGame->run();
-								delete thisGame;
-							}
-							Mix_PlayMusic(nowLevel->sample, -1);
-						}
-						else if( SDL_PointInRect( &point, &LeftButton ) ) {
-							classTurning = -200;
-						}
-						else if( SDL_PointInRect( &point, &RightButton ) ) {
-							classTurning = 200;
-						}
-						
+				break;
+			case SDL_MOUSEBUTTONDOWN:
+				if( evt.button.button == SDL_BUTTON_LEFT && !(classTurning || panelTurning ) ){
+					SDL_Point point{evt.button.x, evt.button.y};
+					SDL_Rect BackButton, UPButton, DownButton, PlayButton, LeftButton, RightButton, ImgButton, ConfigButton;
+					BackButton = { 0,0,150,60 };
+					UPButton = { 0,100,150,60 };
+					DownButton = { 0,170,150,60 };
+					ConfigButton = { 0,380, 150, 60 };
+					PlayButton = { 0,520,150,60 };
+					LeftButton = { 305,40,40,40 };
+					RightButton = { 605,40,40,40 };
+					ImgButton = {200, 200, 200, 200};
+					if( SDL_PointInRect( &point, &BackButton ) ) {
+						unloadForLevel(nowLevel);
+						unloadForMenu();
+						goto __start;
 					}
-					break;
+					else if( SDL_PointInRect( &point, &UPButton ) ) {
+						panelTurning = -200;
+					}
+					else if( SDL_PointInRect( &point, &DownButton ) ) {
+						panelTurning = 200;
+					}
+					else if (SDL_PointInRect(&point, &ConfigButton)) {
+						unloadForLevel(nowLevel);
+						unloadForMenu();
+						goto __config;
+					}
+					else if( SDL_PointInRect( &point, &PlayButton ) || SDL_PointInRect( &point, &ImgButton ) ) {
+						unloadForMenu();
+						unloadForLevel(nowLevel);
+						goto __game;
+					}
+					else if( SDL_PointInRect( &point, &LeftButton ) ) {
+						classTurning = -200;
+					}
+					else if( SDL_PointInRect( &point, &RightButton ) ) {
+						classTurning = 200;
+					}
+				}
+				break;
 			}
 		}
 		drawPanels(&nowLevel,&nowClass, &panelTurning, &classTurning);
 		SDL_RenderPresent(musnakeRender);
 	}
+	unloadForLevel(nowLevel);
+	unloadForMenu();
 	goto __end;
 
 __config:
+	loadForConfig();
 	Mix_PlayMusic(configBGM, -1);
 	settingKey = -1;
 	settingDelta = false;
-	while (musnakeState) {
 
+	while (musnakeState) {
 		updateTime();
 		SDL_RenderClear(musnakeRender);
-
 		while (SDL_PollEvent(&evt)) {
 			switch (evt.type) {
 			case SDL_QUIT:
@@ -301,21 +311,32 @@ __config:
 					if (settingKey == -1) {
 						userData["settings"]["timeOffset"] = noteDelta;
 						flushUserData();
+						unloadForConfig();
 						goto __menu;
 					}
 					else
 						settingKey = -1;
 					break;
+				case SDLK_t:
+					unloadForConfig();
+					goto __tutorial;
 				default:
 					if (settingKey >= 0) {
 						updateUserKeySetting(settingKey, evt.key.keysym.sym);
 						settingKey = -1;
 					}
 				}
+			case SDL_KEYUP:
+				switch (evt.key.keysym.sym) {
+				case SDLK_DELETE:
+					emptyUserData();
+				}
+				break;
 			case SDL_MOUSEBUTTONDOWN:
 				if (evt.button.button == SDL_BUTTON_LEFT && !(classTurning || panelTurning)) {
 					SDL_Point point{ evt.button.x, evt.button.y };
-					SDL_Rect BackButton, OKButton, KeyUpButton, KeyDownButton, KeyLeftButton, KeyRightButton, DeltaBarRect, DeltaPinRect;
+					SDL_Rect BackButton, OKButton, KeyUpButton, KeyDownButton, KeyLeftButton, KeyRightButton, 
+						DeltaBarRect, DeltaPinRect, DeleteDataRect, TutorialRect;
 					BackButton = { 0,0,150,60 };
 					OKButton = { 0,520,150,60 };
 					KeyUpButton = { 240, 100, 80, 160 };
@@ -324,10 +345,13 @@ __config:
 					KeyRightButton = { 660, 100, 80, 160 };
 					DeltaBarRect = { 240, 380, 500, 6 };
 					DeltaPinRect = { 480 + noteDelta / 4, 368 , 20, 30};
+					DeleteDataRect = {400, 394, 200, 60};
+					TutorialRect = { 400, 474, 200, 60 };
 					if (settingKey == -1 && !settingDelta) {
 						if (SDL_PointInRect(&point, &BackButton) || SDL_PointInRect(&point, &OKButton)) {
 							userData["settings"]["timeOffset"] = noteDelta;
 							flushUserData();
+							unloadForConfig();
 							goto __menu;
 						}
 						else if (SDL_PointInRect(&point, &KeyUpButton))
@@ -347,6 +371,13 @@ __config:
 							settingDelta = true;
 							settingDeltaPoint = point;
 							settingDeltaOri = noteDelta;
+						}
+						else if (SDL_PointInRect(&point, &DeleteDataRect)) {
+							emptyUserData();
+						}
+						else if (SDL_PointInRect(&point, &TutorialRect)) {
+							unloadForConfig();
+							goto __tutorial;
 						}
 					}
 					else {
@@ -370,6 +401,7 @@ __config:
 		drawConfig(settingKey);
 		SDL_RenderPresent(musnakeRender);
 	}
+	unloadForConfig();
 
 __end:
 	if (Mix_PlayingMusic()) Mix_HaltMusic();
@@ -387,58 +419,57 @@ __end:
 }
 
 void load() {
-	loadUserData();
 	loadFonts();
+	loadUserData();
 	loadLevels();
-	loadSound();
-	loadImages();
-	loadText();
+	loadForPublic();
 }
 
 void unload() {
+	unloadForPublic();
 	flushUserData();
 }
 
-void drawStart() {  // ������Ϸ��ʼҳ��
+void drawStart(int* bonusM) {
 	static int dt = 0;
 	dt += getTimeDelta();
 	dt %= 3290;
 	titleBGFlame->draw(0, -dt / 10);
 	titleMusnakeFlame->draw(75, 120);
 	titleAuthorFlame->draw(5, 570);
-	if(!bonusM)
+	if(!*bonusM)
 		titleEnterButtonFlame->draw_centered(400, 440);
 	else {
-		switch (bonusM / 200) {
+		switch (*bonusM / 200) {
 		case 0:  // 0 - 199 上键的动效触发
-			titleEnterButtonFlame->draw_centered(400, 440 - bonusM / 4);
-			bonusM -= getTimeDelta();
-			if (bonusM < 0) bonusM = 0;
+			titleEnterButtonFlame->draw_centered(400, 440 - *bonusM / 4);
+			*bonusM -= getTimeDelta();
+			if (*bonusM < 0) *bonusM = 0;
 			break;
 		case 1:  // 200 - 399 下键的动效触发
-			titleEnterButtonFlame->draw_centered(400, 390 + bonusM / 4);
-			bonusM -= getTimeDelta();
-			if (bonusM < 200) bonusM = 0;
+			titleEnterButtonFlame->draw_centered(400, 390 + *bonusM / 4);
+			*bonusM -= getTimeDelta();
+			if (*bonusM < 200) *bonusM = 0;
 			break;
 		case 2:  // 400 - 599 左键的动效触发
-			titleEnterButtonFlame->draw_centered(500 - bonusM / 4, 440);
-			bonusM -= getTimeDelta();
-			if (bonusM < 400) bonusM = 0;
+			titleEnterButtonFlame->draw_centered(500 - *bonusM / 4, 440);
+			*bonusM -= getTimeDelta();
+			if (*bonusM < 400) *bonusM = 0;
 			break;
 		case 3:  // 600 - 799 右键的动效触发
-			titleEnterButtonFlame->draw_centered(bonusM / 4 + 250, 440);
-			bonusM -= getTimeDelta();
-			if (bonusM < 600) bonusM = 0;
+			titleEnterButtonFlame->draw_centered(*bonusM / 4 + 250, 440);
+			*bonusM -= getTimeDelta();
+			if (*bonusM < 600) *bonusM = 0;
 			break;
 		case 4:  // 800 - 999 A键的动效触发
-			titleEnterButtonFlame->draw_centered(400, 440, 1800 - 9 * bonusM / 5.);
-			bonusM -= getTimeDelta();
-			if (bonusM < 800) bonusM = 0;
+			titleEnterButtonFlame->draw_centered(400, 440, 1800 - 9 * *bonusM / 5.);
+			*bonusM -= getTimeDelta();
+			if (*bonusM < 800) *bonusM = 0;
 			break;
 		case 5:  // 1000 - 1199 B键的动效触发
-			titleEnterButtonFlame->draw_centered(400, 440, 9 * bonusM / 5. - 1800);
-			bonusM -= getTimeDelta();
-			if (bonusM < 1000) bonusM = 0;
+			titleEnterButtonFlame->draw_centered(400, 440, 9 * *bonusM / 5. - 1800);
+			*bonusM -= getTimeDelta();
+			if (*bonusM < 1000) *bonusM = 0;
 			break;
 		}
 	}
@@ -455,13 +486,13 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 	dt %= 3290;
 	titleBGFlame->draw(0, -dt / 10);
 	SDL_RenderFillRect(musnakeRender, &prect);
-	if (!*turningClass) {  // û���л�����
+	if (!*turningClass) {
 		menuBackButtonFlame->draw(0, 0);
 		menuUpButtonFlame->draw(0, 100);
 		menuDownButtonFlame->draw(0, 170);
 		menuConfigButtonFlame->draw(0, 380);
 		menuPlayButtonFlame->draw(0, 520);
-		if (!*turningLevel) {  // �����Ƶ�ǰ��Ŀ
+		if (!*turningLevel) {
 			SDL_Rect rect = {200, 200, 200, 200};
 			panel->cover->draw(&rect);
 			panel->nameFlm->draw(430, 200);
@@ -469,12 +500,13 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 			panel->timeFlm->draw(430, 280);
 			if (panel->bestFlm) panel->bestFlm->draw(430, 320);
 		}
-		else if (*turningLevel > 0) {  // ���¹��������Ҫ�������ƶ���Ч��
+		else if (*turningLevel > 0) {
 			Level* lp = panel->next;
 			SDL_Rect re1 = { 200, 200 + *turningLevel * 3, 200, 200 }, re2 = { 200, -400 + *turningLevel * 3, 200, 200 };
-			if (turningFlag == 0) {  // ��������״ε���
-				turningFlag = 1;  // 1����ԭ�ȵ�������������״̬
+			if (turningFlag == 0) {
+				turningFlag = 1;
 				Mix_FadeOutMusic(190);
+				loadForLevel(lp);
 			}
 			lp->cover->draw(&re1);
 			lp->nameFlm->draw(430, 200 + *turningLevel * 3);
@@ -510,6 +542,8 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 
 				SDL_RenderPresent(musnakeRender);
 
+				if (lp != panel) unloadForLevel(panel);
+
 				*turningLevel = 0;
 				turningFlag = 0;
 				Mix_PlayMusic(lp->sample, -1);
@@ -522,6 +556,7 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 			if (turningFlag == 0) {  // ��������״ε���
 				turningFlag = 1;  // 1����ԭ�ȵ�������������״̬
 				Mix_FadeOutMusic(190);
+				loadForLevel(lp);
 			}
 			lp->cover->draw(&re1);
 			lp->nameFlm->draw(430, 200 + *turningLevel * 3);
@@ -557,6 +592,8 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 
 				SDL_RenderPresent(musnakeRender);
 
+				if (lp != panel) unloadForLevel(panel);
+
 				*turningLevel = 0;
 				turningFlag = 0;
 				Mix_PlayMusic(lp->sample, -1);
@@ -573,6 +610,7 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 		if (turningFlag == 0) {
 			turningFlag = 1;
 			Mix_FadeOutMusic(190);
+			loadForLevel(lp);
 		}
 		menuClassButtonFlame->draw(275 + *turningClass * 3, 30);
 		menuClassButtonFlame->draw(-325 + *turningClass * 3, 30);
@@ -622,6 +660,8 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 
 			SDL_RenderPresent(musnakeRender);
 
+			if (lp != panel) unloadForLevel(panel);
+
 			*turningClass = 0;
 			turningFlag = 0;
 			Mix_PlayMusic(lp->sample, -1);
@@ -636,6 +676,7 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 		if (turningFlag == 0) {
 			turningFlag = 1;
 			Mix_FadeOutMusic(190);
+			loadForLevel(lp);
 		}
 		menuClassButtonFlame->draw(275 + *turningClass * 3, 30);
 		menuClassButtonFlame->draw(875 + *turningClass * 3, 30);
@@ -685,6 +726,8 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 
 			SDL_RenderPresent(musnakeRender);
 
+			if (lp != panel) unloadForLevel(panel);
+
 			*turningClass = 0;
 			turningFlag = 0;
 			Mix_PlayMusic(lp->sample, -1);
@@ -705,15 +748,23 @@ void drawConfig(int keyread) {
 	SDL_RenderFillRect(musnakeRender, &prect);
 	configBackButtonFlame->draw(0, 0);
 	configOKButtonFlame->draw(0, 520);
+
 	text_KeyConf_Flame->draw(200, 40);
-	text_DeltaConf_Flame->draw(200, 300);
-	text_DeltaValue_Flame->draw(240, 400);
 	configSetKeyFlame->draw(170, 100);
-	configSetDeltaFlame->draw(170, 380);
-	drawNumber(numberConfigDeltaFlame, noteDelta, 250 + text_DeltaValue_Flame->getW(), 400);
 	for (int i = 0;i < 4;i++)
 		if(configKeyFlame[i]) configKeyFlame[i]->draw_centered(280 + 140 * i, 220);
-	configSetPointerFlame->draw_centered(490 + noteDelta / 4, 383);
+
+	text_DeltaConf_Flame->draw(200,270);
+	text_DeltaValue_Flame->draw(240, 350);
+	configSetDeltaFlame->draw(170, 330);
+	drawNumber(numberConfigDeltaFlame, noteDelta, 250 + text_DeltaValue_Flame->getW(), 350);
+	configSetPointerFlame->draw_centered(490 + noteDelta / 4, 333);
+
+	text_DeleteData_Flame->draw(200, 400);
+	configDeleteButtonFlame->draw(400, 394);
+
+	text_Tutorial_Flame->draw(200, 480);
+	configTutorialButtonFlame->draw(400, 474);
 
 	int al = (int)configFGMask->getAlpha();
 	if (keyread >= 0) {
