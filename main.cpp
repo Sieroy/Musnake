@@ -343,8 +343,8 @@ __config:
 					KeyDownButton = { 380, 100, 80, 160 };
 					KeyLeftButton = { 520, 100, 80, 160 };
 					KeyRightButton = { 660, 100, 80, 160 };
-					DeltaBarRect = { 240, 380, 500, 6 };
-					DeltaPinRect = { 480 + noteDelta / 4, 368 , 20, 30};
+					DeltaBarRect = { 240, 330, 500, 6 };
+					DeltaPinRect = { 480 + noteDelta / 4, 318 , 20, 30};
 					DeleteDataRect = {400, 394, 200, 60};
 					TutorialRect = { 400, 474, 200, 60 };
 					if (settingKey == -1 && !settingDelta) {
