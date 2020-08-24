@@ -1,7 +1,7 @@
 #pragma once
 
-#include "SDL.h"
-#include "SDL_image.h"
+#include <SDL.h>
+#include <SDL_image.h>
 
 #include "MU_declaration.h"
 #include "MU_path.h"
@@ -13,32 +13,32 @@ public:
 	Flame(SDL_Surface* surf, SDL_Rect* blitrect, int duration);
 	~Flame();
 
-	void setAlpha(Uint8 alpha);  // 设置纹理的alpha值
-	void setTexture(SDL_Texture* texture);  // 设置帧的纹理
-	void setDuration(int duration);  // 设置帧的持续时间
-	void setNext(Flame* next);  // 设置下一帧，如果next非空，则转为对next进行setNext
-	void setNext(Flame* next, int forced);  // 强制设置this的下一帧，注意内存泄漏问题
-	void setGroupId(int id);  // 标记帧组号，帧组号用来在terminate时能稳定地释放这些帧
-	void anchorCenter(int* x, int* y);  // 将给定的中心坐标偏移至Flame顶点位置
+	void setAlpha(Uint8 alpha);
+	void setTexture(SDL_Texture* texture);
+	void setDuration(int duration);
+	void setNext(Flame* next);
+	void setNext(Flame* next, int forced);
+	void setGroupId(int id);
+	void anchorCenter(int* x, int* y);
 
 	unsigned getAlpha();
 	int getW();
 	int getH();
-	Flame* getNext();  // 获取下一帧
-	long long getDuration();  // 获取当前帧应持续的时间
+	Flame* getNext();
+	long long getDuration();
 
-	void draw(SDL_Rect* rect);  // 在指定地点绘制
-	void draw(int x, int y);  // 指定基点绘制
+	void draw(SDL_Rect* rect);
+	void draw(int x, int y);
 
-	void draw_centered(int x, int y, double angle=0);  // 指定中心点旋转绘制
+	void draw_centered(int x, int y, double angle=0);
 
 private:
 	int w = 0;
 	int h = 0;
 	int groupId = -1;
-	SDL_Texture* tex = nullptr;  // 该帧的纹理图对象
-	long long duration = -1;  // 该帧要持续的时间，-1表示始终
-	Flame* next = nullptr;  // 下一帧
+	SDL_Texture* tex = nullptr;
+	long long duration = -1;
+	Flame* next = nullptr;
 };
 
 musnake::Flame::Flame() {
@@ -75,7 +75,7 @@ musnake::Flame::Flame(SDL_Surface* surf, SDL_Rect* blitrect, int duration) {
 }
 
 musnake::Flame::~Flame() {
-	if (next != nullptr && next->groupId == groupId) delete next;  // 递归把同组的帧全毙掉
+	if (next != nullptr && next->groupId == groupId) delete next;
 	if (tex) SDL_DestroyTexture(tex);
 }
 

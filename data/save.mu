@@ -1,9 +1,12 @@
 {
-  "record": {
-  },
-  "settings": {
-    "keys": {
-    },
-    "timeOffset": 0
-  }
+	"record":null,
+	"settings":{
+		"key":{
+			"down":0,
+			"left":0,
+			"right":0,
+			"up":0
+		},
+	"timeOffset":0
+	}
 }

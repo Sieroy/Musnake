@@ -3,9 +3,9 @@
 #include <random>
 #include <math.h>
 
-#include "SDL.h"
-#include "SDL_image.h"
-#include "SDL_mixer.h"
+#include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_mixer.h>
 
 #include "MU_declaration.h"
 #include "MU_note.h"
@@ -40,7 +40,7 @@ public:
 	void refreshTime(int delta);
 
 private:
-	char levelPath[32] = "level\\";
+	char levelPath[32] = "level/";
 	char rankVal;
 	unsigned int combo = 0;
 	unsigned short noteCount = 0;
@@ -79,6 +79,7 @@ private:
 
 	void loadMap();
 	void loadToast();
+	void loadNotes();
 	void unloadToast();
 	void updateBase();
 };
@@ -89,49 +90,17 @@ musnake::Game::Game(Level* lp) {
 	loadForGame();
 
 	levelinfo = lp;
-	SDL_strlcat(levelPath, lp->id, 25);
+	SDL_strlcat(levelPath, lp->id, 32);
 
 	char tmpPath[256];
 	char levelfile[64];
 
 	SDL_strlcpy(levelfile, levelPath, 64);
-	SDL_strlcat(levelfile, "\\bgm.mp3", 64);
+	SDL_strlcat(levelfile, "/bgm.mp3", 64);
 	catPath(tmpPath, levelfile);
 	bgm = Mix_LoadMUS(tmpPath);
-
 	if (lp->timev) {
-		SDL_strlcpy(levelfile, levelPath, 64);
-		SDL_strlcat(levelfile, "\\notes.mu", 64);
-		catPath(tmpPath, levelfile);
-		SDL_RWops* f = SDL_RWFromFile(tmpPath, "r");
-		char nts[16], * ntp = nts;
-		char c = 1;
-		Note* endn = nullptr;
-		while (SDL_RWread(f, &c, 1, 1)) {
-			if (c != ';') {
-				*ntp = c;
-				ntp++;
-			}
-			else {
-				long long nt = 0;
-				unsigned long p = 1;
-				do {
-					ntp--;
-					nt += (*ntp - '0') * p;
-					p *= 10;
-				} while (ntp != nts);
-
-				if (!endn) {
-					endn = note = newNote(nt);
-				}
-				else {
-					endn->next = newNote(nt);
-					endn = endn->next;
-				}
-				noteCount++;
-			}
-		}
-		SDL_RWclose(f);
+		loadNotes();
 	}
 	else {
 		Note* nnp = new Note;
@@ -140,7 +109,6 @@ musnake::Game::Game(Level* lp) {
 		interval = lp->interval;
 		addNote(&note, nnp);
 	}
-
 	for (int i = 0;i < 64;i++) {
 		for (int j = 0;j < 64;j++) {
 			Grid* map = gameMap[i][j] = new Grid(i, j);
@@ -151,7 +119,6 @@ musnake::Game::Game(Level* lp) {
 				map->objType = MU_GRID_OBJECT_TYPE_EMPTY;
 		}
 	}
-
 	loadMap();
 	loadToast();
 }
@@ -163,11 +130,7 @@ musnake::Game::~Game() {
 		}
 	}
 
-	delete snakeHead;
 	delete snakeTail;
-	if (food[0]) delete food[0];
-	if (food[1]) delete food[1];
-	if (food[2]) delete food[2];
 
 	clearDelayFunc(&timingFunc);
 	unloadToast();
@@ -1044,12 +1007,7 @@ void musnake::Game::drawFoodPointer(int index) {
 }
 
 inline musnake::Snake::~Snake() {
-	if (next) {
-		delete next;
-	}
-	else if (this == thisGame->snakeTail) thisGame->setSnakeTail(nullptr);
-	/* 因为一般而言，只有蛇尾才会在游戏过程中自动被释放，所以如果不是蛇尾，也就是有next，
-	 * 那么只会是游戏结束时的大释放，这时候应该递归地把这些蛇体全释放掉 */
+	if (this == thisGame->snakeTail) thisGame->setSnakeTail(nullptr);
 }
 
 inline void musnake::Snake::endTail(bool delay) {

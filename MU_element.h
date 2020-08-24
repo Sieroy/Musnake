@@ -1,6 +1,6 @@
 #pragma once
 
-#include"SDL.h"
+#include<SDL.h>
 
 #include"MU_declaration.h"
 #include"MU_flame.h"
@@ -11,16 +11,16 @@ public:
 	void setPosition(SDL_Rect* rect);
 	void setFlame(Flame* flame);
 
-	void delayFlameTime(long long delta);  // 由于暂停等而导致的延迟处理
+	void delayFlameTime(long long delta);
 
 	void update();
 	void draw();
-	void draw(SDL_Point* base);  // 指定绘制开始位置。
+	void draw(SDL_Point* base);
 
 protected:
-	SDL_Rect rect = { 0,0,0,0 };  // 物体矩形
-	Flame* flame = nullptr;  // 物体当前帧
-	long long flameTime = -1;  // 物体当前帧剩余持续时间
+	SDL_Rect rect = { 0,0,0,0 };
+	Flame* flame = nullptr;
+	long long flameTime = -1;
 };
 
 inline void musnake::Element::setFlame(Flame* flame) {
@@ -45,7 +45,7 @@ inline void musnake::Element::delayFlameTime(long long delta) {
 }
 
 inline void musnake::Element::update() {
-	if (flameTime < 0) return;  // 对于永续帧，不再更新
+	if (flameTime < 0) return;
 	flameTime -= getTimeDelta();
 	if (flameTime <= 0) {
 		if (flame) flame = flame->getNext();

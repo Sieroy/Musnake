@@ -2,8 +2,9 @@
 
 #include <random>
 #include <time.h>
-#include "SDL.h"
-#include "SDL_ttf.h"
+
+#include <SDL.h>
+#include <SDL_ttf.h>
 #include "json/json.h"
 
 #define MU_WINDOW_WIDTH 800

@@ -12,10 +12,9 @@ Note* newNote(long long time) {
 	return note;
 }
 
-// 其实相比于这个O(n^2)的工具函数，还不如在需要的地方手写一个利用链表尾的插入，反正文件里note都排好序了……
 void addNote(Note** list, Note* note) {
 	Note* np = *list;
-	if (!np) {  // 表为空
+	if (!np) {  // 锟斤拷为锟斤拷
 		*list = note;
 	}
 	else {

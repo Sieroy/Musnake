@@ -17,6 +17,15 @@ inline void musnake::initPath(char* path) {
 inline void musnake::catPath(char* dest, char* relative) {
 	strcpy(dest, PATH);
 	strcat(dest, relative);
+	char* cp = dest;
+	while (*cp) {
+#if defined(_WIN32) || defined(_WIN64)
+		if (*cp == '/') *cp = '\\';
+#elif defined(_linux) || defined(_linux_) || defined(_unix) || defined(_unix_)
+		if (*cp == '\\') *cp = '/';
+#endif
+		cp++;
+	}
 }
 
 inline void int2str(char* dest, int num) {

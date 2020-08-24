@@ -18,19 +18,55 @@ Just a game for my homework.
 
 ### 环境准备
 
-项目本身是用Visual Studio基于SDL2开发的，需要导入许多库，比如SDL2本体啊、SDL_TTF啊之类的。
+#### Windows
+>
+> 项目本身是用Visual Studio基于SDL2开发的，需要导入许多库，比如SDL2本体啊、SDL_TTF啊之类的。
+>
+> SDL2链接-> http://libsdl.org/download-2.0.php
+>
+> SDL_Image链接-> http://www.libsdl.org/projects/SDL_image/ （附有zlib、libpng等库的下载链接）
+>
+> SDL_TTF链接-> http://www.libsdl.org/projects/SDL_ttf/ （附有FreeType库下载链接）
+>
+> SDL_Mixer链接-> http://www.libsdl.org/projects/SDL_mixer/
+>
+> 可以直接下载它们的dll文件，也可以下载了工程文件后自行编译出lib文件和dll文件。
 
-SDL2链接-> http://libsdl.org/download-2.0.php
+#### Linux
+>
+>是的，项目也兼容Linux系统（虽然目前只在Ubuntu上测试过）~
+>
+>和上面一样，需要先安装需要的SDL库。
+>
+>```bash
+>sudo apt-get install libsdl2-dev
+>sudo apt-get install libsdl2-image-dev
+>sudo apt-get install libsdl2-ttf-dev
+>sudo apt-get install libsdl2-mixer-dev
+>```
+>
+>然后`g++`编译即可：
+>
+>```bash
+>g++ main.cpp jsoncpp.cpp -I/usr/include/SDL2 -L/usr/lib -lSDL2 -lSDL2_image -lSDL2_mixer -lSDL2_ttf -oMusnake.out
+>```
+>
+>最后的运行就简单了：
+>
+>
+> ```bash
+> ./Musnake.out
+> ```
+> 
+> 对于`Cmake`党而言，注意在编译前安装导入对应的库。
+> 
 
-SDL_Image链接-> http://www.libsdl.org/projects/SDL_image/ （附有zlib、libpng等库的下载链接）
 
-SDL_TTF链接-> http://www.libsdl.org/projects/SDL_ttf/ （附有FreeType库下载链接）
 
-SDL_Mixer链接-> http://www.libsdl.org/projects/SDL_mixer/
-
-可以直接下载它们的dll文件，也可以下载了工程文件后自行编译出lib文件和dll文件。
 
 SDL2文档-> https://wiki.libsdl.org/
+
+另外，项目使用了JSONCPP，文档-> https://github.com/open-source-parsers/jsoncpp/wiki
 
 会看文档就不怕不怕辣。
 
@@ -392,4 +428,15 @@ SDL2文档-> https://wiki.libsdl.org/
 > >
 > > // 最后，希望Stdcat能早点把地图搞定~
 
+##### 2020年8月25日 中午
+
+> ***Sieroy***:
+>
+> > 虽然说了不更新，但这还是更新了唉……
+> >
+> > 这次更新为Musnake增加了Linux系统支持，鼓励鼓励~
+> >
+> > 此外，修正了蛇图的png格式BUG；改善音符文件的格式为JSON格式；改进了游戏结束时蛇和食物的释放流程（玩一有人玩到1000多分，递归释放可能会爆栈）。
+> >
+> > 顺便还更新了一下本文档上面的“环境准备”栏。
 

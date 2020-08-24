@@ -1,11 +1,11 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define SDL_MAIN_HANDLED
 
-#include"SDL.h"
-#include"SDL_main.h"
-#include"SDL_ttf.h"
-#include"SDL_image.h"
-#include"SDL_mixer.h"
+#include<SDL.h>
+#include<SDL_main.h>
+#include<SDL_ttf.h>
+#include<SDL_image.h>
+#include<SDL_mixer.h>
 
 #include"MU_declaration.h"
 #include"MU_flame.h"
@@ -172,7 +172,7 @@ __menu:
 __tutorial:
 		musnakeState = MU_STATE_GAMING;
 		while (musnakeState == MU_STATE_GAMING) {
-			Mix_HaltMusic();
+			if (Mix_PlayingMusic()) Mix_HaltMusic();
 			thisGame = new Game(bonusTutorialLevel);
 			thisGame->run();
 			delete thisGame;

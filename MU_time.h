@@ -1,6 +1,6 @@
 #pragma once
 
-#include"SDL.h"
+#include<SDL.h>
 
 #include"MU_declaration.h"
 
@@ -34,26 +34,25 @@ inline void musnake::addDelayFunc(DelayFunc** list, void (*func)(unsigned long),
 	ndf->arg = arg;
 	ndf->time = delay + getTimeVal();
 
-	if (!*list) {  // 如果延时表是空的
+	if (!*list) {
 		*list = ndf;
 		ndf->next = nullptr;
 	}
 	else {
-		if (ndf->time <= (*list)->time) {  // 如果新延时值比其他的都要小
+		if (ndf->time <= (*list)->time) {
 			ndf->next = *list;
 			*list = ndf;
 		}
 		else {
 			DelayFunc* np = *list;
 			while (np->next) {
-				if (ndf->time <= np->next->time) {  // 如果新延时值大小介于某两个之间
+				if (ndf->time <= np->next->time) {
 					ndf->next = np->next;
 					np->next = ndf;
 					return;
 				}
 				np = np->next;
 			}
-			// 如果新延时值比其他的都要大
 			np->next = ndf;
 			ndf->next = nullptr;
 		}
@@ -63,8 +62,8 @@ inline void musnake::addDelayFunc(DelayFunc** list, void (*func)(unsigned long),
 inline int musnake::removeDelayFuncByFuncArg(DelayFunc** list, void(*func)(unsigned long), unsigned long arg) {
 	DelayFunc* dp = *list;
 
-	if (!dp) return 1;  // 空表
-	if (dp->func == func && dp->arg == arg) {  // 首项中标
+	if (!dp) return 1; 
+	if (dp->func == func && dp->arg == arg) { 
 		*list = dp->next;
 		delete dp;
 		return 0;

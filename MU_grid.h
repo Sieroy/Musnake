@@ -53,7 +53,14 @@ musnake::Grid::Grid(int x, int y) {
 }
 
 musnake::Grid::~Grid() {
-
+	switch (objType) {
+	case MU_GRID_OBJECT_TYPE_FOOD:
+		delete obj.food;
+		break;
+	case MU_GRID_OBJECT_TYPE_SNAKE:
+		delete obj.snake;
+		break;
+	}
 }
 
 inline void musnake::Grid::setSnake(Snake* snake) {
