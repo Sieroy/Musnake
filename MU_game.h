@@ -554,7 +554,7 @@ void musnake::Game::ending(){
 	int timing = 0;
 	SDL_Event evt;
 
-	if (interval <= 0 && hp > 0) {  // 如果胜利，那么存个档
+	if (interval <= 0 && hp > 0 && !pausingTime) {  // 如果胜利，那么存个档
 		rankVal = hits * 100 / (noteCount + badCount);
 		switch (rankVal / 10) {
 		case 10:
@@ -799,6 +799,7 @@ void musnake::Game::pause() {
 	if (state == MU_GAME_STATE_RUNNING) {
 		updateTime();
 		refreshTime(0);
+		pausingTime = 0;
 	}
 }
 

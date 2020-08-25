@@ -598,7 +598,12 @@ void musnake::unloadForGame() {
 			numberHitsFlame[i], numberScoreFlame[i], numberTotalFlame[i] = nullptr;
 		}
 
-		for (char i = 0;i < 50;i++) {
+		for (char i = MU_SNAKE_FLAME_HEAD_0toUP;i < 50;i++) {
+			delete snakeFlame[i];
+			snakeFlame[i] = nullptr;
+		}
+
+		for (char i = 0;i < MU_SNAKE_FLAME_HEAD_0toUP;i++) {
 			delete snakeFlame[i];
 			snakeFlame[i] = nullptr;
 		}
