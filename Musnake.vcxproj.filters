@@ -61,16 +61,10 @@
     <ClInclude Include="MU_time.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MU_snake.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="MU_flame.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="MU_game.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="MU_grid.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="MU_path.h">
@@ -79,16 +73,10 @@
     <ClInclude Include="MU_declaration.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MU_note.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="MU_food.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="MU_element.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="MU_loader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MU_gamestruct.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

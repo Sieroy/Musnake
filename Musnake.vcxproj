@@ -158,16 +158,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MU_declaration.h" />
-    <ClInclude Include="MU_element.h" />
+    <ClInclude Include="MU_gamestruct.h" />
     <ClInclude Include="MU_loader.h" />
     <ClInclude Include="MU_flame.h" />
-    <ClInclude Include="MU_food.h" />
     <ClInclude Include="MU_game.h" />
-    <ClInclude Include="MU_grid.h" />
-    <ClInclude Include="MU_note.h" />
     <ClInclude Include="MU_path.h" />
     <ClInclude Include="MU_time.h" />
-    <ClInclude Include="MU_snake.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

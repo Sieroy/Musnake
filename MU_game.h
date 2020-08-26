@@ -8,10 +8,8 @@
 #include <SDL_mixer.h>
 
 #include "MU_declaration.h"
-#include "MU_note.h"
 #include "MU_path.h"
-#include "MU_grid.h"
-#include "MU_snake.h"
+#include "MU_gamestruct.h"
 #include "MU_flame.h"
 
 

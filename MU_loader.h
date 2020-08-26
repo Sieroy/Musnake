@@ -11,10 +11,10 @@
 
 #include "MU_declaration.h"
 #include "MU_path.h"
-#include "MU_note.h"
-#include "MU_flame.h"
-#include "MU_game.h"
 #include "MU_time.h"
+#include "MU_flame.h"
+#include "MU_gamestruct.h"
+#include "MU_game.h"
 
 inline void musnake::loadUserData() {
 	Json::Reader reader;
