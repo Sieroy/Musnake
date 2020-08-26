@@ -178,6 +178,7 @@ __tutorial:
 			delete thisGame;
 		}
 		userData["hasTutorial"] = 1;
+		flushUserData();
 	}
 	loadForMenu();
 	loadForLevel(nowLevel);

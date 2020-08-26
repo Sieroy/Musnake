@@ -133,6 +133,7 @@ inline void musnake::loadFonts() {
 
 	catPath(tmpPath, (char*)"font/msyhbd.ttc");
 	titleAuthorFont =
+	menuSongbySmallFont =
 	configKeyFont =
 	numberFPSFont = TTF_OpenFont(tmpPath, 16);
 
@@ -142,6 +143,8 @@ inline void musnake::loadFonts() {
 	configLabelFont =
 	gameScorelabelFont =
 	numberConfigDeltaFont = TTF_OpenFont(tmpPath, 20);
+
+	menuSongnameSmallFont = TTF_OpenFont(tmpPath, 24);
 
 	menuSongnameFont =
 	configSettingFont =
@@ -753,12 +756,12 @@ void musnake::loadLevels() {
 
 			*(lp->id + levelRoot["classes"][i]["items"][j]["id"].asString().copy(lp->id, 3, 0)) = 0;
 
-			*(tmpStr + levelRoot["classes"][i]["items"][j]["name"].asString().copy(tmpStr, 31, 0)) = 0;
-			lp->nameFlm = loadFlameForUTF8(menuSongnameFont, tmpStr, &tmpColor);
+			*(tmpStr + levelRoot["classes"][i]["items"][j]["name"].asString().copy(tmpStr, 255, 0)) = 0;
+			lp->nameFlm = loadFlameForUTF8(SDL_strlen(tmpStr) < 32 ? menuSongnameFont : menuSongnameSmallFont, tmpStr, &tmpColor);
 
 			*tmpStr = 'B';  *(tmpStr + 1) = 'y';  *(tmpStr + 2) = ' ';
-			*(tmpStr + levelRoot["classes"][i]["items"][j]["by"].asString().copy(tmpStr + 3, 28, 0) + 3) = 0;
-			lp->byFlm = loadFlameForUTF8(menuSongbyFont, tmpStr, &tmpColor);
+			*(tmpStr + levelRoot["classes"][i]["items"][j]["by"].asString().copy(tmpStr + 3, 250, 0) + 3) = 0;
+			lp->byFlm = loadFlameForUTF8(SDL_strlen(tmpStr) < 32 ? menuSongbyFont : menuSongbySmallFont, tmpStr, &tmpColor);
 
 			if (levelRoot["classes"][i]["items"][j]["time"].empty()) {
 				lp->timev = 0;

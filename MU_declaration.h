@@ -234,7 +234,9 @@ namespace musnake {
 	TTF_Font* titleAuthorFont = nullptr;  // 标题下角的作者名字体
 	TTF_Font* menuClassNameFont = nullptr;  // 菜单处分区名字体
 	TTF_Font* menuSongnameFont = nullptr;  // 菜单处歌名字体
+	TTF_Font* menuSongnameSmallFont = nullptr;
 	TTF_Font* menuSongbyFont = nullptr;  // 菜单处的作者字体
+	TTF_Font* menuSongbySmallFont = nullptr;
 	TTF_Font* menuSongtimeFont = nullptr;  // 菜单处歌曲时长字体
 	TTF_Font* menuSongBestTextFont = nullptr;  // 菜单处最高纪录文字
 	TTF_Font* menuSongBestDataFont = nullptr;  // 菜单处最高纪录数据
