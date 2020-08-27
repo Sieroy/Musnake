@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
 
 	musnakeWindow = SDL_CreateWindow("Musnake", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
 	musnakeRender = SDL_CreateRenderer(musnakeWindow, -1, 0);
-	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
+	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 256);
 	musnakeState = MU_STATE_RUNNING;
 
 	load();
@@ -280,6 +280,19 @@ __game:
 					}
 				}
 				break;
+			case SDL_MOUSEWHEEL:
+				if (evt.wheel.x < 0) {
+					if (!(panelTurning || classTurning)) classTurning = -200;
+				}
+				else if (evt.wheel.x > 0) {
+					if (!(panelTurning || classTurning)) classTurning = 200;
+				}
+				else if (evt.wheel.y < 0) {
+					if (!(panelTurning || classTurning)) panelTurning = 200;
+				}
+				else if (evt.wheel.y > 0) {
+					if (!(panelTurning || classTurning)) panelTurning = -200;
+				}
 			}
 		}
 		drawPanels(&nowLevel,&nowClass, &panelTurning, &classTurning);
@@ -523,25 +536,6 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 
 			*turningLevel -= getTimeDelta();
 			if (*turningLevel <= 0) {
-				SDL_RenderClear(musnakeRender);
-				titleBGFlame->draw(0, -dt / 10);
-				menuBackButtonFlame->draw(0, 0);
-				menuUpButtonFlame->draw(0, 100);
-				menuDownButtonFlame->draw(0, 170);
-				menuConfigButtonFlame->draw(0, 380);
-				menuPlayButtonFlame->draw(0, 520);
-				SDL_RenderFillRect(musnakeRender, &prect);
-				re1.y = 200;
-				lp->cover->draw(&re1);
-				lp->nameFlm->draw(430, 200);
-				lp->byFlm->draw(430, 244);
-				lp->timeFlm->draw(430, 280);
-				if (lp->bestFlm) lp->bestFlm->draw(430, 320);
-
-				menuClassButtonFlame->draw(275, 30);
-				(*nowClass)->nameFlm->draw_centered(475, 60);
-
-				SDL_RenderPresent(musnakeRender);
 
 				if (lp != panel) unloadForLevel(panel);
 
@@ -551,11 +545,11 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 				*nowPanel = lp;
 			}
 		}
-		else if (*turningLevel < 0) {  // ���Ϲ��������Ҫ�������ƶ���Ч��
+		else if (*turningLevel < 0) {
 			Level* lp = panel->prev;
 			SDL_Rect re1 = { 200, 200 + *turningLevel * 3, 200, 200 }, re2 = { 200, 800 + *turningLevel * 3, 200, 200 };
-			if (turningFlag == 0) {  // ��������״ε���
-				turningFlag = 1;  // 1����ԭ�ȵ�������������״̬
+			if (turningFlag == 0) {
+				turningFlag = 1;
 				Mix_FadeOutMusic(190);
 				loadForLevel(lp);
 			}
@@ -573,26 +567,6 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 
 			*turningLevel += getTimeDelta();
 			if (*turningLevel >= 0) {
-				SDL_RenderClear(musnakeRender);
-				titleBGFlame->draw(0, -dt / 10);
-				menuBackButtonFlame->draw(0, 0);
-				menuUpButtonFlame->draw(0, 100);
-				menuDownButtonFlame->draw(0, 170);
-				menuConfigButtonFlame->draw(0, 380);
-				menuPlayButtonFlame->draw(0, 520);
-				SDL_RenderFillRect(musnakeRender, &prect);
-				re1.y = 200;
-				lp->cover->draw(&re1);
-				lp->nameFlm->draw(430, 200);
-				lp->byFlm->draw(430, 244);
-				lp->timeFlm->draw(430, 280);
-				if (lp->bestFlm) lp->bestFlm->draw(430, 320);
-
-				menuClassButtonFlame->draw(275, 30);
-				(*nowClass)->nameFlm->draw_centered(475, 60);
-
-				SDL_RenderPresent(musnakeRender);
-
 				if (lp != panel) unloadForLevel(panel);
 
 				*turningLevel = 0;
@@ -604,7 +578,7 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 		menuClassButtonFlame->draw(275, 30);
 		levelClass->nameFlm->draw_centered(475, 60);
 	}
-	else if (*turningClass > 0) {  // ��������
+	else if (*turningClass > 0) {
 		LevelClass* clp = levelClass->next;
 		Level* lp = clp->levels;
 		SDL_Rect re1 = { 200 + *turningClass * 3, 200, 200, 200 }, re2 = { -400 + *turningClass * 3,200, 200, 200 };
@@ -640,27 +614,6 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 
 		*turningClass -= getTimeDelta();
 		if (*turningClass <= 0) {
-			SDL_RenderClear(musnakeRender);
-			titleBGFlame->draw(0, -dt / 10);
-			menuBackButtonFlame->draw(0, 0);
-			menuUpButtonFlame->draw(0, 100);
-			menuDownButtonFlame->draw(0, 170);
-			menuConfigButtonFlame->draw(0, 380);
-			menuPlayButtonFlame->draw(0, 520);
-			SDL_RenderFillRect(musnakeRender, &prect);
-
-			menuClassButtonFlame->draw(275, 30);
-			clp->nameFlm->draw_centered(475, 60);
-
-			re1.x = 200;
-			lp->cover->draw(&re1);
-			lp->nameFlm->draw(430, 200);
-			lp->byFlm->draw(430, 244);
-			lp->timeFlm->draw(430, 280);
-			if (lp->bestFlm) lp->bestFlm->draw(430, 320);
-
-			SDL_RenderPresent(musnakeRender);
-
 			if (lp != panel) unloadForLevel(panel);
 
 			*turningClass = 0;
@@ -670,7 +623,7 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 			*nowPanel = lp;
 		}
 	}
-	else if (*turningClass < 0) {  // ��������
+	else if (*turningClass < 0) {
 		LevelClass* clp = levelClass->prev;
 		Level* lp = clp->levels;
 		SDL_Rect re1 = { 200 + *turningClass * 3, 200, 200, 200 }, re2 = { 800 + *turningClass * 3, 200, 200, 200 };
@@ -706,27 +659,6 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 
 		*turningClass += getTimeDelta();
 		if (*turningClass >= 0) {
-			SDL_RenderClear(musnakeRender);
-			titleBGFlame->draw(0, -dt / 10);
-			menuBackButtonFlame->draw(0, 0);
-			menuUpButtonFlame->draw(0, 100);
-			menuDownButtonFlame->draw(0, 170);
-			menuConfigButtonFlame->draw(0, 380);
-			menuPlayButtonFlame->draw(0, 520);
-			SDL_RenderFillRect(musnakeRender, &prect);
-
-			menuClassButtonFlame->draw(275, 30);
-			clp->nameFlm->draw_centered(475, 60);
-
-			re1.x = 200;
-			lp->cover->draw(&re1);
-			lp->nameFlm->draw(430, 200);
-			lp->byFlm->draw(430, 244);
-			lp->timeFlm->draw(430, 280);
-			if (lp->bestFlm) lp->bestFlm->draw(430, 320);
-
-			SDL_RenderPresent(musnakeRender);
-
 			if (lp != panel) unloadForLevel(panel);
 
 			*turningClass = 0;
