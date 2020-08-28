@@ -826,11 +826,34 @@ void musnake::Game::loadMap() {
 	Json::Reader reader;
 	Json::Value levelRoot;
 	char tmpStr[256];
-	catPath(tmpStr, (char*)"data/maps.mu");
+	catPath(tmpStr, (char*)"level/");
+	strcat(tmpStr, (char*)levelinfo->id);
+	strcat(tmpStr, (char*)"/map.mu");
 	std::ifstream ifs(tmpStr, std::ios::binary);
 
 	reader.parse(ifs, levelRoot);
-	int tailNum = levelRoot[levelinfo->id]["tailNum"].asInt();
+	
+	int darkNum = levelRoot["darkPos"].size();
+	int darkx, darky;
+	for( int i = 0; i< darkNum; i++ ){
+		darkx = levelRoot["darkPos"][i]["x"].asInt();
+		darky = levelRoot["darkPos"][i]["y"].asInt();
+		Grid* map = gameMap[darkx][darky];
+		map->setFlame(gridDarkFlame);
+		map->objType = MU_GRID_OBJECT_TYPE_DARK;
+	}
+
+	int noneNum = levelRoot["none"].size();
+	int nonex, noney;
+	for( int i = 0; i< noneNum; i++ ){
+		nonex = levelRoot["none"][i]["x"].asInt();
+		noney = levelRoot["none"][i]["y"].asInt();
+		Grid* map = gameMap[nonex][noney];
+		map->setFlame(gridWaterFlame);
+		map->objType = MU_GRID_OBJECT_TYPE_NONE;
+	}
+
+	int tailNum = levelRoot["snakePos"].size();
 	length = tailNum;
 	Snake *oldSnake, *newSnake;
 	int oldx, oldy;
@@ -838,8 +861,8 @@ void musnake::Game::loadMap() {
 	oldSnake = newSnake = nullptr;
 	for( int i = 0; i < tailNum; i++ ){
 		int x, y;
-		x = levelRoot[levelinfo->id]["tailPos"][i]["x"].asInt();
-		y = levelRoot[levelinfo->id]["tailPos"][i]["y"].asInt();
+		x = levelRoot["snakePos"][i]["x"].asInt();
+		y = levelRoot["snakePos"][i]["y"].asInt();
 		gameMap[x][y]->setSnake( newSnake = new Snake );
 		if( oldSnake ) {
 			if( x > oldx ) {
@@ -944,13 +967,26 @@ void musnake::Game::loadMap() {
 	else if( lastDir == MU_SNAKE_DIRECT_RIGHT )
 		newSnake->setFlame(snakeFlame[MU_SNAKE_FLAME_TAIL_RIGHT]);
 	setSnakeTail(newSnake);
-	//int foodx, foody;
-	//foodx = levelRoot[levelinfo->id]["foodPos"]["x"].asInt();
-	//foody = levelRoot[levelinfo->id]["foodPos"]["y"].asInt();
-	//if( foodx == -1 && foody == -1 ) return;
-	//food = new Food;
-	//food->setFlame(foodFlame[0]);
-	//gameMap[foodx][foody]->setFood(food);
+
+
+	int foodx, foody;
+	for( int i = 0; i<3; i++ ){
+		foodx = levelRoot["food"][i]["x"].asInt();
+		foody = levelRoot["food"][i]["y"].asInt();
+		if( foodx == -1 && foody == -1 ) continue;
+		food[i] = new Food(i);
+		gameMap[foodx][foody]->setFood(food[i]);
+	}
+
+	int blockNum = levelRoot["blockPos"].size();
+	int blockx, blocky;
+	for( int i = 0; i< blockNum; i++ ){
+		blockx = levelRoot["blockPos"][i]["x"].asInt();
+		blocky = levelRoot["blockPos"][i]["y"].asInt();
+		Grid* map = gameMap[blockx][blocky];
+		map->setFlame(gridBlockFlame);
+		map->objType = MU_GRID_OBJECT_TYPE_BLOCK;
+	}
 
 	ifs.close();
 }

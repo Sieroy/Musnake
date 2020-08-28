@@ -95,6 +95,7 @@ namespace musnake {
 		MU_GRID_OBJECT_TYPE_SNAKE,
 		MU_GRID_OBJECT_TYPE_BLOCK,
 		MU_GRID_OBJECT_TYPE_FOOD,
+		MU_GRID_OBJECT_TYPE_NONE,	
 	};
 
 	enum SnakeDirect {

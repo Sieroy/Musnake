@@ -246,6 +246,7 @@ inline void musnake::Grid::update() {
 }
 
 inline void musnake::Grid::draw(SDL_Point* base) {
+	if( objType == MU_GRID_OBJECT_TYPE_NONE ) return;
 	if (objType == MU_GRID_OBJECT_TYPE_BLOCK) {
 		SDL_Rect r = rect;
 		r.x += base->x;

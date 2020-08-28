@@ -111,10 +111,7 @@ musnake::Game::Game(Level* lp) {
 		for (int j = 0;j < 64;j++) {
 			Grid* map = gameMap[i][j] = new Grid(i, j);
 			map->setFlame(gridFlame);
-			if (i == 0 || i == 63 || j == 0 || j == 63)
-				map->objType = MU_GRID_OBJECT_TYPE_DARK;
-			else
-				map->objType = MU_GRID_OBJECT_TYPE_EMPTY;
+			map->objType = MU_GRID_OBJECT_TYPE_EMPTY;
 		}
 	}
 	loadMap();
@@ -254,7 +251,7 @@ int musnake::Game::moveSnake(int dir) {
 		if (gp->getSnake() != snakeTail) {
 	case MU_GRID_OBJECT_TYPE_BLOCK:
 	case MU_GRID_OBJECT_TYPE_DARK:
-		hp -= interval > 0 ? 10 : 3;
+			hp -= interval > 0 ? 10 : 3;
 			if (hp < 0) hp = 0;
 			combo = 0;
 			return 1;
