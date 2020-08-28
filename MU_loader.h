@@ -350,6 +350,11 @@ void musnake::loadForGame() {
 		SDL_Surface* picSurf;
 		SDL_Color tmpColor = { 255,255,255,255 };
 
+		catPath(tmpPath, (char*)"sound/bgm_gamelose.mp3");
+		gameloseBGM = Mix_LoadMUS(tmpPath);
+		catPath(tmpPath, (char*)"sound/bgm_gamewin.mp3");
+		gamewinBGM = Mix_LoadMUS(tmpPath);
+
 		gamePauseResumeButtonFlame[0] = loadFlameFromFile((char*)"image/button_resume_nc.png");
 		gamePauseResumeButtonFlame[1] = loadFlameFromFile((char*)"image/button_resume_c.png");
 		gamePauseRetryButtonFlame[0] = loadFlameFromFile((char*)"image/button_retry_nc.png");
@@ -500,6 +505,7 @@ void musnake::loadForGame() {
 
 void musnake::unloadForGame() {
 	if (loadingList[MU_LOAD_GAME]) {
+		Mix_FreeMusic(gameloseBGM);
 		delete hpFlame[0][0];
 		delete hpFlame[0][1];
 		delete hpFlame[1][0];
@@ -546,6 +552,8 @@ void musnake::unloadForGame() {
 		delete rankFlame[6];
 		delete text_TotalScore_Flame;
 		delete text_TotalLength_Flame;
+
+		gamewinBGM = gameloseBGM = nullptr;
 
 		hpFlame[0][0] =
 			hpFlame[0][1] =

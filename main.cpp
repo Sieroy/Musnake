@@ -1,5 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
-#define SDL_MAIN_HANDLED
+// #define SDL_MAIN_HANDLED
 
 #include<SDL.h>
 #include<SDL_main.h>

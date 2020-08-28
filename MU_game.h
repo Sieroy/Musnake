@@ -656,11 +656,17 @@ void musnake::Game::ending(){
 }
 
 void musnake::Game::drawWin(int t) {
+	static int m = 0;
 	if (t < 1000) {
+		m = 0;
 		drawGame();
 		gamewinBGFlame->draw(0, (int)(600 - t));
 	}
 	else {
+		if (m == 0) {
+			m = 1;
+			Mix_PlayMusic(gamewinBGM, 1);
+		}
 		int l = t > 1400 ? 400 : (int)(t - 1000);
 		SDL_Rect prect = { 970 - 2 * l, 0, 610, 600 };
 		gamewinBGFlame->draw(0, -400 - (t / 10 - 100) % 130);
@@ -690,14 +696,20 @@ void musnake::Game::drawWin(int t) {
 }
 
 void musnake::Game::drawLose(int t) {
+	static int m = 0;
 	drawGame();
 	if (t < 1000) {
+		m = 0;
 		gameloseBGFlame->setAlpha(t / 2 <= 255 ? t / 2 : 255);
 		gameloseFGFlame->setAlpha(t / 2 <= 255 ? t / 2 : 255);
 		gameloseBGFlame->draw(&musnakeRect);
 		gameloseFGFlame->draw_centered(400, 280);
 	}
 	else {
+		if (m == 0) {
+			Mix_FadeInMusic(gameloseBGM, 1, 500);
+			m = 1;
+		}
 		int l = t > 1400 ? 400 : (int)(t - 1000);
 		SDL_Rect prect = { 970 - 2 * l, 0, 610, 600 };
 		gameloseBGFlame->draw(&musnakeRect);

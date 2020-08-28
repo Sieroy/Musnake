@@ -8,9 +8,9 @@
 		"centered": 1
 	},
 	{
-		"time": 4000,
+		"time": 1000,
 		"str": "第四话 4:38",
-		"duration": 4000,
+		"duration": 3000,
 		"x": 400,
 		"y": 140,
 		"centered": 1

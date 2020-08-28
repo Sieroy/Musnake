@@ -164,10 +164,13 @@ namespace musnake {
 	SDL_Point musnakeCenterPoint = { MU_WINDOW_WIDTH / 2, MU_WINDOW_HEIGHT / 2 };
 	SDL_Renderer* musnakeRender = nullptr;
 	SDL_Window* musnakeWindow = nullptr;
-	Mix_Music* titleBGM = nullptr;
-	Mix_Music* configBGM = nullptr;
 
 	std::default_random_engine Rander((unsigned int)time(NULL));  // 随机数生成器
+
+	Mix_Music* titleBGM = nullptr;
+	Mix_Music* configBGM = nullptr;
+	Mix_Music* gamewinBGM = nullptr;
+	Mix_Music* gameloseBGM = nullptr;
 
 	Flame* snakeFlame[50] = { nullptr };
 	Flame* gridFlame = nullptr;

@@ -209,6 +209,30 @@
 	},
 	{
 		"time": 81000,
+		"str": "游戏胜利BGM出自《RPG GameMaker》素材库",
+		"duration": 4000,
+		"x": 400,
+		"y": 80,
+		"centered": 1
+	},
+	{
+		"time": 85000,
+		"str": "游戏失败BGM《一杯のかけそば》出自动漫",
+		"duration": 4000,
+		"x": 400,
+		"y": 60,
+		"centered": 1
+	},
+	{
+		"time": 85000,
+		"str": "《我不受欢迎这件事怎么想都是你们的错》",
+		"duration": 4000,
+		"x": 400,
+		"y": 100,
+		"centered": 1
+	},
+	{
+		"time": 90000,
 		"str": "关卡内的部分贴图魔改自游戏《节奏地牢》",
 		"duration": 3000,
 		"x": 400,
@@ -216,7 +240,7 @@
 		"centered": 1
 	},
 	{
-		"time": 81000,
+		"time": 90000,
 		"str": "卷心菜食物源自游戏《植物大战僵尸》",
 		"duration": 3000,
 		"x": 400,
@@ -224,23 +248,23 @@
 		"centered": 1
 	},
 	{
-		"time": 85000,
-		"str": "游戏使用了微软雅黑、Showcard Gothic",
+		"time": 94000,
+		"str": "游戏使用了微软雅黑、Showcard Gothic、",
 		"duration": 3000,
 		"x": 400,
 		"y": 60,
 		"centered": 1
 	},
 	{
-		"time": 85000,
-		"str": "和SWGothici字体",
+		"time": 94000,
+		"str": "SWGothicI和SWGothicE字体",
 		"duration": 3000,
 		"x": 400,
 		"y": 100,
 		"centered": 1
 	},
 	{
-		"time": 89000,
+		"time": 98000,
 		"str": "歌曲曲绘大部分来自网络",
 		"duration": 2500,
 		"x": 400,
@@ -248,7 +272,7 @@
 		"centered": 1
 	},
 	{
-		"time": 93000,
+		"time": 102000,
 		"str": "你进入本关使用的“秘籍”NETA自“KONAMI秘籍”",
 		"duration": 4000,
 		"x": 400,
@@ -256,7 +280,7 @@
 		"centered": 1
 	},
 	{
-		"time": 97000,
+		"time": 106000,
 		"str": "Enter按钮的UI表现借鉴自Wallpaper Engine",
 		"duration": 6000,
 		"x": 400,
@@ -264,7 +288,7 @@
 		"centered": 1
 	},
 	{
-		"time": 97000,
+		"time": 106000,
 		"str": "Konami成就触发界面的UI表现",
 		"duration": 6000,
 		"x": 400,
@@ -272,7 +296,7 @@
 		"centered": 1
 	},
 	{
-		"time": 105000,
+		"time": 114000,
 		"str": "本作主要使用SDL2.0进行GUI开发",
 		"duration": 3000,
 		"x": 400,
@@ -280,7 +304,7 @@
 		"centered": 1
 	},
 	{
-		"time": 108000,
+		"time": 117000,
 		"str": "同时还使用了SDL_image、SDL_TTF、SDL_mixer",
 		"duration": 6000,
 		"x": 400,
@@ -288,7 +312,7 @@
 		"centered": 1
 	},
 	{
-		"time": 108000,
+		"time": 117000,
 		"str": "以及JSONcpp进行辅助",
 		"duration": 6000,
 		"x": 400,
@@ -296,7 +320,7 @@
 		"centered": 1
 	},
 	{
-		"time": 116000,
+		"time": 125000,
 		"str": "此外，游戏的文件系统极其随意",
 		"duration": 3000,
 		"x": 400,
@@ -304,7 +328,7 @@
 		"centered": 1
 	},
 	{
-		"time": 119000,
+		"time": 128000,
 		"str": "你可以随意更改游戏目录下的文件来改造游戏",
 		"duration": 4000,
 		"x": 400,
@@ -312,7 +336,7 @@
 		"centered": 1
 	},
 	{
-		"time": 123000,
+		"time": 132000,
 		"str": "自定义关卡和伪造最高分纪录更是不在话下",
 		"duration": 4000,
 		"x": 400,
@@ -320,7 +344,7 @@
 		"centered": 1
 	},
 	{
-		"time": 129000,
+		"time": 138000,
 		"str": "再次感谢您游玩Musnake",
 		"duration": 4000,
 		"x": 400,
@@ -328,7 +352,7 @@
 		"centered": 1
 	},
 	{
-		"time": 134000,
+		"time": 143000,
 		"str": "如果想与作者联系，请通过邮箱——",
 		"duration": 5000,
 		"x": 400,
@@ -336,7 +360,7 @@
 		"centered": 1
 	},
 	{
-		"time": 135500,
+		"time": 144500,
 		"str": "s.ed@qq.com",
 		"duration": 3500,
 		"x": 400,
@@ -344,7 +368,7 @@
 		"centered": 1
 	},
 	{
-		"time": 140000,
+		"time": 149000,
 		"str": "最后，祝你接下来能顺利过关~",
 		"duration": 5000,
 		"x": 400,
