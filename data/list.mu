@@ -42,6 +42,13 @@
 					"by": "神前暁",
 					"time": "1:47",
 					"timeVal": 105000
+				},
+				{
+					"id": "b04",
+					"name": "Maxi poi☆poi poi poi!",
+					"by": "S9ryne",
+					"time": "4:57",
+					"timeVal": 297330
 				}
 			]
 		},
