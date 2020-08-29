@@ -830,6 +830,12 @@ inline void musnake::Game::drawGame() {
 	}
 	snakeTail->update();
 	snakeTail->draw(&base);
+	int i = snakeTail->getGrid()->x;
+	for (int j = snakeTail->getGrid()->y + 1;j < 64 && (gameMap[i][j]->objType == MU_GRID_OBJECT_TYPE_DARK 
+													|| gameMap[i][j]->objType == MU_GRID_OBJECT_TYPE_BLOCK 
+													|| gameMap[i][j]->objType == MU_GRID_OBJECT_TYPE_FOOD);j++) {
+		gameMap[i][j]->draw(&base);
+	}
 
 	drawUI();
 
