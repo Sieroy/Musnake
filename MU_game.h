@@ -680,7 +680,7 @@ void musnake::Game::drawWin(int t) {
 		}
 		else {
 			rankFlame[ri]->draw_centered(1120 - 2 * l, 200);
-			levelinfo->nameFlm->draw(1300 - 2 * l, 140);
+			levelinfo->nameFlm->draw_centered(1275 - 2 * l, 60);
 			text_TotalScore_Flame->draw(1000 - 2 * l, 300);
 			text_TotalLength_Flame->draw(1000 - 2 * l, 450);
 			drawNumber(numberTotalFlame, score, 1060 - 2 * l, 355);
