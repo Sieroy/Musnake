@@ -181,8 +181,8 @@ __tutorial:
 		flushUserData();
 	}
 	loadForMenu();
-	loadForLevel(nowLevel);
 	loadForClass(nowClass);
+	loadForLevel(nowLevel);
 	Mix_PlayMusic(nowLevel->sample, -1);
 	while (musnakeState) {
 		updateTime();
@@ -199,12 +199,14 @@ __tutorial:
 					if (!(panelTurning || classTurning)) {
 						Mix_FadeOutMusic(100);
 						unloadForLevel(nowLevel);
+						unloadForClass(nowClass);
 						unloadForMenu();
 						goto __start;
 					}
 					break;
 				case SDLK_TAB:
 					unloadForLevel(nowLevel);
+					unloadForClass(nowClass);
 					unloadForMenu();
 					goto __config;
 				case SDLK_UP:
@@ -224,6 +226,7 @@ __tutorial:
 				case SDLK_KP_ENTER:
 					if (!(panelTurning || classTurning)) {
 						unloadForLevel(nowLevel);
+						unloadForClass(nowClass);
 						unloadForMenu();
 __game:
 						musnakeState = MU_STATE_GAMING;
@@ -234,6 +237,7 @@ __game:
 							delete thisGame;
 						}
 						loadForMenu();
+						loadForClass(nowClass);
 						loadForLevel(nowLevel);
 						Mix_PlayMusic(nowLevel->sample, -1);
 					}
@@ -254,6 +258,7 @@ __game:
 					ImgButton = {200, 200, 200, 200};
 					if( SDL_PointInRect( &point, &BackButton ) ) {
 						unloadForLevel(nowLevel);
+						unloadForClass(nowClass);
 						unloadForMenu();
 						goto __start;
 					}
@@ -265,12 +270,14 @@ __game:
 					}
 					else if (SDL_PointInRect(&point, &ConfigButton)) {
 						unloadForLevel(nowLevel);
+						unloadForClass(nowClass);
 						unloadForMenu();
 						goto __config;
 					}
 					else if( SDL_PointInRect( &point, &PlayButton ) || SDL_PointInRect( &point, &ImgButton ) ) {
-						unloadForMenu();
 						unloadForLevel(nowLevel);
+						unloadForClass(nowClass);
+						unloadForMenu();
 						goto __game;
 					}
 					else if( SDL_PointInRect( &point, &LeftButton ) ) {
@@ -300,6 +307,7 @@ __game:
 		SDL_RenderPresent(musnakeRender);
 	}
 	unloadForLevel(nowLevel);
+	unloadForClass(nowClass);
 	unloadForMenu();
 	goto __end;
 
