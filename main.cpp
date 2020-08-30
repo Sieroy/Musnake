@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
 	initPath(argv[0]);
 	SDL_Init(SDL_INIT_EVERYTHING);
 	IMG_Init(IMG_INIT_PNG);
-	Mix_Init(MIX_INIT_MP3);
+	Mix_Init(MIX_INIT_OGG);
 	TTF_Init();
 
 	musnakeWindow = SDL_CreateWindow("Musnake", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
@@ -55,7 +55,8 @@ int main(int argc, char* argv[]) {
 
 __start:
 	loadForTitle();
-	Mix_FadeInMusic(titleBGM, -1, 1000);
+	Mix_AllocateChannels(2);
+	Mix_FadeInChannel(MU_MUSIC_CHANNEL_BGM, titleBGM, -1, 1000);
 	while (musnakeState) {
 		updateTime();
 		SDL_RenderClear(musnakeRender);
@@ -119,18 +120,18 @@ __start:
 				case SDLK_RETURN:
 				case SDLK_RETURN2:
 				case SDLK_KP_ENTER:
-					Mix_HaltMusic();
+					Mix_HaltChannel(-1);
+					Mix_AllocateChannels(2);
 					if (bonus == 10) {
 						unloadForTitle();
 						musnakeState = MU_STATE_GAMING;
 						while (musnakeState == MU_STATE_GAMING) {
-							Mix_HaltMusic();
 							thisGame = new Game(bonusInfoLevel);
 							thisGame->run();
 							delete thisGame;
 						}
 						loadForTitle();
-						Mix_FadeInMusic(titleBGM, -1, 1000);
+						Mix_FadeInChannel(MU_MUSIC_CHANNEL_BGM, titleBGM, -1, 1000);
 						bonusM = 0;
 						bonus = 0;
 					}
@@ -153,7 +154,8 @@ __start:
 					SDL_Point point{evt.button.x, evt.button.y};
 					SDL_Rect ReturnButton{ 300,410,150,60 };
 					if( SDL_PointInRect( &point, &ReturnButton ) ){
-						Mix_HaltMusic();
+						Mix_HaltChannel(-1);
+						Mix_AllocateChannels(2);
 						unloadForTitle();
 						goto __menu;
 						break;
@@ -172,7 +174,8 @@ __menu:
 __tutorial:
 		musnakeState = MU_STATE_GAMING;
 		while (musnakeState == MU_STATE_GAMING) {
-			if (Mix_PlayingMusic()) Mix_HaltMusic();
+			Mix_HaltChannel(-1);
+			Mix_AllocateChannels(2);
 			thisGame = new Game(bonusTutorialLevel);
 			thisGame->run();
 			delete thisGame;
@@ -183,7 +186,7 @@ __tutorial:
 	loadForMenu();
 	loadForClass(nowClass);
 	loadForLevel(nowLevel);
-	Mix_PlayMusic(nowLevel->sample, -1);
+	Mix_PlayChannel(MU_MUSIC_CHANNEL_BGM, nowLevel->sample, -1);
 	while (musnakeState) {
 		updateTime();
 		SDL_RenderClear(musnakeRender);
@@ -197,7 +200,7 @@ __tutorial:
 				switch (evt.key.keysym.sym) {
 				case SDLK_ESCAPE:
 					if (!(panelTurning || classTurning)) {
-						Mix_FadeOutMusic(100);
+						Mix_FadeOutChannel(MU_MUSIC_CHANNEL_BGM, 100);
 						unloadForLevel(nowLevel);
 						unloadForClass(nowClass);
 						unloadForMenu();
@@ -225,21 +228,19 @@ __tutorial:
 				case SDLK_RETURN2:
 				case SDLK_KP_ENTER:
 					if (!(panelTurning || classTurning)) {
-						unloadForLevel(nowLevel);
-						unloadForClass(nowClass);
 						unloadForMenu();
 __game:
 						musnakeState = MU_STATE_GAMING;
 						while (musnakeState == MU_STATE_GAMING) {
-							Mix_HaltMusic();
+							Mix_HaltChannel(-1);
+							Mix_AllocateChannels(2);
 							thisGame = new Game(nowLevel);
 							thisGame->run();
 							delete thisGame;
 						}
+						updateLevelBestFlame(nowLevel);
 						loadForMenu();
-						loadForClass(nowClass);
-						loadForLevel(nowLevel);
-						Mix_PlayMusic(nowLevel->sample, -1);
+						Mix_PlayChannel(MU_MUSIC_CHANNEL_BGM, nowLevel->sample, -1);
 					}
 					break;
 				}
@@ -313,7 +314,8 @@ __game:
 
 __config:
 	loadForConfig();
-	Mix_PlayMusic(configBGM, -1);
+	Mix_AllocateChannels(2);
+	Mix_PlayChannel(MU_MUSIC_CHANNEL_BGM, configBGM, -1);
 	settingKey = -1;
 	settingDelta = false;
 
@@ -427,13 +429,16 @@ __config:
 	unloadForConfig();
 
 __end:
-	if (Mix_PlayingMusic()) Mix_HaltMusic();
-
+	Mix_HaltChannel(-1);
 	unload();
 
 	TTF_Quit();
 	IMG_Quit();
+
+	Mix_AllocateChannels(0);
+	Mix_CloseAudio();
 	Mix_Quit();
+
 	SDL_DestroyRenderer(musnakeRender);
 	SDL_DestroyWindow(musnakeWindow);
 	SDL_Quit();
@@ -528,7 +533,7 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 			SDL_Rect re1 = { 200, 200 + *turningLevel * 3, 200, 200 }, re2 = { 200, -400 + *turningLevel * 3, 200, 200 };
 			if (turningFlag == 0) {
 				turningFlag = 1;
-				Mix_FadeOutMusic(190);
+				Mix_FadeOutChannel(MU_MUSIC_CHANNEL_BGM, 190);
 				loadForLevel(lp);
 			}
 			lp->cover->draw(&re1);
@@ -550,7 +555,9 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 
 				*turningLevel = 0;
 				turningFlag = 0;
-				Mix_PlayMusic(lp->sample, -1);
+				Mix_AllocateChannels(0);
+				Mix_AllocateChannels(2);
+				Mix_PlayChannel(MU_MUSIC_CHANNEL_BGM, lp->sample, -1);
 				*nowPanel = lp;
 			}
 		}
@@ -559,7 +566,7 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 			SDL_Rect re1 = { 200, 200 + *turningLevel * 3, 200, 200 }, re2 = { 200, 800 + *turningLevel * 3, 200, 200 };
 			if (turningFlag == 0) {
 				turningFlag = 1;
-				Mix_FadeOutMusic(190);
+				Mix_FadeOutChannel(MU_MUSIC_CHANNEL_BGM, 190);
 				loadForLevel(lp);
 			}
 			lp->cover->draw(&re1);
@@ -580,7 +587,9 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 
 				*turningLevel = 0;
 				turningFlag = 0;
-				Mix_PlayMusic(lp->sample, -1);
+				Mix_AllocateChannels(0);
+				Mix_AllocateChannels(2);
+				Mix_PlayChannel(MU_MUSIC_CHANNEL_BGM, lp->sample, -1);
 				*nowPanel = lp;
 			}
 		}
@@ -594,7 +603,7 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 		if (turningFlag == 0) {
 			turningFlag = 1;
 			loadForClass(clp);
-			Mix_FadeOutMusic(190);
+			Mix_FadeOutChannel(MU_MUSIC_CHANNEL_BGM, 190);
 			loadForLevel(lp);
 		}
 		menuClassButtonFlame->draw(275 + *turningClass * 3, 30);
@@ -628,7 +637,9 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 			if (clp != *nowClass)unloadForClass(*nowClass);
 			*turningClass = 0;
 			turningFlag = 0;
-			Mix_PlayMusic(lp->sample, -1);
+			Mix_AllocateChannels(0);
+			Mix_AllocateChannels(2);
+			Mix_PlayChannel(MU_MUSIC_CHANNEL_BGM, lp->sample, -1);
 			*nowClass = clp;
 			*nowPanel = lp;
 		}
@@ -640,7 +651,7 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 		if (turningFlag == 0) {
 			turningFlag = 1;
 			loadForClass(clp);
-			Mix_FadeOutMusic(190);
+			Mix_FadeOutChannel(MU_MUSIC_CHANNEL_BGM, 190);
 			loadForLevel(lp);
 		}
 		menuClassButtonFlame->draw(275 + *turningClass * 3, 30);
@@ -674,7 +685,9 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 			if (clp != *nowClass)unloadForClass(*nowClass);
 			*turningClass = 0;
 			turningFlag = 0;
-			Mix_PlayMusic(lp->sample, -1);
+			Mix_AllocateChannels(0);
+			Mix_AllocateChannels(2);
+			Mix_PlayChannel(MU_MUSIC_CHANNEL_BGM, lp->sample, -1);
 			*nowClass = clp;
 			*nowPanel = lp;
 		}

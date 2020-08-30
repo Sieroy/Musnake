@@ -60,7 +60,7 @@ private:
 	Level* levelinfo = nullptr;
 	Note* note = nullptr;
 	Food* food[3] = { nullptr };
-	Mix_Music* bgm = nullptr;
+	Mix_Chunk* bgm = nullptr;
 	bool movingLock = false;
 	unsigned long long pausingTime = 0;
 	SDL_Rect drawRect;
@@ -98,9 +98,9 @@ musnake::Game::Game(Level* lp) {
 	char levelfile[64];
 
 	SDL_strlcpy(levelfile, levelPath, 64);
-	SDL_strlcat(levelfile, "/bgm.mp3", 64);
+	SDL_strlcat(levelfile, "/bgm.ogg", 64);
 	catPath(tmpPath, levelfile);
-	bgm = Mix_LoadMUS(tmpPath);
+	bgm = Mix_LoadWAV(tmpPath);
 	if (lp->timev) {
 		loadNotes();
 	}
@@ -135,8 +135,9 @@ musnake::Game::~Game() {
 	unloadToast();
 	clearNotes(&note);
 
-	Mix_HaltMusic();
-	Mix_FreeMusic(bgm);
+	Mix_HaltChannel(-1);
+	Mix_AllocateChannels(2);
+	Mix_FreeChunk(bgm);
 
 	unloadForGame();
 }
@@ -163,7 +164,7 @@ inline void musnake::Game::unlockMoving() {
 }
 
 inline void musnake::Game::playBGM(int loop) {
-	if(bgm) Mix_PlayMusic(bgm, loop);
+	if (bgm) Mix_PlayChannel(MU_MUSIC_CHANNEL_BGM, bgm, loop - 1);
 }
 
 void unlockMoving_D(unsigned long arg) {
@@ -191,11 +192,11 @@ int musnake::Game::moveSnake(int dir) {
 			delete snakeTail;
 			snakeTail = sp;
 		}
-		setDelayFunc(&unlockMoving_D, 0, 78);
+		setDelayFunc(&unlockMoving_D, 0, 120);
 	}
 	else {
 		movingLock = true;
-		setDelayFunc(&unlockMoving_D, 0, 78);
+		setDelayFunc(&unlockMoving_D, 0, 120);
 	}
 
 	if (dir == snakeHead->getTailDir()) {
@@ -255,6 +256,7 @@ int musnake::Game::moveSnake(int dir) {
 		if (gp->getSnake() != snakeTail) {
 	case MU_GRID_OBJECT_TYPE_BLOCK:
 	case MU_GRID_OBJECT_TYPE_DARK:
+			Mix_PlayChannel(MU_MUSIC_CHANNEL_SE, gameHurtSe, 0);
 			hp -= interval > 0 ? 10 : 3;
 			if (hp < 0) hp = 0;
 			combo = 0;
@@ -271,6 +273,7 @@ int musnake::Game::moveSnake(int dir) {
 			else if (fp == food[1]) food[1] = nullptr;
 			else if (fp == food[2]) food[2] = nullptr;
 			delete fp;
+			Mix_PlayChannel(MU_MUSIC_CHANNEL_SE, gameEatSe, 0);
 			score += fever > 0 ? 200 : 100;
 			snakeTail->shakeTail();
 		}
@@ -527,7 +530,7 @@ void musnake::Game::run() {
 
 		if (hp <= 0) {
 			state = MU_GAME_STATE_OVER;
-			Mix_FadeOutMusic(1000);
+			Mix_FadeOutChannel(MU_MUSIC_CHANNEL_BGM, 900);
 		}
 
 		if (!food[0])
@@ -666,7 +669,8 @@ void musnake::Game::drawWin(int t) {
 	else {
 		if (m == 0) {
 			m = 1;
-			Mix_PlayMusic(gamewinBGM, 1);
+			Mix_AllocateChannels(2);
+			Mix_PlayChannel(MU_MUSIC_CHANNEL_BGM, gamewinBGM, 0);
 		}
 		int l = t > 1400 ? 400 : (int)(t - 1000);
 		SDL_Rect prect = { 970 - 2 * l, 0, 610, 600 };
@@ -677,7 +681,7 @@ void musnake::Game::drawWin(int t) {
 		gameOverOKButtonFlame->draw(l - 400, 520);
 
 		if (interval > 0) {
-			levelinfo->nameFlm->draw(1000 - 2 * l, 140);
+			levelinfo->nameFlm->draw(1000 - 2 * l, 100);
 			text_TotalLength_Flame->draw(1000 - 2 * l, 200);
 			drawNumber(numberTotalFlame, length, 1060 - 2 * l, 240);
 			if (lv > 0) gamewinNewBestFlame->draw(1060 - 2 * l, 280);
@@ -708,7 +712,8 @@ void musnake::Game::drawLose(int t) {
 	}
 	else {
 		if (m == 0) {
-			Mix_FadeInMusic(gameloseBGM, 1, 500);
+			Mix_AllocateChannels(2);
+			Mix_FadeInChannel(MU_MUSIC_CHANNEL_BGM, gameloseBGM, 0, 500);
 			m = 1;
 		}
 		int l = t > 1400 ? 400 : (int)(t - 1000);
@@ -728,7 +733,7 @@ void musnake::Game::pause() {
 	int choosing = 0;
 	SDL_Event evt;
 
-	Mix_PauseMusic();
+	Mix_Pause(-1);
 	pausingTime = getTimeVal();
 
 	while (state == MU_GAME_STATE_PAUSED) {
@@ -806,7 +811,7 @@ void musnake::Game::pause() {
 		SDL_RenderPresent(musnakeRender);
 	}
 	SDL_RenderClear(musnakeRender);
-	Mix_ResumeMusic();
+	Mix_Resume(-1);
 	if (state == MU_GAME_STATE_RUNNING) {
 		updateTime();
 		refreshTime(0);
@@ -1045,7 +1050,7 @@ inline void musnake::Snake::endTail(bool delay) {
 	}
 	setHeadDir(MU_SNAKE_DIRECT_NONE);
 	if (delay) {
-		musnake::thisGame->setDelayFunc(&discardTail, (unsigned long)this, 75);
+		musnake::thisGame->setDelayFunc(&discardTail, (unsigned long)this, 121);
 	}
 	else {
 		delete this;

@@ -1,8 +1,8 @@
 [
 	{
-		"time": 0,
+		"time": 500,
 		"str": "欢迎来到Musnake",
-		"duration": 4000,
+		"duration": 3500,
 		"x": 260,
 		"y": 200
 	},

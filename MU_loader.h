@@ -189,8 +189,8 @@ void musnake::loadForTitle() {
 		titleMusnakeFlame = loadFlameForText(titleMusnakeFont, (char*)"MUSNAKE", &tmpColor);
 		titleAuthorFlame = loadFlameForText(titleAuthorFont, (char*)"By Sieroy & StdCat", &tmpColor);
 
-		catPath(tmpPath, (char*)"sound/bgm_title.mp3");
-		titleBGM = Mix_LoadMUS(tmpPath);
+		catPath(tmpPath, (char*)"sound/bgm_title.ogg");
+		titleBGM = Mix_LoadWAV(tmpPath);
 
 		loadingList[MU_LOAD_TITLE] = true;
 	}
@@ -201,7 +201,7 @@ void musnake::unloadForTitle() {
 		delete titleEnterButtonFlame;
 		delete titleMusnakeFlame;
 		delete titleAuthorFlame;
-		Mix_FreeMusic(titleBGM);
+		Mix_FreeChunk(titleBGM);
 
 		titleEnterButtonFlame = titleMusnakeFlame = titleAuthorFlame = nullptr;
 		titleBGM = nullptr;
@@ -284,8 +284,8 @@ void musnake::loadForConfig() {
 		}
 		numberConfigDeltaFlame[10] = loadFlameForText(numberConfigDeltaFont, (char*)"-", &tmpColor);
 
-		catPath(tmpPath, (char*)"sound/bgm_config.mp3");
-		configBGM = Mix_LoadMUS(tmpPath);
+		catPath(tmpPath, (char*)"sound/bgm_config.ogg");
+		configBGM = Mix_LoadWAV(tmpPath);
 
 		loadingList[MU_LOAD_CONFIG] = true;
 	}
@@ -293,6 +293,7 @@ void musnake::loadForConfig() {
 
 void musnake::unloadForConfig() {
 	if (loadingList[MU_LOAD_CONFIG]) {
+		Mix_FreeChunk(configBGM);
 		delete configSetKeyFlame;
 		delete configSetDeltaFlame;
 		delete configSetPointerFlame;
@@ -350,10 +351,14 @@ void musnake::loadForGame() {
 		SDL_Surface* picSurf;
 		SDL_Color tmpColor = { 255,255,255,255 };
 
-		catPath(tmpPath, (char*)"sound/bgm_gamelose.mp3");
-		gameloseBGM = Mix_LoadMUS(tmpPath);
-		catPath(tmpPath, (char*)"sound/bgm_gamewin.mp3");
-		gamewinBGM = Mix_LoadMUS(tmpPath);
+		catPath(tmpPath, (char*)"sound/bgm_gamelose.ogg");
+		gameloseBGM = Mix_LoadWAV(tmpPath);
+		catPath(tmpPath, (char*)"sound/bgm_gamewin.ogg");
+		gamewinBGM = Mix_LoadWAV(tmpPath);
+		catPath(tmpPath, (char*)"sound/se_hurt.wav");
+		gameHurtSe = Mix_LoadWAV(tmpPath);
+		catPath(tmpPath, (char*)"sound/se_eat.wav");
+		gameEatSe = Mix_LoadWAV(tmpPath);
 
 		gamePauseResumeButtonFlame[0] = loadFlameFromFile((char*)"image/button_resume_nc.png");
 		gamePauseResumeButtonFlame[1] = loadFlameFromFile((char*)"image/button_resume_c.png");
@@ -401,7 +406,7 @@ void musnake::loadForGame() {
 			for (int j = 0;j < 8;j++) {
 				SDL_Rect srect = { j * 20, i * 20, 20, 20 };
 
-				flames[j] = new Flame(picSurf, &srect, 9);
+				flames[j] = new Flame(picSurf, &srect, 15);
 				flames[j]->setGroupId(MU_SNAKE_FLAME_HEAD_0toUP + i);
 				if (j)flames[j - 1]->setNext(flames[j]);
 			}
@@ -416,7 +421,7 @@ void musnake::loadForGame() {
 			for (int j = 0;j < 8;j++) {
 				SDL_Rect srect = { j * 20, i * 20, 20, 20 };
 
-				flames[j] = new Flame(picSurf, &srect, 10);
+				flames[j] = new Flame(picSurf, &srect, 15);
 				flames[j]->setGroupId(MU_SNAKE_FLAME_TAIL_UPshake + i);
 				if (j)flames[j - 1]->setNext(flames[j]);
 			}
@@ -505,7 +510,9 @@ void musnake::loadForGame() {
 
 void musnake::unloadForGame() {
 	if (loadingList[MU_LOAD_GAME]) {
-		Mix_FreeMusic(gameloseBGM);
+		Mix_FreeChunk(gameloseBGM);
+		Mix_FreeChunk(gameHurtSe);
+		Mix_FreeChunk(gameEatSe);
 		delete hpFlame[0][0];
 		delete hpFlame[0][1];
 		delete hpFlame[1][0];
@@ -633,9 +640,9 @@ void musnake::loadForLevel(Level* lp) {
 	if (!(lp->sample)) {
 		SDL_strlcpy(ss, "level/", 48);
 		SDL_strlcat(ss, lp->id, 48);
-		SDL_strlcat(ss, "/sample.mp3", 48);
+		SDL_strlcat(ss, "/sample.ogg", 48);
 		catPath(tmpStr, ss);
-		lp->sample = Mix_LoadMUS(tmpStr);
+		lp->sample = Mix_LoadWAV(tmpStr);
 	}
 	if (!(lp->cover)) {
 		SDL_strlcpy(ss, "level/", 48);
@@ -659,7 +666,7 @@ void musnake::unloadForLevel(Level* lp) {
 	delete lp->cover;
 	delete lp->nameFlm;
 	delete lp->byFlm;
-	Mix_FreeMusic(lp->sample);
+	Mix_FreeChunk(lp->sample);
 
 	lp->nameFlm = lp->byFlm = lp->bestFlm = lp->cover = nullptr;
 	lp->sample = nullptr;

@@ -114,6 +114,11 @@ namespace musnake {
 		MU_LOAD_GAME
 	};
 
+	enum MusicChannel {
+		MU_MUSIC_CHANNEL_BGM,
+		MU_MUSIC_CHANNEL_SE
+	};
+
 	class Flame;
 	class Element;
 	class Snake;
@@ -133,7 +138,7 @@ namespace musnake {
 		int index;
 		int timev;  // 总时间ms
 		int interval;
-		Mix_Music* sample;  // 预览歌
+		Mix_Chunk* sample;  // 预览歌
 		Flame* cover;  // 封面
 		Flame* nameFlm;
 		Flame* byFlm;
@@ -171,10 +176,12 @@ namespace musnake {
 
 	std::default_random_engine Rander((unsigned int)time(NULL));  // 随机数生成器
 
-	Mix_Music* titleBGM = nullptr;
-	Mix_Music* configBGM = nullptr;
-	Mix_Music* gamewinBGM = nullptr;
-	Mix_Music* gameloseBGM = nullptr;
+	Mix_Chunk* titleBGM = nullptr;
+	Mix_Chunk* configBGM = nullptr;
+	Mix_Chunk* gamewinBGM = nullptr;
+	Mix_Chunk* gameloseBGM = nullptr;
+	Mix_Chunk* gameHurtSe = nullptr;
+	Mix_Chunk* gameEatSe = nullptr;
 
 	Flame* snakeFlame[50] = { nullptr };
 	Flame* gridFlame = nullptr;
