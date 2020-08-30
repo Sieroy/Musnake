@@ -643,17 +643,40 @@ void musnake::loadForLevel(Level* lp) {
 		SDL_strlcat(ss, "/cover.png", 48);
 		lp->cover = loadFlameFromFile(ss);
 	}
+	if (!(lp->nameFlm)) {
+		*(tmpStr + levelData["classes"][lp->myClass->index]["items"][lp->index]["name"].asString().copy(tmpStr, 255, 0)) = 0;
+		lp->nameFlm = loadFlameForUTF8(SDL_strlen(tmpStr) < 32 ? menuSongnameFont : menuSongnameSmallFont, tmpStr, &tmpColor);
+	}
+	if (!(lp->byFlm)) {
+		*tmpStr = 'B';  *(tmpStr + 1) = 'y';  *(tmpStr + 2) = ' ';
+		*(tmpStr + levelData["classes"][lp->myClass->index]["items"][lp->index]["by"].asString().copy(tmpStr + 3, 250, 0) + 3) = 0;
+		lp->byFlm = loadFlameForUTF8(SDL_strlen(tmpStr) < 32 ? menuSongbyFont : menuSongbySmallFont, tmpStr, &tmpColor);
+	}
 }
 
 void musnake::unloadForLevel(Level* lp) {
 	delete lp->bestFlm;
 	delete lp->cover;
+	delete lp->nameFlm;
+	delete lp->byFlm;
 	Mix_FreeMusic(lp->sample);
 
-	lp->bestFlm = lp->cover = nullptr;
+	lp->nameFlm = lp->byFlm = lp->bestFlm = lp->cover = nullptr;
 	lp->sample = nullptr;
 }
 
+void musnake::loadForClass(LevelClass* clp) {
+	char tmpStr[256];
+	SDL_Color tmpColor = { 255, 255, 255, 255 };
+
+	*(tmpStr + levelData["classes"][clp->index]["name"].asString().copy(tmpStr, 31, 0)) = 0;
+	clp->nameFlm = loadFlameForUTF8(menuClassNameFont, tmpStr, &tmpColor);
+}
+
+void musnake::unloadForClass(LevelClass* clp) {
+	delete clp->nameFlm;
+	clp->nameFlm = nullptr;
+}
 
 inline void musnake::parseRankStr(char* str, int rankv) {
 	switch (rankv / 10) {
@@ -728,14 +751,13 @@ void musnake::updateLevelBestFlame(Level* lp) {
 void musnake::loadLevels() {
 	SDL_Color tmpColor = { 255, 255, 255, 255 };
 	Json::Reader reader;
-	Json::Value levelRoot;
 	char tmpStr[256];
 	catPath(tmpStr, (char*)"data/list.mu");
 	std::ifstream ifs(tmpStr, std::ios::binary);
 
-	reader.parse(ifs, levelRoot);
+	reader.parse(ifs, levelData);
 
-	int classCount = levelRoot["classes"].size();
+	int classCount = levelData["classes"].size();
 	LevelClass* clp = nullptr;
 	for (int i = 0; i < classCount; i++) {
 		if (!clp)
@@ -745,10 +767,9 @@ void musnake::loadLevels() {
 			clp->next->prev = clp;
 			clp = clp->next;
 		}
-		*(tmpStr + levelRoot["classes"][i]["name"].asString().copy(tmpStr, 31, 0)) = 0;
-		clp->nameFlm = loadFlameForUTF8(menuClassNameFont, tmpStr, &tmpColor);
+		clp->index = i;
 
-		int itemCount = levelRoot["classes"][i]["items"].size();
+		int itemCount = levelData["classes"][i]["items"].size();
 		Level* lp = nullptr;
 		for (int j = 0;j < itemCount;j++) {
 			if (!lp)
@@ -758,36 +779,33 @@ void musnake::loadLevels() {
 				lp->next->prev = lp;
 				lp = lp->next;
 			}
+			lp->nameFlm = nullptr;
+			lp->byFlm = nullptr;
 			lp->bestFlm = nullptr;
 			lp->cover = nullptr;
 			lp->sample = nullptr;
+			lp->myClass = clp;
+			lp->index = j;
 
-			*(lp->id + levelRoot["classes"][i]["items"][j]["id"].asString().copy(lp->id, 3, 0)) = 0;
+			*(lp->id + levelData["classes"][i]["items"][j]["id"].asString().copy(lp->id, 3, 0)) = 0;
 
-			*(tmpStr + levelRoot["classes"][i]["items"][j]["name"].asString().copy(tmpStr, 255, 0)) = 0;
-			lp->nameFlm = loadFlameForUTF8(SDL_strlen(tmpStr) < 32 ? menuSongnameFont : menuSongnameSmallFont, tmpStr, &tmpColor);
-
-			*tmpStr = 'B';  *(tmpStr + 1) = 'y';  *(tmpStr + 2) = ' ';
-			*(tmpStr + levelRoot["classes"][i]["items"][j]["by"].asString().copy(tmpStr + 3, 250, 0) + 3) = 0;
-			lp->byFlm = loadFlameForUTF8(SDL_strlen(tmpStr) < 32 ? menuSongbyFont : menuSongbySmallFont, tmpStr, &tmpColor);
-
-			if (levelRoot["classes"][i]["items"][j]["time"].empty()) {
+			if (levelData["classes"][i]["items"][j]["time"].empty()) {
 				lp->timev = 0;
 
 				SDL_strlcpy(tmpStr, "\xe9\x80\x9f\xe5\xba\xa6\xef\xbc\x9a", 16);
-				*(tmpStr + 9 + levelRoot["classes"][i]["items"][j]["bpm"].asString().copy(tmpStr + 9, 31, 0)) = 0;
+				*(tmpStr + 9 + levelData["classes"][i]["items"][j]["bpm"].asString().copy(tmpStr + 9, 31, 0)) = 0;
 				lp->timeFlm = loadFlameForUTF8(menuSongtimeFont, tmpStr, &tmpColor);
 
-				lp->interval = (int)levelRoot["classes"][i]["items"][j]["interval"].asFloat();
+				lp->interval = (int)levelData["classes"][i]["items"][j]["interval"].asFloat();
 			}
 			else {
 				lp->interval = 0;
 
 				SDL_strlcpy(tmpStr, "\xe6\x97\xb6\xe9\x95\xbf\xef\xbc\x9a", 16);
-				*(tmpStr + 9 + levelRoot["classes"][i]["items"][j]["time"].asString().copy(tmpStr + 9, 31, 0)) = 0;
+				*(tmpStr + 9 + levelData["classes"][i]["items"][j]["time"].asString().copy(tmpStr + 9, 31, 0)) = 0;
 				lp->timeFlm = loadFlameForUTF8(menuSongtimeFont, tmpStr, &tmpColor);
 
-				lp->timev = levelRoot["classes"][i]["items"][j]["timeVal"].asInt();
+				lp->timev = levelData["classes"][i]["items"][j]["timeVal"].asInt();
 			}
 
 		}
@@ -802,22 +820,22 @@ void musnake::loadLevels() {
 	lp->byFlm = nullptr;
 	lp->timeFlm = nullptr;
 	lp->cover = nullptr;
-	*(lp->id + levelRoot["bonus"]["tutorial"]["id"].asString().copy(lp->id, 3, 0)) = 0;
+	*(lp->id + levelData["bonus"]["tutorial"]["id"].asString().copy(lp->id, 3, 0)) = 0;
 	if (!userData["record"][lp->id].empty()) updateLevelBestFlame(lp);
-	*(tmpStr + levelRoot["bonus"]["tutorial"]["name"].asString().copy(tmpStr, 31, 0)) = 0;
+	*(tmpStr + levelData["bonus"]["tutorial"]["name"].asString().copy(tmpStr, 31, 0)) = 0;
 	lp->nameFlm = loadFlameForUTF8(menuSongnameFont, tmpStr, &tmpColor);
-	lp->timev = levelRoot["bonus"]["tutorial"]["timeVal"].asInt();
+	lp->timev = levelData["bonus"]["tutorial"]["timeVal"].asInt();
 
 	lp = bonusInfoLevel = new Level;
 	lp->bestFlm = nullptr;
 	lp->byFlm = nullptr;
 	lp->timeFlm = nullptr;
 	lp->cover = nullptr;
-	*(lp->id + levelRoot["bonus"]["info"]["id"].asString().copy(lp->id, 3, 0)) = 0;
+	*(lp->id + levelData["bonus"]["info"]["id"].asString().copy(lp->id, 3, 0)) = 0;
 	if (!userData["record"][lp->id].empty()) updateLevelBestFlame(lp);
-	*(tmpStr + levelRoot["bonus"]["info"]["name"].asString().copy(tmpStr, 31, 0)) = 0;
+	*(tmpStr + levelData["bonus"]["info"]["name"].asString().copy(tmpStr, 31, 0)) = 0;
 	lp->nameFlm = loadFlameForUTF8(menuSongnameFont, tmpStr, &tmpColor);
-	lp->timev = levelRoot["bonus"]["info"]["timeVal"].asInt();
+	lp->timev = levelData["bonus"]["info"]["timeVal"].asInt();
 
 	ifs.close();
 }
@@ -986,6 +1004,16 @@ void musnake::Game::loadMap() {
 		Grid* map = gameMap[blockx][blocky];
 		map->setFlame(gridBlockFlame);
 		map->objType = MU_GRID_OBJECT_TYPE_BLOCK;
+	}
+
+	for (int i = 0;i < 64;i++) {
+		for (int j = 0;j < 64;j++) {
+			if (gameMap[i][j]->objType == MU_GRID_OBJECT_TYPE_EMPTY) {
+				emptyGridPos[2 * emptyGridNum] = i;
+				emptyGridPos[2 * emptyGridNum + 1] = j;
+				emptyGridNum++;
+			}
+		}
 	}
 
 	ifs.close();

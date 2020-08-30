@@ -130,6 +130,7 @@ namespace musnake {
 
 	typedef struct _Level {
 		char id[4];  // 最多3位ID号，用来确定路径
+		int index;
 		int timev;  // 总时间ms
 		int interval;
 		Mix_Music* sample;  // 预览歌
@@ -138,11 +139,13 @@ namespace musnake {
 		Flame* byFlm;
 		Flame* timeFlm;
 		Flame* bestFlm;
+		struct _LevelClass* myClass;
 		struct _Level* prev;
 		struct _Level* next;
 	}Level;
 
 	typedef struct _LevelClass {
+		int index;
 		Level* levels;
 		Flame* nameFlm;
 		struct _LevelClass* prev;
@@ -265,6 +268,7 @@ namespace musnake {
 	Level* bonusInfoLevel = nullptr;
 
 	Json::Value userData;
+	Json::Value levelData;
 	int noteDelta = 0;  // 节奏偏移
 	SDL_Keycode musnakeKey[4] = { 0 };
 	Flame* configKeyFlame[4] = { nullptr };
@@ -276,7 +280,6 @@ namespace musnake {
 	int musnakeState;
 	bool loadingList[5] = { false };
 	Game* thisGame = nullptr;  // 当前进行中的游戏对象（鱼，好大的鱼，虎纹鲨鱼……）
-	Grid* gameMap[64][64] = { nullptr };
 
 
 
@@ -287,7 +290,9 @@ namespace musnake {
 	void loadLevels();
 
 	void loadForLevel(Level* lp);
+	void loadForClass(LevelClass* clp);
 	void unloadForLevel(Level* lp);
+	void unloadForClass(LevelClass* clp);
 
 	void loadForPublic();
 	void loadForTitle();

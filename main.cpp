@@ -182,6 +182,7 @@ __tutorial:
 	}
 	loadForMenu();
 	loadForLevel(nowLevel);
+	loadForClass(nowClass);
 	Mix_PlayMusic(nowLevel->sample, -1);
 	while (musnakeState) {
 		updateTime();
@@ -584,6 +585,7 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 		SDL_Rect re1 = { 200 + *turningClass * 3, 200, 200, 200 }, re2 = { -400 + *turningClass * 3,200, 200, 200 };
 		if (turningFlag == 0) {
 			turningFlag = 1;
+			loadForClass(clp);
 			Mix_FadeOutMusic(190);
 			loadForLevel(lp);
 		}
@@ -615,7 +617,7 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 		*turningClass -= getTimeDelta();
 		if (*turningClass <= 0) {
 			if (lp != panel) unloadForLevel(panel);
-
+			if (clp != *nowClass)unloadForClass(*nowClass);
 			*turningClass = 0;
 			turningFlag = 0;
 			Mix_PlayMusic(lp->sample, -1);
@@ -629,6 +631,7 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 		SDL_Rect re1 = { 200 + *turningClass * 3, 200, 200, 200 }, re2 = { 800 + *turningClass * 3, 200, 200, 200 };
 		if (turningFlag == 0) {
 			turningFlag = 1;
+			loadForClass(clp);
 			Mix_FadeOutMusic(190);
 			loadForLevel(lp);
 		}
@@ -660,7 +663,7 @@ void drawPanels(Level** nowPanel, LevelClass** nowClass, int* turningLevel, int*
 		*turningClass += getTimeDelta();
 		if (*turningClass >= 0) {
 			if (lp != panel) unloadForLevel(panel);
-
+			if (clp != *nowClass)unloadForClass(*nowClass);
 			*turningClass = 0;
 			turningFlag = 0;
 			Mix_PlayMusic(lp->sample, -1);

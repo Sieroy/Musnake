@@ -38,6 +38,10 @@ public:
 	void refreshTime(int delta);
 
 private:
+	Grid* gameMap[64][64] = { nullptr };
+	char emptyGridPos[64 * 64 * 2];
+	int emptyGridNum = 0;
+
 	char levelPath[32] = "level/";
 	char rankVal;
 	unsigned int combo = 0;
@@ -328,7 +332,7 @@ inline void musnake::Game::updateBase() {
 
 inline void musnake::Game::refreshFood(int index) {
 	while (true) {
-		int x = Rander() % 62 + 1, y = Rander() % 62 + 1;
+		int rp = Rander() % emptyGridNum, x = emptyGridPos[2 * rp], y = emptyGridPos[2 * rp + 1];
 		if (gameMap[x][y]->objType == MU_GRID_OBJECT_TYPE_EMPTY) {
 			food[index] = new Food(index);
 			gameMap[x][y]->setFood(food[index]);
