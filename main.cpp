@@ -276,8 +276,6 @@ __game:
 						goto __config;
 					}
 					else if( SDL_PointInRect( &point, &PlayButton ) || SDL_PointInRect( &point, &ImgButton ) ) {
-						unloadForLevel(nowLevel);
-						unloadForClass(nowClass);
 						unloadForMenu();
 						goto __game;
 					}
