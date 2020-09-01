@@ -121,7 +121,7 @@
 	},
 	{
 		"time": 46000,
-		"str": "测试：Sieroy  Stdcat",
+		"str": "测试：Sieroy  Stdcat 马哥",
 		"duration": 4000,
 		"x": 400,
 		"y": 100,

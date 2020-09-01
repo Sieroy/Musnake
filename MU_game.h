@@ -174,8 +174,10 @@ void unlockMoving_D(unsigned long arg) {
 void discardTail(unsigned long arg) {
 	using namespace musnake;
 	Snake* snake = (Snake*)arg;
-	thisGame->setSnakeTail(snake->getPrev());
-	snake->getPrev()->setNext(nullptr);
+	if (thisGame->snakeTail == snake) {
+		thisGame->setSnakeTail(snake->getPrev());
+		snake->getPrev()->setNext(nullptr);
+	}
 	delete snake;
 }
 
@@ -192,7 +194,7 @@ int musnake::Game::moveSnake(int dir) {
 			delete snakeTail;
 			snakeTail = sp;
 		}
-		setDelayFunc(&unlockMoving_D, 0, 120);
+		setDelayFunc(&unlockMoving_D, 0, 123);
 	}
 	else {
 		movingLock = true;
@@ -1050,7 +1052,7 @@ inline void musnake::Snake::endTail(bool delay) {
 	}
 	setHeadDir(MU_SNAKE_DIRECT_NONE);
 	if (delay) {
-		musnake::thisGame->setDelayFunc(&discardTail, (unsigned long)this, 121);
+		musnake::thisGame->setDelayFunc(&discardTail, (unsigned long)this, 120);
 	}
 	else {
 		delete this;

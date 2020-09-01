@@ -336,11 +336,13 @@ inline void musnake::Snake::setTailDir(int dir) {
 }
 
 inline void musnake::Snake::setNext(Snake* snake) {
-	next = snake;
+	if (this)
+		next = snake;
 }
 
 inline void musnake::Snake::setPrev(Snake* snake) {
-	prev = snake;
+	if (this)
+		prev = snake;
 }
 
 inline musnake::Snake* musnake::Snake::getNext() {
