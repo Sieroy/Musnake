@@ -290,6 +290,8 @@ int musnake::Game::moveSnake(int dir) {
 		snakeHead->setPrev(sp);
 		snakeHead->turnBody(dir);
 		sp->setNext(snakeHead);
+		if (!snakeHead->getNext())
+			snakeHead->getNext()->delayFlameTime(120);
 		snakeHead = sp;
 		gp->setSnake(sp);
 
@@ -301,9 +303,24 @@ int musnake::Game::moveSnake(int dir) {
 inline void musnake::Game::updateBase() {
 	static int dc = 0;
 	int x, y;
+	int flag = 0;
 	x = snakeHead->getGrid()->x;
 	y = snakeHead->getGrid()->y;
-	if (x * 40 + base.x > 600) {
+	if (x * 40 + base.x > 800) {
+		dc += getTimeDelta();
+		while (dc >= 5) {
+			base.x -= 5;
+			dc -= 5;
+		}
+	}
+	else if (x * 40 + base.x < 0) {
+		dc += getTimeDelta();
+		while (dc >= 5) {
+			base.x += 5;
+			dc -= 5;
+		}
+	}
+	else if (x * 40 + base.x > 600) {
 		dc += getTimeDelta();
 		while (dc >= 5) {
 			base.x -= 2;
@@ -314,6 +331,23 @@ inline void musnake::Game::updateBase() {
 		dc += getTimeDelta();
 		while (dc >= 5) {
 			base.x += 2;
+			dc -= 5;
+		}
+	}
+	else 
+		flag = 1;
+
+	if (y * 40 + base.y > 600) {
+		dc += getTimeDelta();
+		while (dc >= 5) {
+			base.y -= 5;
+			dc -= 5;
+		}
+	}
+	else if (y * 40 + base.y < 0) {
+		dc += getTimeDelta();
+		while (dc >= 5) {
+			base.y += 5;
 			dc -= 5;
 		}
 	}
@@ -331,7 +365,7 @@ inline void musnake::Game::updateBase() {
 			dc -= 5;
 		}
 	}
-	else
+	else if (flag)
 		dc = 0;
 }
 
@@ -587,12 +621,14 @@ void musnake::Game::ending(){
 		lv = length > userData["record"][levelinfo->id]["length"].asUInt() ? length : 0;
 
 		updateUserScore(levelinfo->id, rv, sv, lv);
+		updateLevelBestFlame(levelinfo);
 		flushUserData();
 	}
 	else if (interval > 0) {
 		lv = length > userData["record"][levelinfo->id]["length"].asUInt() ? length : 0;
 
 		updateUserScore(levelinfo->id, -1, -1, lv);
+		updateLevelBestFlame(levelinfo);
 		flushUserData();
 	}
 

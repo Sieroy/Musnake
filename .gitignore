@@ -36,6 +36,6 @@ build
 *.app
 .vs/*
 env/*
-tools/*
+tools_ignored/*
 Debug/*
 hidden/*

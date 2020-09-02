@@ -238,7 +238,6 @@ __game:
 							thisGame->run();
 							delete thisGame;
 						}
-						updateLevelBestFlame(nowLevel);
 						loadForMenu();
 						Mix_PlayChannel(MU_MUSIC_CHANNEL_BGM, nowLevel->sample, -1);
 					}
