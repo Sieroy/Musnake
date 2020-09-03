@@ -185,7 +185,7 @@ int musnake::Game::moveSnake(int dir) {
 	Grid* gp = snakeHead->getGrid();
 	Snake* sp;
 	int returnVal = 0;
-	int x = gp->x, y = gp->y;
+	unsigned x = gp->x, y = gp->y;
 
 	if (movingLock) {
 		removeDelayFuncByFuncArg(&timingFunc, &unlockMoving_D, 0);
@@ -251,7 +251,7 @@ int musnake::Game::moveSnake(int dir) {
 		x--;
 		break;
 	}
-	gp = gameMap[x][y];
+	gp = gameMap[x%64][y%64];
 
 	switch (gp->objType) {
 	case MU_GRID_OBJECT_TYPE_SNAKE:
@@ -309,14 +309,14 @@ inline void musnake::Game::updateBase() {
 	if (x * 40 + base.x > 800) {
 		dc += getTimeDelta();
 		while (dc >= 5) {
-			base.x -= 5;
+			base.x -= 20;
 			dc -= 5;
 		}
 	}
 	else if (x * 40 + base.x < 0) {
 		dc += getTimeDelta();
 		while (dc >= 5) {
-			base.x += 5;
+			base.x += 20;
 			dc -= 5;
 		}
 	}
@@ -340,14 +340,14 @@ inline void musnake::Game::updateBase() {
 	if (y * 40 + base.y > 600) {
 		dc += getTimeDelta();
 		while (dc >= 5) {
-			base.y -= 5;
+			base.y -= 20;
 			dc -= 5;
 		}
 	}
 	else if (y * 40 + base.y < 0) {
 		dc += getTimeDelta();
 		while (dc >= 5) {
-			base.y += 5;
+			base.y += 20;
 			dc -= 5;
 		}
 	}
