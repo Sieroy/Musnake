@@ -86,14 +86,26 @@
 			]
 		},
 		{
+			"name": "音游杀我！",
+			"items": [
+				{
+					"id": "k01",
+					"name": "Oshama Scramble!",
+					"by": "t+pazolite",
+					"time": "2:03",
+					"timeVal": 120000
+				}
+			]
+		},
+		{
 			"name": "Debug",
 			"items": [
 				{
 					"id": "z01",
 					"name": "Test",
 					"by": "Danny Baranowsky",
-					"time": "0:11",
-					"timeVal": 11000
+					"time": "2:00",
+					"timeVal": 120000
 				}
 			]
 		}
