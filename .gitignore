@@ -1,7 +1,15 @@
-#vscode
+# vscode
 .vscode
-#cmake
+
+# vs
+*.sln
+*.vcxproj*
+.vs/*
+
+# cmake
+CMakeLists.txt
 build
+
 # Prerequisites
 *.d
 
@@ -34,7 +42,8 @@ build
 *.exe
 *.out
 *.app
-.vs/*
+
+# Others
 env/*
 tools_ignored/*
 Debug/*

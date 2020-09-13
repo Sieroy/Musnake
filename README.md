@@ -19,18 +19,19 @@ Just a game for my homework.
 ### 环境准备
 
 #### Windows
+>项目本身是用Visual Studio基于SDL2开发的，需要导入许多库，比如SDL2本体啊、SDL_TTF啊之类的。
 >
-> 项目本身是用Visual Studio基于SDL2开发的，需要导入许多库，比如SDL2本体啊、SDL_TTF啊之类的。
+>SDL2链接-> http://libsdl.org/download-2.0.php
 >
-> SDL2链接-> http://libsdl.org/download-2.0.php
+>SDL_Image链接-> http://www.libsdl.org/projects/SDL_image/ （附有zlib、libpng等库的下载链接）
 >
-> SDL_Image链接-> http://www.libsdl.org/projects/SDL_image/ （附有zlib、libpng等库的下载链接）
+>SDL_TTF链接-> http://www.libsdl.org/projects/SDL_ttf/ （附有FreeType库下载链接）
 >
-> SDL_TTF链接-> http://www.libsdl.org/projects/SDL_ttf/ （附有FreeType库下载链接）
+>SDL_Mixer链接-> http://www.libsdl.org/projects/SDL_mixer/
 >
-> SDL_Mixer链接-> http://www.libsdl.org/projects/SDL_mixer/
+>如果要在VS项目中导入上述这些库，需要下载对应机型的开发库，并在VS中通过添加`.lib`文件以及“附加包含目录”来导入。
 >
-> 可以直接下载它们的dll文件，也可以下载了工程文件后自行编译出lib文件和dll文件。
+>之后，不论是运行还是在VS等IDE中调试，都要将上述库的动态链接库文件（`.dll`），添加到与`.exe`游戏文件或VS工程文件同目录的位置。可以直接从上述链接中下载它们的`.dll`文件，也可以下载了工程文件后自行编译出`.lib`文件和`.dll`文件。
 
 #### Linux
 >
@@ -61,7 +62,7 @@ Just a game for my homework.
 > 对于`Cmake`党而言，注意在编译前安装导入对应的库。
 > 
 
-
+### 其他说明
 
 
 SDL2文档-> https://wiki.libsdl.org/
@@ -70,4 +71,7 @@ SDL2文档-> https://wiki.libsdl.org/
 
 会看文档就不怕不怕辣。
 
-由于开发日志体量较大，现已迁移至另一文件->diary.md
+由于开发日志体量较大，现已迁移至另一文件->`doc/diary.md`
+
+此外，关于开发思路和游戏构成，我们将其整理到了这个文件中->`doc/document.md`
+
