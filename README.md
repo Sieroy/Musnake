@@ -59,8 +59,8 @@ Just a game for my homework.
 > ./Musnake.out
 > ```
 > 
-> 对于`Cmake`党而言，注意在编译前安装导入对应的库。
-> 
+
+对于`Cmake`党而言，注意在写`makefile`时安装导入对应的库。
 
 ### 其他说明
 
