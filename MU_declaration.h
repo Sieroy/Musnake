@@ -165,9 +165,7 @@ namespace musnake {
 		int y;
 	}Toast;
 
-
 	const char* keyName[4] = { "up", "down", "left", "right" };
-	char PATH[256];
 
 	SDL_Rect musnakeRect = { 0,0,MU_WINDOW_WIDTH,MU_WINDOW_HEIGHT };
 	SDL_Point musnakeCenterPoint = { MU_WINDOW_WIDTH / 2, MU_WINDOW_HEIGHT / 2 };
@@ -280,8 +278,6 @@ namespace musnake {
 	SDL_Keycode musnakeKey[4] = { 0 };
 	Flame* configKeyFlame[4] = { nullptr };
 
-	unsigned long long timeVal = 0;
-	unsigned long timeDelta = 0;
 	unsigned long fps = 0;
 
 	int musnakeState;

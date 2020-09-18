@@ -4,6 +4,9 @@
 
 #include"MU_declaration.h"
 
+static unsigned long long timeVal = 0;
+static unsigned long timeDelta = 0;
+
 inline unsigned long long musnake::updateTime() {
 	static unsigned flameCount = 0;
 	static unsigned timeCount = 0;

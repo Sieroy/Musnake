@@ -5,6 +5,8 @@
 
 #include "MU_declaration.h"
 
+static char PATH[256];
+
 inline void musnake::initPath(char* path) {
 	char* p = PATH;
 
