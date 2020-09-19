@@ -96,7 +96,7 @@
 					"timeVal": 120000
 				}
 			]
-		},
+		}/*,
 		{
 			"name": "Debug",
 			"items": [
@@ -108,7 +108,7 @@
 					"timeVal": 120000
 				}
 			]
-		}
+		}*/
 	],
 	"bonus": {
 		"tutorial": {
