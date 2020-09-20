@@ -594,7 +594,9 @@ void musnake::Game::ending(){
 
 	if (interval <= 0 && hp > 0 && !pausingTime) {  // 如果胜利，那么存个档
 		rankVal = hits * 100 / (noteCount + badCount);
-		if (rankVal >= 97)
+		if (rankVal == 100)
+			ri = 0;
+		else if (rankVal >= 97)
 			ri = 1;
 		else if (rankVal >= 95)
 			ri = 2;
