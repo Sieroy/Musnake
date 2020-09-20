@@ -686,28 +686,20 @@ void musnake::unloadForClass(LevelClass* clp) {
 }
 
 inline void musnake::parseRankStr(char* str, int rankv) {
-	switch (rankv / 10) {
-	case 10:
+	if (rankv == 100)
 		SDL_strlcpy(str, "SSS", 4);
-		break;
-	case 9:
-		if (rankv >= 95)
-			SDL_strlcpy(str, "SS", 3);
-		else
-			SDL_strlcpy(str, "S", 3);
-		break;
-	case 8:
+	else if (rankv >= 97)
+		SDL_strlcpy(str, "SS", 3);
+	else if (rankv >= 95)
+		SDL_strlcpy(str, "S", 3);
+	else if (rankv >= 90)
 		SDL_strlcpy(str, "A", 3);
-		break;
-	case 7:
+	else if (rankv >= 85)
 		SDL_strlcpy(str, "B", 3);
-		break;
-	case 6:
+	else if (rankv >= 80)
 		SDL_strlcpy(str, "C", 3);
-		break;
-	default:
+	else
 		SDL_strlcpy(str, "D", 3);
-	}
 }
 
 void musnake::updateLevelBestFlame(Level* lp) {

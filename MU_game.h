@@ -594,28 +594,19 @@ void musnake::Game::ending(){
 
 	if (interval <= 0 && hp > 0 && !pausingTime) {  // 如果胜利，那么存个档
 		rankVal = hits * 100 / (noteCount + badCount);
-		switch (rankVal / 10) {
-		case 10:
-			ri = 0;
-			break;
-		case 9:
-			if (rankVal >= 95)
-				ri = 1;
-			else
-				ri = 2;
-			break;
-		case 8:
+		if (rankVal >= 97)
+			ri = 1;
+		else if (rankVal >= 95)
+			ri = 2;
+		else if (rankVal >= 90)
 			ri = 3;
-			break;
-		case 7:
+		else if (rankVal >= 85)
 			ri = 4;
-			break;
-		case 6:
+		else if (rankVal >= 80)
 			ri = 5;
-			break;
-		default:
+		else
 			ri = 6;
-		}
+
 		rv = rankVal > userData["record"][levelinfo->id]["rank"].asInt() ? rankVal : -1;
 		sv = score > userData["record"][levelinfo->id]["score"].asUInt() ? score : -1;
 		lv = length > userData["record"][levelinfo->id]["length"].asUInt() ? length : 0;
