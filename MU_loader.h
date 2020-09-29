@@ -1109,7 +1109,7 @@ void musnake::Game::loadToast() {
 		ifs.close();
 	}
 	else {
-
+		// 缺少toast文件
 	}
 }
 
@@ -1119,6 +1119,7 @@ void musnake::Game::unloadToast() {
 	while (np = toastQueue) {
 		toastQueue = np->next;
 		delete ((Toast*)np->arg)->flame;
+		delete (Toast*)np->arg;
 		delete np;
 	}
 }

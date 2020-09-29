@@ -583,6 +583,7 @@ void musnake::Game::run() {
 		SDL_RenderPresent(musnakeRender);
 	}
 
+	triggerDelayFunc(&timingFunc);
 	ending();
 
 	if (state == MU_GAME_STATE_END) return;

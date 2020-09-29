@@ -368,19 +368,21 @@ update *-- getTimeDelta : 确定时间
 
 游戏是分地格来实现各种对象的作用的，我们的蛇也是由一格一格的“蛇段”来拼接而成的。而且，蛇段对象本身不可在移动，准确来说，它表示一个地格上有蛇的一种状态。当蛇移动时，尾端的蛇段会被释放（如果需要），并会在移动的方向生成一个蛇段作为新的头。
 
-`Snake`类的对象有两个指针`prev`和`next`，分别指向当前蛇段的前一段和后一段，这种结构使得整个蛇体构成一个双向链表；此外它还有两个属性`headDir`和`tailDir`，分别表示前一段和后一段的蛇段相对于当前蛇段的方向。表示方向是靠5个枚举类型——
+`Snake`类的对象有两个指针`prev`和`next`，分别指向当前蛇段的前一段和后一段，这种结构使得整个蛇体构成一个双向链表；此外它还有两个属性`headDir`和`tailDir`，分别表示前一段和后一段的蛇段相对于当前蛇段的方向，表示方向是靠5个枚举类型——
 
-`MU_SNAKE_DIRECT_NONE`：值为`-1`，表示没有方向；
+- `MU_SNAKE_DIRECT_NONE`：值为`-1`，表示没有方向；
 
-`MU_SNAKE_DIRECT_UP`：值为`0`，表示方向为上；
+- `MU_SNAKE_DIRECT_UP`：值为`0`，表示方向为上；
 
-`MU_SNAKE_DIRECT_RIGHT`：值为`1`，表示方向为右；
+- `MU_SNAKE_DIRECT_RIGHT`：值为`1`，表示方向为右；
 
-`MU_SNAKE_DIRECT_DOWN`：值为`2`，表示方向为下；
+- `MU_SNAKE_DIRECT_DOWN`：值为`2`，表示方向为下；
 
-`MU_SNAKE_DIRECT_LEFT`：值为`3`，表示方向为左。
+- `MU_SNAKE_DIRECT_LEFT`：值为`3`，表示方向为左。
 
-特别地，对于蛇头和蛇尾的两段，它们分别有一个指针为空，且一个方向为`MU_SNAKE_DIRECT_NONE`。
+特别地，对于蛇头和蛇尾的两段，它们分别有一个指针为空，且方向为`MU_SNAKE_DIRECT_NONE`。
+
+蛇还有一个地格指针成员，用来定位其位置。
 
 关于蛇的大致样子，下面有图示：
 
@@ -388,27 +390,135 @@ update *-- getTimeDelta : 确定时间
 
 此外，`Snake`对象还有几个方法：
 
-`turnBody`：蛇头使用的一个方法，使自身成为蛇身，同时播放自身摇头动画；
+- `turnBody`：蛇头使用的一个方法，使自身成为蛇身，同时播放自身摇头动画；
 
-`turnTail`：蛇身使用的一个方法，使自身成为蛇尾，同时播放缩尾动画；
+- `turnTail`：蛇身使用的一个方法，使自身成为蛇尾，同时播放缩尾动画；
 
-`shakeTail`：蛇尾使用的一个方法，在蛇吃食物时调用，播放甩尾动画而不释放掉它；
+- `shakeTail`：蛇尾使用的一个方法，在蛇吃食物时调用，播放甩尾动画而不释放掉它；
 
-`endTail`：蛇尾使用的一个方法，在蛇正常前进时调用，播放蛇尾摇摆动画并添加蛇尾的延时释放函数。
+- `endTail`：蛇尾使用的一个方法，在蛇正常前进时调用，播放蛇尾摇摆动画并添加蛇尾的延时释放函数。
 
-以上是蛇的基本特性。为了显示动态的蛇图，我们绘制出了蛇的分帧图片，这些图片位于`image/snake_0_head.png`、`image/snake_0_tail.png`和`image/snake_0_body.png`，在下面文件构成小节我们会具体说明它们。这些图片会被按需加载到若干个全局的变量内，并编连成组，供蛇显示。
+以上是蛇的基本特性。
+
+为了显示动态的蛇图，我们绘制出了各部分蛇段的分帧图片，这些图片位于`image/snake_0_head.png`、`image/snake_0_tail.png`和`image/snake_0_body.png`，在下面文件构成小节我们会具体说明它们。这些图片会被按需加载到若干个全局的变量内，并编连成组，供蛇显示。
+
+为了区分出各个蛇段的方向和状态并将其正确绘出，我们为它的图编连了这些组：
+
+- `MU_SNAKE_FLAME_HEAD_UP`：从上边伸出来的蛇头（静态）
+- `MU_SNAKE_FLAME_HEAD_RIGHT`：从右边伸出来的蛇头（静态）
+- `MU_SNAKE_FLAME_HEAD_DOWN`：从下边伸出来的蛇头（静态）
+- `MU_SNAKE_FLAME_HEAD_LEFT`：从左方伸出来的蛇头（静态）
+- `MU_SNAKE_FLAME_TAIL_UP`：向上的蛇尾（静态）
+- `MU_SNAKE_FLAME_TAIL_RIGHT`：向右的蛇尾（静态）
+- `MU_SNAKE_FLAME_TAIL_DOWN`：向下的蛇尾（静态）
+- `MU_SNAKE_FLAME_TAIL_LEFT`：向左的蛇尾（静态）
+- `MU_SNAKE_FLAME_BODY_UPDOWN`：上下方向的蛇身（静态）
+- `MU_SNAKE_FLAME_BODY_RIGHTLEFT`：左右方向的蛇身（静态）
+- `MU_SNAKE_FLAME_BODY_UPRIGHT`：上右方向的蛇身（静态）
+- `MU_SNAKE_FLAME_BODY_RIGHTDOWN`：下右方向的蛇身（静态）
+- `MU_SNAKE_FLAME_BODY_DOWNLEFT`：下左方向的蛇身（静态）
+- `MU_SNAKE_FLAME_BODY_UPLEFT`：上左方向的蛇身（静态）
+- `MU_SNAKE_FLAME_HEAD_0toUP`：从上边伸出来的蛇头（动态）
+- `MU_SNAKE_FLAME_HEAD_UPtoRIGHT`：从上边伸向右边的蛇头（动态）
+- `MU_SNAKE_FLAME_HEAD_UPtoDOWN`：从上边伸向下边的蛇头（动态）
+- `MU_SNAKE_FLAME_HEAD_UPtoLEFT`：从上边伸向左边的蛇头（动态）
+- `MU_SNAKE_FLAME_HEAD_0toRIGHT`：从右边伸出来的蛇头（动态）
+- `MU_SNAKE_FLAME_HEAD_RIGHTtoUP`：从右边伸向上边的蛇头（动态）
+- `MU_SNAKE_FLAME_HEAD_RIGHTtoDOWN`：从右边伸向下边的蛇头（动态）
+- `MU_SNAKE_FLAME_HEAD_RIGHTtoLEFT`：从右边伸向左边的蛇头（动态）
+- `MU_SNAKE_FLAME_HEAD_0toDOWN`：从下边伸出来的蛇头（动态）
+- `MU_SNAKE_FLAME_HEAD_DOWNtoUP`：从下边伸向上边的蛇头（动态）
+- `MU_SNAKE_FLAME_HEAD_DOWNtoRIGHT`：从下边伸向右边的蛇头（动态）
+- `MU_SNAKE_FLAME_HEAD_DOWNtoLEFT`：从下边伸向左边的蛇头（动态）
+- `MU_SNAKE_FLAME_HEAD_0toLEFT`：从左边伸出来的蛇头（动态）
+- `MU_SNAKE_FLAME_HEAD_LEFTtoUP`：从左边伸向上边的蛇头（动态）
+- `MU_SNAKE_FLAME_HEAD_LEFTtoRIGHT`：从左边伸向右边的蛇头（动态）
+- `MU_SNAKE_FLAME_HEAD_LEFTtoDOWN`：从左边伸向下边的蛇头（动态）
+- `MU_SNAKE_FLAME_TAIL_UPshake`：向上的蛇尾摆动（动态）
+- `MU_SNAKE_FLAME_TAIL_UPto0`：向上摆出去的蛇尾（动态）
+- `MU_SNAKE_FLAME_TAIL_RIGHTtoUP`：从右向上的蛇尾（动态）
+- `MU_SNAKE_FLAME_TAIL_DOWNtoUP`：从下向上的蛇尾（动态）
+- `MU_SNAKE_FLAME_TAIL_LEFTtoUP`：从左向上的蛇尾（动态）
+- `MU_SNAKE_FLAME_TAIL_RIGHTshake`：向右的蛇尾摆动（动态）
+- `MU_SNAKE_FLAME_TAIL_RIGHTto0`：向右摆出去的蛇尾（动态）
+- `MU_SNAKE_FLAME_TAIL_UPtoRIGHT`：从上向右的蛇尾（动态）
+- `MU_SNAKE_FLAME_TAIL_DOWNtoRIGHT`：从下向右的蛇尾（动态）
+- `MU_SNAKE_FLAME_TAIL_LEFTtoRIGHT`：从左向右的蛇尾（动态）
+- `MU_SNAKE_FLAME_TAIL_DOWNshake`：向下的蛇尾摆动（动态）
+- `MU_SNAKE_FLAME_TAIL_DOWNto0`：向下摆出去的蛇尾（动态）
+- `MU_SNAKE_FLAME_TAIL_UPtoDOWN`：从上向下的蛇尾（动态）
+- `MU_SNAKE_FLAME_TAIL_RIGHTtoDOWN`：从右向下的蛇尾（动态）
+- `MU_SNAKE_FLAME_TAIL_LEFTtoDOWN`：从左向下的蛇尾（动态）
+- `MU_SNAKE_FLAME_TAIL_LEFTshake`：向左的蛇尾摆动（动态）
+- `MU_SNAKE_FLAME_TAIL_LEFTto0`：向左摆出去的蛇尾（动态）
+- `MU_SNAKE_FLAME_TAIL_UPtoLEFT`：从上向左的蛇尾（动态）
+- `MU_SNAKE_FLAME_TAIL_RIGHTtoLEFT`：从右向左的蛇尾（动态）
+- `MU_SNAKE_FLAME_TAIL_DOWNtoLEFT`：从下向左的蛇尾（动态）
+
+每次移动时，蛇会根据上面的枚举值更新自身的图片。
 
 #### 地格（`Grid`）
 
+`Grid`是游戏中的基本对象，每个`Grid`对象都会处于以下状态之一（存储在成员`objType`中）：
 
+- `MU_GRID_OBJECT_TYPE_DARK`：地格上为另一种障碍物
+- `MU_GRID_OBJECT_TYPE_EMPTY`：地格上为空，蛇可以自由行走
+- `MU_GRID_OBJECT_TYPE_SNAKE`：地格上为蛇段
+- `MU_GRID_OBJECT_TYPE_BLOCK`：地格上为普通障碍物
+- `MU_GRID_OBJECT_TYPE_FOOD`：地格上为食物
+- `MU_GRID_OBJECT_TYPE_NONE`：地格没有任何物体，蛇理论上不可到达
+
+特别地，当`objType`为`MU_GRID_OBJECT_TYPE_SNAKE`或`MU_GRID_OBJECT_TYPE_FOOD`时，`Grid`对象的共用体成员`obj`会储存对应蛇段或食物的指针。通过`getSnake`、`getFood`和`setSnake`、`setFood`方法可以访问它。在析构时，这些地格上对象会被一起释放。
+
+此外，`Grid`对象有`center`成员，存储其中心点坐标，该坐标用于镜头的移动，通过`getCenterPoint`方法可以获得它的值。
 
 #### 食物（`Food`）
 
+`Food`对象用来表示地格有食物的一个状态，并储存其图片用以绘制。它有`grid`成员，储存其所在地格的指针；此外还有`duration`成员，帮助实现限时食物，虽然最终这个想法被鸽了。
 
+食物有三种样式，在刷新食物时会为它分配。
 
 ## 程序流程
 
 ### 总体流程
+
+游戏总体流程很简单，如图：
+
+```mermaid
+graph TB
+
+Start([开始])
+End([结束])
+InitPublic[载入全局资源]
+TermPublic[卸载全局资源]
+SenceTitle(标题界面)
+SenceMenu(菜单界面)
+SenceConfig(设定界面)
+Game(游戏运行)
+
+
+Start --> InitPublic
+InitPublic --> SenceTitle
+SenceTitle --> SenceMenu
+SenceMenu --> SenceTitle
+SenceMenu --> SenceConfig
+SenceConfig --> SenceMenu
+SenceTitle -->|新手教学或触发彩蛋| Game
+SenceMenu -->|进入关卡| Game
+SenceConfig -->|新手教学| Game
+Game -->|游戏结束| SenceMenu
+SenceTitle -->|点击关闭| TermPublic
+SenceMenu -->|点击关闭| TermPublic
+SenceConfig -->|点击关闭| TermPublic
+Game -->|点击关闭| TermPublic
+TermPublic --> End
+```
+
+各个子流程如下所示。
+
+### 资源加载/卸载
+
+
 
 ### 标题页面
 
