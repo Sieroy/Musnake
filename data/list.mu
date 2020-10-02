@@ -49,6 +49,13 @@
 					"by": "S9ryne",
 					"time": "4:57",
 					"timeVal": 297330
+				},
+				{
+					"id": "b05",
+					"name": "恋のうた(TV size)",
+					"by": "Yunomi (feat.鬼頭明里)",
+					"time": "1:30",
+					"timeVal": 91000
 				}
 			]
 		},
