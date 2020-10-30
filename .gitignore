@@ -47,4 +47,5 @@ build
 env/*
 tools_ignored/*
 Debug/*
+Release/*
 hidden/*
